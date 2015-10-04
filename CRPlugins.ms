@@ -778,7 +778,7 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 	)
 	rollout accessoryParams "Accessory Parameters"
 	(
-		edittext txt_accessoryName "Accessory Type" labelOnTop:true
+		edittext txt_accessoryName "Accessory Name" labelOnTop:true
 		edittext txt_accessoryType "Accessory Type" labelOnTop:true
 		edittext txt_accessoryFileName "Accessory Folder" labelOnTop:true 
 		colorpicker colpick_AccessoryColour "Accessory Colour"

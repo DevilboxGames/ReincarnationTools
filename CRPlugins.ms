@@ -876,3 +876,22 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 		)
 	)
 )
+
+plugin simpleObject CarmaHelper_LevelRoutes
+	Name:"AI Routes"
+	classID:#(0x20c755be, 0x683f57d2)
+	category:"Carmageddon: Reincarnation"
+	version:1
+(
+	local AINodesObjects, AILinksObjects
+	
+	parameters RouteParamBlock rollout: RouteParameters
+	(
+		AILinks type:#point3Tab
+		AILinksLayers type:#intTab
+	)
+	
+	rollout RouteParameters "Route Parameters"
+	(
+	)
+)

@@ -1,3 +1,18 @@
+fn StringIsInt str = 
+(
+	return (str as integer) as string == str
+)
+fn StringIsFloat str = 
+(
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+$"
+	return rx.isMatch str
+)
+fn StringIsPoint3 str = 
+(
+	
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+$"
+	return rx.isMatch str
+)
 fn GetBonesFromSkin skinMod =
 (
 	boneArray = for o in objects where (refs.dependencylooptest skinMod o) collect o
@@ -101,6 +116,106 @@ fn Close_Pressed sender arg =
 	
 	
 	destroydialog carma_reincarnation_dockfloater
+)
+
+struct BatchRouteTopType (Name, SubTypes, Values)
+struct BatchRouteSubType (Name, Values)
+fn BatchLevelRoutesButton_Pressed sender arg =
+(
+	global CarmaSettings
+	
+	levelsPath = CarmaSettings.GamePath+"/Data_Core/Content/Levels/"
+	
+	levelsList= getDirectories(levelsPath+"*")
+	
+	AILinkTypes = #()
+	AINodeTypes = #()
+	TopSectionTypes = #()
+	
+	
+	for i=1 to levelsList.count do
+	(
+		if ((dotnetclass "System.IO.File").exists (levelsList[i]+"routes.txt")) then
+		(
+			splitDir = filterstring levelsList[i] "\/"
+			levelName = splitDir[splitDir.count]
+			routesText = openfile (levelsList[i]+"routes.txt") mode:"r"
+			
+			lineNum=0
+			activeType=undefined
+			activeSubType = undefined
+			
+			while not (eof routesText) do
+			(
+				lineNum += 1
+				
+				curline = trimLeft (trimRight (readline routesText))
+				if curline[1] == "[" then
+				(
+					foundType = false
+					for topType in TopSectionTypes where (toupper topType.Name) == (toupper curLine) do 
+					(
+						activeType = topType
+						foundType = true
+					)
+					if not foundType then
+					(
+						activeType = BatchRouteTopType Name:curLine SubTypes:#() Values:#()
+						append TopSectionTypes activeType
+						activeSubType = undefined
+					)
+				)
+				else if curline[1] == "<" then
+				(
+					foundType = false
+					for subType in activeType.SubTypes where (toupper subType.Name) == (toupper curLine) do
+					(
+						foundType = true
+						activeSubType = subType
+					)
+					if not foundType then
+					(
+						activeSubType = BatchRouteSubType Name:curLine Values:#()
+						append activeType.SubTypes activeSubType
+					)
+				)
+				else if activeSubType == undefined and activeType != undefined then
+				(
+					if StringIsInt curLine then appendIfUnique activeType.Values "INTEGER"
+					else if StringIsFloat curLine then appendIfUnique activeType.Values "FLOAT"
+					else if StringIsPoint3 curLine then appendIfUnique activeType.Values "POINT3"
+					else appendIfUnique activeType.Values curLine
+				)
+				else if activeSubType != undefined then
+				(
+					if StringIsInt curLine then appendIfUnique activeSubType.Values "INTEGER"
+					else if StringIsFloat curLine then appendIfUnique activeSubType.Values "FLOAT"
+					else if StringIsPoint3 curLine then appendIfUnique activeSubType.Values "POINT3"
+					else appendIfUnique activeSubType.Values curLine
+				)
+			)
+			
+		)
+	)
+			for topType in TopSectionTypes do
+			(
+				format "%\n" topType.Name
+				if topType.SubTypes.count > 0 do format "Potential Sub Types:\n"
+				for subType in topType.SubTypes do
+				(
+					format "\t%\n" subType.Name
+					if subType.Values.count > 0 do format "\tPotential Values:\n"
+					for val in subType.Values do
+					(
+						format "\t\t%\n" val
+					)
+				)
+				if topType.Values.count > 0 do format "Potential Values:\n"
+				for val in topType.Values do
+				(
+					format "\t%\n" val
+				)
+			)
 )
 
 fn BatchCarSetupLOLsButton_Pressed sender arg =
@@ -260,7 +375,6 @@ fn BatchCarStructuresParseNodes xmlnode carName &partTypes &partArgs &partArgCar
 
 	)
 ) 
-
 fn BatchCarStructuresButton_Pressed sender arg =
 (
 	global CarmaSettings

@@ -252,11 +252,18 @@ fn CR_SetupCommonToolsTab tabPage =
 	SetControlLayout BatchCarStructuresButton (DN_ControlLayout Height: 30 Left: (BatchCarSetupLOLsButton.right+5) Top:(UpdateAttributesButton.bottom +5) Width: 160)
 	DebugToolsGroup.controls.add BatchCarStructuresButton
 	
+	BatchLevelRoutesButton = dotnetobject "button"
+	BatchLevelRoutesButton.text = "Batch Process routes.txt files"
+	BatchLevelRoutesButton.name= "BatchLevelRoutesButton"
+	SetClickHandler BatchLevelRoutesButton BatchLevelRoutesButton_Pressed
+	SetControlLayout BatchLevelRoutesButton (DN_ControlLayout Height: 30 Left: (10) Top:(BatchCarSetupLOLsButton.bottom +5) Width: 160)
+	DebugToolsGroup.controls.add BatchLevelRoutesButton
+	
 	CloseButton = dotnetobject "button"
 	CloseButton.text = "Close"
 	CloseButton.name= "CloseButton"
 	SetClickHandler CloseButton Close_Pressed
-	SetControlLayout CloseButton (DN_ControlLayout Height: 30 Left: 10 Top:(BatchCarSetupLOLsButton.bottom +5) Width: 160)
+	SetControlLayout CloseButton (DN_ControlLayout Height: 30 Left: 10 Top:(BatchLevelRoutesButton.bottom +5) Width: 160)
 	DebugToolsGroup.controls.add CloseButton
 	tabPage.controls.add DebugToolsGroup
 )

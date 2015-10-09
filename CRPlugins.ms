@@ -877,6 +877,96 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 	)
 )
 
+--struct AINode (Index, Type, Radius, Position, RaceLine, RaceLineOffset)
+struct AILink (Node1, Node2, Width, Type, OneWay, Interior, Loop)
+plugin Helper AINode
+	name:"Level AI Node"
+	classID:#(0x47db14fe, 0x4e9b5f90)
+	category:"Carmageddon: Reincarnation"
+	extends:dummy
+(
+  local lastSize, meshObj, raceLineObj, lastRaceLine
+  parameters pblock rollout:params
+  (
+		Index type:#integer default: 0
+		Type type:#integer default: 0
+		Radius type:#float default: 0.0 ui: spn_Radius
+		Position type:#point3 default: [0,0,0]
+		RaceLine type:#point3 default: [0,0,0]
+		RaceLineOffset type:#float default: 0.0
+		
+		ShowRaceLine type:#boolean default: true ui: chk_ShowRaceLine
+  )
+  rollout params "HelperTest Parameters"
+  (
+    Spinner spn_Radius "Radius:" range:[0, 1e9, 0]
+	Checkbox chk_ShowRaceLine "Show Race Line:" default: true
+  )
+  on getDisplayMesh do
+  (
+    if (meshObj == undefined) do
+    (
+      meshObj = createInstance sphere radius:Radius
+      lastSize = size
+    )
+	if (raceLineObj == undefined) or lastRaceLine != raceLine do
+	(
+		vect = Position - RaceLine
+		raceLineObj = trimesh()
+		
+		vertices = #([vect.x, vect.y, vect.z], [vect.x + Radius, vect.y, vect.z], [-(vect.x + Radius), vect.y, vect.z], [vect.x, vect.y + Radius, vect.z], [vect.x, -(vect.y + Radius), vect.z],[vect.x, vect.y, vect.z + Radius], [vect.x, vect.y, -(vect.z + Radius)])
+		faces = #(1, 2, 1, 3, 1, 4, 1, 5, 1, 6, 1, 7)
+		setNumVerts raceLineObj vertices.count
+		setNumFaces raceLineObj (faces.count / 2)
+		for i=1 to vertices.count do setVert raceLineObj i vertices[i]
+		for i=1 to faces.count / 2 do setFace raceLineObj i faces[i] faces[i + 1] faces[i + 2]
+		lastRaceLine = RaceLine
+	)
+    if Radius != lastSize do
+    (
+      meshObj.radius = Radius 
+      lastSize = Radius
+    )
+    if ShowRaceLine then 
+	(
+	 meshObj.mesh + raceLineObj
+	)
+	 else meshObj.mesh
+  )
+	tool create
+	(
+	
+		on mousePoint clickno do
+		(
+		
+		  case clickno of
+			(
+				1: 
+				(
+					nodeTM = matrix3 1
+					nodeTM.translation = worldPoint
+					RaceLine = worldPoint
+					Position = worldPoint
+				)
+				3:
+				(
+					Radius = length (nodeTM.translation - worldPoint) 
+					#stop
+				)
+				
+			)
+		)
+		on mouseMove clickno do
+		(
+		
+			case clickno of
+			(
+				3: Radius = length (nodeTM.translation - worldPoint)
+				--3: #stop
+			)
+		)
+	)
+)
 plugin simpleObject CarmaHelper_LevelRoutes
 	Name:"AI Routes"
 	classID:#(0x20c755be, 0x683f57d2)
@@ -887,11 +977,59 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	
 	parameters RouteParamBlock rollout: RouteParameters
 	(
-		AILinks type:#point3Tab
-		AILinksLayers type:#intTab
+		Races type:#stringTab tabSizeVariable:true
+		RoutesVersion type:#float default:2.5
+		Lump type:#string default:""
 	)
-	
+	parameters AINodeBlock
+	(
+		AINodes_Index type:#intTab tabSizeVariable:true
+		AINodes_Type type:#intTab tabSizeVariable:true
+		AINodes_Radius type:#floattab tabSizeVariable:true
+		AINodes_Position type:#point3Tab tabSizeVariable:true
+		AINodes_RaceLine type:#point3Tab tabSizeVariable:true
+		AINodes_RaceLineOffset type:#floatTab tabSizeVariable:true
+		
+	)
+	parameters AILinkBlock
+	(
+		AILinks_Node1 type:#intTab tabSizeVariable:true
+		AILinks_Node2 type:#intTab tabSizeVariable:true
+		AILinks_Width type:#floattab tabSizeVariable:true
+		AILinks_Type type:#intTab tabSizeVariable:true
+		AILinks_OneWay type:#boolTab tabSizeVariable:true
+		AILinks_Interior type:#boolTab tabSizeVariable:true
+		AILinks_Loop type:#boolTab tabSizeVariable:true
+		
+	)
+	on buildmesh do
+	(
+		
+	)
 	rollout RouteParameters "Route Parameters"
 	(
+		button tstbutton "Test"
+	)
+	
+	tool create
+	(
+		on mousePoint click do
+		(
+			case click of
+			(
+				1: 
+				(
+					
+				)
+				2: #stop
+			)
+		)
+		on mouseMove click do
+		(
+			case click of
+			(
+				2: #stop
+			)
+		)
 	)
 )

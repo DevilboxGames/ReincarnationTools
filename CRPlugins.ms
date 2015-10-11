@@ -897,7 +897,7 @@ plugin Helper AINode
 		
 		ShowRaceLine type:#boolean default: true ui: chk_ShowRaceLine
   )
-  rollout params "HelperTest Parameters"
+  rollout params "AI Link Parameters"
   (
     Spinner spn_Radius "Radius:" range:[0, 1e9, 0]
 	Checkbox chk_ShowRaceLine "Show Race Line:" default: true
@@ -973,7 +973,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	category:"Carmageddon: Reincarnation"
 	version:1
 (
-	local AINodesObjects, AILinksObjects
+	local AINodesObjects, AILinksObjects, IconMesh
 	
 	parameters RouteParamBlock rollout: RouteParameters
 	(
@@ -1004,7 +1004,21 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	)
 	on buildmesh do
 	(
-		
+		if IconMesh == undefined then
+		(
+			IconMesh = createInstance plane width:1 lengthsegs:1 widthsegs:1
+			mats = for mat in scenematerials where mat.name == "sys_AIRoutesIconMat" collect mat
+			if mats.count == 0 then
+			(
+				iconMat = standardmaterial name:"sys_AIRoutesIconMat"
+				scriptFileName = getThisScriptFilename()
+				scriptFolder = getFileNamePath scriptFileName
+				iconMat.diffuse = bitmaptexture filename:(scriptFolder+"UI/PathsIcon.png")
+				iconmesh.material = iconMat
+			)
+			else iconmesh.material = mats[0]
+		)
+		return IconMesh.mesh
 	)
 	rollout RouteParameters "Route Parameters"
 	(

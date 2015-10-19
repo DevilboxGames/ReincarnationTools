@@ -11,6 +11,7 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false =
 	(
 		curLayer = layerManager.getLayer i
 		layerName = curLayer.name
+		if (substring layerName 0 4) == "sys_" then continue
 		refLayer = ILayerManager.getLayerObject i
 		layerNodes = refs.dependents refLayer
 		

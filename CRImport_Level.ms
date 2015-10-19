@@ -298,6 +298,128 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	)
 	--format "The Level.lol file: %\n" lolscript
 )
+fn ParseLevelRoutesTXT txtFileName =
+(
+	oldCurrentLayer = LayerManager.current
+	routesLayer = LayerManager.getLayerFromName "sys_LevelRoutes"
+	if routesLayer == undefined then
+	(
+		routesLayer = LayerManager.newLayerFromName "sys_LevelRoutes"
+	)
+	routesLayer.current = true
+	
+	format "Loading routes file: %\n" txtFileName
+	
+	if ((dotnetclass "System.IO.File").exists txtFileName) then
+	(
+		f = openfile txtFileName mode:"r"
+		
+		
+			activeType=undefined
+			activeSubType = undefined
+			
+			currentAINode = undefined
+			AINodes = #()
+			AINodeCount = 0
+			currentAILink = undefined
+			AILinkCount = 0
+			currentMode = undefined
+			lineNum=0
+			while not (eof f) do
+			(
+				lineNum += 1
+				
+				curline = trimLeft (trimRight (readline f))
+				if curline[1] == "[" then
+				(
+					currentAILink = undefined
+					currentAINode = undefined
+					if toupper curline == "[AINODE]" then
+					(
+						currentAINode = AINode name:("AINode_"+(AINodeCount as string))
+						AINodeCount += 1
+					)
+					else if toupper curline == "[AILINK]" then
+					(
+						currentAILink = AILink name:("AILink_"+(AILinkCount as string))
+						AILinkCount += 1
+					)
+				)
+				else if currentAINode != undefined then
+				(
+					if curline[1] == "<" then currentMode = toupper curLine
+					else
+					(
+						if curline == "" then continue
+						case currentMode of
+						(
+							"<INDEX>":
+							(
+								currentAINode.Index = curline as integer
+								AINodes[(curline as integer)+1] = currentAINode
+							)
+							"<POS>": 
+							(
+								currentAINode.pos = ConvertToCRSpace (StringAsPoint3 curline)
+								currentAINode.pos.y = -currentAINode.pos.y
+								--currentAINode.pos.z = -currentAINode.pos.z
+							)
+							"<RADIUS>":
+							(
+								currentAINode.Radius = curline as float
+							)
+							"<RACE_LINE>":
+							(
+								currentAINode.RaceLine = ConvertToCRSpace (StringAsPoint3 curline)
+								currentAINode.RaceLine.y = -currentAINode.RaceLine.y
+								currentAINode.pos.z = -currentAINode.pos.z
+							)
+							"<RACE_LINE_OFFSET>":
+							(
+								currentAINode.RaceLineOffset = curline as float
+							)
+							"<TYPE>":
+							(
+								currentAINode.Type = curline as integer
+							)
+						)
+					)
+				)
+				else if currentAILink != undefined then
+				(
+					if toupper curline == "<ONEWAY>" then currentAILink.OneWay = true
+					else if toupper curline == "WATER" then currentAILink.Water = true
+					else if toupper curline == "\"\"LOOP\"\"" then currentAILink.Loop = true
+					else if toupper curline == "\"\"INTERIOR\"\"" then currentAILink.Interior = true
+					if curline[1] == "<" then currentMode = toupper curLine
+					else
+					(
+						case currentMode of
+						(
+							"<NODES>":
+							(
+								if currentAILink.Node1 == undefined then currentAILink.Node1 = nodeTransformMonitor node:(AINodes[(curline as integer)+1]) forwardTransformChangeMsgs:false
+								else if currentAILink.Node2 == undefined then currentAILink.Node2 = nodeTransformMonitor node:(AINodes[(curline as integer)+1]) forwardTransformChangeMsgs:false
+							)
+							"<WIDTH>":
+							(
+								currentAILink.Width = curline as float
+							)
+						)
+					)
+					
+				)
+				
+				
+			)
+		
+		close f
+	)
+	else messageBox "Error: Routes.txt does not exist!" title:"No Routes.txt found!"
+	
+	
+	oldCurrentLayer.current = true
+)
 fn ImportLevelButtonPressed sender arg=
 (
 
@@ -329,6 +451,12 @@ fn ImportLevelButtonPressed sender arg=
 					powerupLOLFile = (getFilenamePath cnt_name)+"powerups.lol"
 					ParseLevelAccessoryLOL powerupLOLFile isPowerup:true
 				)
+				if sender.parent.controls.Item["LoadPathsCheckbox"].checked then
+				(
+					routesTXTFile  =(getFilenamePath cnt_name)+"routes.txt"
+					ParseLevelRoutesTXT routesTXTFile
+				)
+					
 			)
 		)
 	)

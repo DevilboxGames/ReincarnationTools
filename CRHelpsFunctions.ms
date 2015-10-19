@@ -13,6 +13,14 @@ fn StringIsPoint3 str =
 	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+$"
 	return rx.isMatch str
 )
+fn StringAsPoint3 str = 
+(
+	
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+)$"
+	matches = rx.Match str
+	
+	return [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float, matches.Groups.Item[3].Value as float]
+)
 fn GetBonesFromSkin skinMod =
 (
 	boneArray = for o in objects where (refs.dependencylooptest skinMod o) collect o

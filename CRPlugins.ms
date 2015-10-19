@@ -878,7 +878,210 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 )
 
 --struct AINode (Index, Type, Radius, Position, RaceLine, RaceLineOffset)
-struct AILink (Node1, Node2, Width, Type, OneWay, Interior, Loop)
+--struct AILink (Node1, Node2, Width, Type, OneWay, Interior, Loop)
+
+fn target_ainode_filter obj = ( (classof obj) == AINode)
+fn target_ailink_filter obj = ( (classof obj) == AILink)
+plugin Helper AILink
+	name:"Level AI Link"
+	classID:#(0x726998ab, 0x6dfa99f8)
+	category:"Carmageddon: Reincarnation"
+	extends: dummy
+(
+	local lastWidth, lastNode1Radius, lastNode2Radius, lastNode1Pos, lastNode2Pos, lastOneWay, meshObj, thisNode
+	
+	parameters paramblock rollout:params
+	(
+		NodeStorage type:#maxObject
+		Node1 type:#maxObject
+		Node2 type:#maxObject
+		Width type:#float default: 1 ui:spn_Width
+		LinkType type:#integer default: 0
+		OneWay type:#boolean default:false ui:chk_OneWay
+		Interior type:#boolean default:false ui:chk_Interior
+		Loop type:#boolean default:false ui:chk_Loop
+		Water type:#boolean default:false ui:chk_Water
+	)
+	rollout params "AI Link Parameters"
+	(
+		pickbutton pck_Node1 "Node 1" filter:target_ainode_filter autodisplay:true labelOnTop:true 
+		pickbutton pck_Node2 "Node 2" filter:target_ainode_filter autodisplay:true labelOnTop:true 
+		Spinner spn_Width "Width:" range:[0,1e9,1]
+		Checkbox chk_OneWay "One Way:" default: false
+		Checkbox chk_Loop "Lopp:" default: false
+		Checkbox chk_Interior "Interior:" default: false
+		Checkbox chk_Water "Water:" default: false
+		
+		on pck_Node1 picked obj do
+		(
+			format "Picked Node1: %\n" obj
+			Node1 = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			if Node2 != undefined do
+			(
+				v = Node2.node.pos - Node1.node.pos
+				vLen = length v
+				vLen -= Node1.node.Radius + Node2.node.Radius
+				vLen = vLen / 2
+				vLen += Node1.node.Radius
+				vNorm = normalize v
+				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+				thisNode
+			)
+		)
+		on pck_Node2 picked obj do
+		(
+			format "Picked Node2: %\n" obj
+			Node2 = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			if Node1 != undefined do
+			(
+				v = Node2.node.pos - Node1.node.pos
+				vLen = length v
+				vLen -= Node1.node.Radius + Node2.node.Radius
+				vLen = vLen / 2
+				vLen += Node1.node.Radius
+				vNorm = normalize v
+				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+			)
+		)
+		on params open do
+		(
+			if Node1 != undefined then pck_Node1.object = Node1.node
+			if Node2 != undefined then pck_Node2.object = Node2.node
+		)
+	)
+	on attachedToNode nodeVar do
+	(
+		thisNode = nodeVar
+		NodeStorage = nodeTransformMonitor node:nodeVar forwardTransformChangeMsgs:false
+	)
+	on postload do
+	(
+		thisNode = NodeStorage.node
+		if Node2 != undefined and Node1 != undefined do
+		(
+				v = Node2.node.pos - Node1.node.pos
+				vLen = length v
+				vLen -= Node1.node.Radius + Node2.node.Radius
+				vLen = vLen / 2
+				vLen += Node1.node.Radius
+				vNorm = normalize v
+				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+		)
+	)
+	on postcreate do
+	(
+		
+		if Node2 != undefined and Node1 != undefined do
+		(
+				v = Node2.node.pos - Node1.node.pos
+				vLen = length v
+				vLen -= Node1.node.Radius + Node2.node.Radius
+				vLen = vLen / 2
+				vLen += Node1.node.Radius
+				vNorm = normalize v
+				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+		)
+	)
+	
+	on getDisplayMesh do
+	(
+		updateMesh  =false
+		node1Pos = [0,-1,0]
+		node2Pos = [0,1,0]
+		node1Radius = 1
+		node2Radius = 1
+		if meshObj == undefined then updateMesh = true
+		if Node1 != undefined and Node2 != undefined then
+		(
+			node1Pos = Node1.node.pos
+			node2Pos = Node2.node.pos
+			node1Radius = Node1.node.Radius
+			node2Radius = Node2.node.Radius
+			
+			if lastNode1Pos != Node1.node.pos or lastNode2Pos != Node2.node.pos then
+			(
+				updateMesh = true
+				lastNode1Pos = Node1.node.pos
+				lastNode2Pos = Node2.node.pos
+			)
+			if lastNode1Radius != Node1.node.Radius or lastNode2Radius != Node2.node.Radius then
+			(
+				updateMesh = true
+				lastNode1Radius = Node1.node.Radius
+				lastNode2Radius = Node2.node.Radius
+			)
+		)
+		if lastWidth != Width then
+		(
+			updateMesh = true
+			lastWidth = Width
+		)
+		if updateMesh then
+		(
+			--format "updating mesh\n"
+			
+			planeObj = createInstance plane width: lastWidth length:1 lengthsegs:1 widthsegs:1
+			
+			
+				planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
+			
+			m = planeObj.mesh
+			
+				v = Node2pos - Node1pos
+				
+				vLen = length v
+				vLen -= Node1Radius + Node2Radius
+				vLen = vLen / 2
+				--vLen += Node1.node.Radius
+				vNorm = normalize v
+				thisNode.pos = vNorm * vLen + Node1pos + vNorm * Node1radius
+				verts = #(-vNorm * vLen, -vNorm * vLen, vNorm * vLen, vNorm * vLen)
+				tang = [Width,0,0]
+				if abs (dot vNorm [0,0,1]) > 0.95 then
+				(
+					tang = (cross vNorm [1,0,0]) * width
+				)
+				else
+				(
+					tang = (cross vNorm [0,0,1]) * width
+				)
+			setVert m 1 (verts[1] + tang)
+			setVert m 2 (verts[2] - tang)
+			setVert m 3 (verts[3] + tang)
+			setVert m 4 (verts[4] - tang)
+			meshObj = m
+		)
+		
+		meshObj
+	)
+	tool create
+	(
+		on mousePoint clickno do
+		(
+		
+		  case clickno of
+			(
+				1: 
+				(
+					nodeTM = matrix3 1
+					nodeTM.translation = worldPoint
+					
+				)
+				2:
+				(
+					--Radius = length (nodeTM.translation - worldPoint) 
+					#stop
+				)
+				
+			)
+		)
+		
+	)
+)
 plugin Helper AINode
 	name:"Level AI Node"
 	classID:#(0x47db14fe, 0x4e9b5f90)
@@ -897,7 +1100,7 @@ plugin Helper AINode
 		
 		ShowRaceLine type:#boolean default: true ui: chk_ShowRaceLine
   )
-  rollout params "AI Link Parameters"
+  rollout params "AI Node Parameters"
   (
     Spinner spn_Radius "Radius:" range:[0, 1e9, 0]
 	Checkbox chk_ShowRaceLine "Show Race Line:" default: true
@@ -906,7 +1109,7 @@ plugin Helper AINode
   (
     if (meshObj == undefined) do
     (
-      meshObj = createInstance sphere radius:Radius
+      meshObj = createInstance sphere radius:Radius segs:8
       lastSize = size
     )
 	if (raceLineObj == undefined) or lastRaceLine != raceLine do
@@ -929,9 +1132,10 @@ plugin Helper AINode
     )
     if ShowRaceLine then 
 	(
-	 meshObj.mesh + raceLineObj
+	 --meshObj.mesh + raceLineObj
 	)
-	 else meshObj.mesh
+	 --else 
+	 meshObj.mesh
   )
 	tool create
 	(
@@ -973,10 +1177,12 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	category:"Carmageddon: Reincarnation"
 	version:1
 (
-	local AINodesObjects, AILinksObjects, IconMesh
+	local AINodesObjects, AILinksObjects, IconMesh, thisNode
 	
 	parameters RouteParamBlock rollout: RouteParameters
 	(
+	
+		NodeStorage type:#maxObject
 		Races type:#stringTab tabSizeVariable:true
 		RoutesVersion type:#float default:2.5
 		Lump type:#string default:""
@@ -1000,25 +1206,72 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		AILinks_OneWay type:#boolTab tabSizeVariable:true
 		AILinks_Interior type:#boolTab tabSizeVariable:true
 		AILinks_Loop type:#boolTab tabSizeVariable:true
+		AILinks_Water type:#boolTab tabSizeVariable:true
 		
+	)
+	
+	on postLoad do
+	(
+		thisNode = NodeStorage.node
+		AINodesObjects = #()
+		AILinksObjects = #()
+	)
+	on attachedToNode nodeVar do
+	(
+		thisNode = nodeVar
+		NodeStorage = nodeTransformMonitor node:nodeVar forwardTransformChangeMsgs:false
 	)
 	on buildmesh do
 	(
-		if IconMesh == undefined then
+		iconMat = undefined
+		mats = for mat in scenematerials where mat.name == "sys_AIRoutesIconMat" collect mat
+		format "Mat Count: %\n" mats.count
+		if mats.count == 0 then
 		(
-			IconMesh = createInstance plane width:1 lengthsegs:1 widthsegs:1
-			mats = for mat in scenematerials where mat.name == "sys_AIRoutesIconMat" collect mat
-			if mats.count == 0 then
-			(
-				iconMat = standardmaterial name:"sys_AIRoutesIconMat"
-				scriptFileName = getThisScriptFilename()
-				scriptFolder = getFileNamePath scriptFileName
-				iconMat.diffuse = bitmaptexture filename:(scriptFolder+"UI/PathsIcon.png")
-				iconmesh.material = iconMat
-			)
-			else iconmesh.material = mats[0]
+			iconMat = standardmaterial name:"sys_AIRoutesIconMat"
+			scriptFileName = getThisScriptFilename()
+			scriptFolder = getFileNamePath scriptFileName
+			iconMat.diffuseMap = bitmaptexture filename:(scriptFolder+"UI/PathsIcon.png")
+			iconMat.opacityMap = bitmaptexture filename:(scriptFolder+"UI/PathsIcon.png") monoOutput:1
+			--IconMesh.material = iconMat
 		)
-		return IconMesh.mesh
+		else iconMat = mats[1] --IconMesh.material = mats[0]
+		format "Icon Mat: %\n" iconMat
+		showTextureMap iconMat on
+		--IconMesh = createInstance plane width:1 lengthsegs:1 widthsegs:1 material:iconMat -- 
+		--material = iconMat
+		m = trimesh()
+		verts = #([0.5,0.5,0],[0.5,-0.5,0],[-0.5,0.5,0],[-0.5,-0.5,0])
+		faces = #([1,2,3],[2,4,3])
+		tverts = #([1,1,0], [1,0,0], [0,1,0], [0,0,0])
+		setNumVerts m 4
+		setVert m 1 verts[1]
+		setVert m 2 verts[2]
+		setVert m 3 verts[3]
+		setVert m 4 verts[4]
+		setNumTVerts m 4
+		setTVert m 1 tverts[1]
+		setTVert m 2 tverts[2]
+		setTVert m 3 tverts[3]
+		setTVert m 4 tverts[4]
+		setNumFaces m 2
+		setFace m 1 faces[1]
+		setFace m 2 faces[2]
+		
+		
+		thisNode.material = iconMat
+		setmesh mesh vertices:#([0.5,0.5,0],[0.5,-0.5,0],[-0.5,0.5,0],[-0.5,-0.5,0]) faces:#([1,2,3],[2,4,3])
+		
+		setNumTVerts mesh 4
+		setTVert mesh 1 tverts[1]
+		setTVert mesh 2 tverts[2]
+		setTVert mesh 3 tverts[3]
+		setTVert mesh 4 tverts[4]
+		buildTVFaces mesh
+		
+		setTVFace mesh 1 faces[1]
+		setTVFace mesh 2 faces[2]
+		
 	)
 	rollout RouteParameters "Route Parameters"
 	(
@@ -1033,7 +1286,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 			(
 				1: 
 				(
-					
+					nodeTM.translation = worldPoint
 				)
 				2: #stop
 			)

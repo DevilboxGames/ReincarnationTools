@@ -31,6 +31,16 @@ fn GetBonesFromSkin skinMod =
 	)
 	return boneArray
 )
+fn GetRootBoneFromSkin skinMod =
+(
+	boneArray = for o in objects where (refs.dependencylooptest skinMod o) collect o
+	
+	for i=1 to boneArray.count do
+	(
+		if boneArray[i].parent == undefined then return boneArray[i]
+	)
+	--return boneArray
+)
 fn showProps obj doClearListener:false=
 	(
 		if doClearListener then clearListener()
@@ -61,6 +71,14 @@ fn ConvertToCRSpace pos =
 (
 	return [-pos.x,pos.z,-pos.y]
 )
+fn ConvertQuatFromCRSpace q =
+(
+	return (quat q.y -q.x q.w q.z)
+)
+fn ConvertQuatToCRSpace q =
+(
+	return (quat -q.y q.x q.w q.z)
+)
 fn GetAllChildren obj &arr:#() =
 (
 	for c in obj.children do
@@ -86,11 +104,24 @@ fn getNodeByName2 nodeName =
 	(
 		if (stricmp obj.name nodeName) == 0 then 
 		(
-			format "Found %\n" obj.name
+			--format "Found %\n" obj.name
 			return obj
 		)
 	)
-	format "Didn't find object named %\n" nodeName
+	--format "Didn't find object named %\n" nodeName
+	return undefined
+)
+fn getBoneByName nodeName =
+(
+	for obj in objects do
+	(
+		if (stricmp obj.name nodeName) == 0 and (classof obj)== BoneGeometry then 
+		(
+			--format "Found %\n" obj.name
+			return obj
+		)
+	)
+	--format "Didn't find object named %\n" nodeName
 	return undefined
 )
 
@@ -559,7 +590,7 @@ fn CheckBitIsSet flags bitNum =
 )
 fn printFlagBits flags numBits fieldName =
 (
-	format "% has value of %\nIt's bits: " fieldName flags
+	format "% has value of % -  " fieldName flags
 	for i = (numBits-1) to 0 by -1 do
 	(
 		if (CheckBitIsSet flags i) then format "%" 1
@@ -800,4 +831,39 @@ fn SplitVertexNormals =
 		finalMesh = mesh mesh:newM
 		finalMesh.transform = oldTransform
 		selection[1].transform = oldTransform 
+)
+
+fn GetBonesList mdl =
+(
+	if mdl.modifiers["Ped Bones List"] != undefined then
+	(
+		pedBonesList = for b in mdl.modifiers["Ped Bones List"].BoneList where b != undefined and b.node != undefined collect b.node
+		return pedBonesList
+		
+		
+		
+	)
+	else if mdl.modifiers["Skin"] != undefined then
+	(
+		return (GetBonesFromSkin skinMod)
+	)
+)
+
+fn IsObjectAPedBonesList obj =
+(
+	return (obj.modifiers["Ped Bones List"] != undefined)
+)
+fn AddPedBonesListMod mdl =
+(
+	if (IsObjectAPedBonesList mdl) != undefined then
+	(
+		messagebox mdl.name
+		max modify mode
+		boneHierarchyModifier = emptyModifier()
+		boneHierarchyModifier.name = "Ped Bones List"
+		addModifier mdl boneHierarchyModifier
+		custattributes.add boneHierarchyModifier PedSkeletonAttribute baseObject:false
+		boneHierarchyModifier.PedSkelCustAttribute.AddBonesFromSkin()
+		SetCNTNodeType mdl "SKIN"
+	)
 )

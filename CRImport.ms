@@ -80,6 +80,18 @@ fn GetMDLTexture folder materialName importTextures:false =
 			texmap = bitmaptexture()
 			texmap.filename = folder+textureName+".tga"
 		)
+		else if (doesFileExist (folder+"NON_VT\\"+textureName+".png")) then
+		(
+			--format "Texture is already converted: %\n" (folder+textureName+".png")
+			texmap = bitmaptexture()
+			texmap.filename = folder+"NON_VT\\"+textureName+".png"
+		)
+		else if (doesFileExist (folder+"NON_VT\\"+textureName+".tga")) then
+		(
+			--format "Texture is already converted: %\n"  (folder+textureName+".tga")
+			texmap = bitmaptexture()
+			texmap.filename = folder+"NON_VT\\"+textureName+".tga"
+		)
 		else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
@@ -111,6 +123,7 @@ fn GetMDLTexture folder materialName importTextures:false =
 			if startPath == "" then startPath = folder
 			TDXFilename = undefined
 			if (doesFileExist (folder+texturename+".tdx")) then TDXFilename = folder+texturename+".tdx"
+			else if (doesFileExist (folder+"NON_VT\\"+texturename+".tdx")) then TDXFilename = folder+"NON_VT\\"+texturename+".tdx"
 			else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tdx"
 			else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tdx"
 			
@@ -143,7 +156,166 @@ fn GetMDLTexture folder materialName importTextures:false =
 	)
 	return texmap
 )
+fn BlankUnknownSkinData fileName =
+(
+	backupFileName = (getFilenamePath fileName)
+	format "%\n" backupFileName
+	backupFileName = backupFileName+(getFilenameFile fileName)
+	format "%\n" backupFileName
+	backupFileName = backupFileName+"_backup"+(getFilenameType fileName)
+	format "%\n" backupFileName
+	format "Renaming \"%\" to \n\"%\"\n" fileName backupFileName
+	renameFile fileName backupFileName
+	
+	f = fopen backupFileName "rb"
+	fw = fopen fileName "wb"
+	magic1 = readbyte f #unsigned
+	writebyte fw magic1
+	
+	magic2 = readbyte f #unsigned
+	writebyte fw magic2
+	mdlMinorVersion = readbyte f #unsigned
+	writebyte fw mdlMinorVersion
+	mdlMajorVersion = readbyte f #unsigned
+	writebyte fw mdlMajorVersion
+	
+	version61orless=false
+	if mdlMinorVersion < 2 or mdlMajorVersion < 6 then version61orless=true
+	for i=1 to 64 do
+	(
+		b = readbyte f
+		writebyte fw b
+	)
+		
+	materialCount = readshort f #unsigned
+	writeshort fw materialCount #unsigned
+	meshMaterial = undefined
+	
+	for i=1 to materialCount do
+	(
+		materialName = readpaddedstring f version61OrLess:version61orless
+		witepaddedstring fw materialName
+	)
+	PREPfaceCount = readlong f #unsigned
+	writelong fw PREPfaceCount #unsigned
+	for i=1 to (16 * PREPfaceCount) do
+	(
+		b = readbyte f
+		writebyte fw b
+	)
+	
 
+	PREPvertcount = readlong f #unsigned
+	writelong fw PREPvertcount #unsigned
+	for i=1 to (44 * PREPvertcount) do
+	(
+		b = readbyte f
+		writebyte fw b
+	)
+	
+	matGroupCount = readshort f #unsigned
+	writeshort fw matGroupCount #unsigned
+	for i = 1 to matGroupCount do
+	(
+		for j = 1 to 48 do
+		(
+			b = readbyte f
+			writebyte fw b
+		)
+		--fseek f 48 #seek_cur
+		
+		triStripLength = readlong f #unsigned
+		writelong fw triStripLength
+		
+		for j = 1 to ((triStripLength * 4)+8) do
+		(
+			b = readbyte f
+			writebyte fw b
+		)
+		--fseek f ((triStripLength * 4)+8) #seek_cur
+		
+		patchListLength = readlong f #unsigned
+		writelong fw patchListLength
+		--fseek f (patchListLength * 4) #seek_cur
+		for j = 1 to (patchListLength * 4) do
+		(
+			b = readbyte f
+			writebyte fw b
+		)
+		
+	)
+	prepSkinDataSet = true
+	if prepSkinDataSet then
+	(
+		--format "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nOMG PANIC! THIS MDL HAS PREP SKIN DATA AND I DON'T KNOW WHAT TO DO WITH IT!!! At Position: %\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" (ftell f)
+		--format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
+		numBones = readshort f #unsigned
+		unknown1 = readshort f #unsigned
+		unknown2 = readshort f #unsigned
+		writeshort fw numBones #unsigned
+		writeshort fw unknown1 #unsigned
+		writeshort fw unknown2 #unsigned
+		--format "Unknown1 = %\nUnknown2 = %\n" unknown1 unknown2
+		--skinMod = skin()
+		--addmodifier m skinMod
+		boneNames = #()
+		for i=1 to numBones do
+		(
+			bname = readstring f
+			writestring fw bname
+		)
+		--PrintArrayInFull boneNames "boneNames"
+		
+		boneInfo = #()
+		for i = 1 to numbones do
+		(
+			for x=1 to 39 do
+			(
+				b = readbyte f
+				writebyte fw b
+			)
+		)
+		listOfBones = #()
+		--select m
+		--max modify mode
+		--modPanel.setCurrentObject skinMod
+		for i=1 to numbones do
+		(
+			for x=1 to 32 do
+			(
+				b = readbyte f
+				writebyte fw b
+			)
+		)
+		
+		
+		for i = 1 to PREPvertcount do
+		(
+			s = readshort f #unsigned
+			writeshort fw s #unsigned
+			s = readbyte f
+			s = readbyte f
+			writebyte fw 0 #unsigned
+			writebyte fw 0 #unsigned
+			s = readlong f #unsigned
+			writelong fw s #unsigned
+			
+			--format "%: %     % - %     %\n" i weightCount unknown unknown2 weightIndex
+		)
+		pos = ftell f
+		fseek f 0 #seek_end
+		end = ftell f
+		fseek f pos #seek_set
+		for i=1 to (end - pos) do
+		(
+			b = readbyte f
+			writebyte fw b
+		)
+	
+	)
+	fclose f
+	fclose fw
+)
 fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true =
 (
 	f = fopen filename "r"
@@ -153,11 +325,13 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	mdlMinorVersion = readbyte f #unsigned
 	mdlMajorVersion = readbyte f #unsigned
 	version61orless=false
+	version63orhigher=false
 	if mdlMinorVersion < 2 or mdlMajorVersion < 6 then version61orless=true
+	if mdlMinorVersion > 2 or mdlMajorVersion > 6 then version63orhigher=true
 	
 	checksum = readlong f #unsigned
 	flags = readlong f #unsigned
-	--printFlagBits flags 32 "MDL Flags"
+	printFlagBits flags 32 "MDL Flags"
 	
 	prepSize = readlong f #unsigned
 	
@@ -165,17 +339,19 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	uniqueVertexCount = readlong f #unsigned
 	
 	fileSize = readlong f #unsigned
-	
-	boundingSphereRadius = readfloat f
-	bboxMinX = readfloat f
-	bboxMinY = readfloat f
-	bboxMinZ = readfloat f
-	bboxMaxX = readfloat f
-	bboxMaxY = readfloat f
-	bboxMaxZ = readfloat f
-	bboxCenterX = readfloat f
-	bboxCenterY = readfloat f
-	bboxCenterZ = readfloat f
+	if version63orhigher == false and filesize > 0 then
+	(
+		boundingSphereRadius = readfloat f
+		bboxMinX = readfloat f
+		bboxMinY = readfloat f
+		bboxMinZ = readfloat f
+		bboxMaxX = readfloat f
+		bboxMaxY = readfloat f
+		bboxMaxZ = readfloat f
+		bboxCenterX = readfloat f
+		bboxCenterY = readfloat f
+		bboxCenterZ = readfloat f
+	)
 	
 	materialCount = readshort f #unsigned
 	meshMaterial = undefined
@@ -402,7 +578,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				matGroup.triStripVertOffset = readlong f #unsigned
 				triStripVertCount = readlong f #unsigned
 				triStripLength = readlong f #unsigned
-				format "Tristrip Vert Count: %\n Tristrip Length: % \n" triStripVertCount triStripLength
+				--format "Tristrip Vert Count: %\n Tristrip Length: % \n" triStripVertCount triStripLength
 				degenerateBit = bit.shift 1 31
 				antiDegenerateBit = bit.not degenerateBit
 				tsi1 = undefined
@@ -516,7 +692,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		numFacesToAdd = rawfaces.count
 		if useTriStrips then
 		(
-			format "Using TriStrips!\n"
+			--format "Using TriStrips!\n"
 			faceNumber = 0
 			--format "Number Of TriStrip Indices: %\n" triStripIndices.count
 			for i = 1 to matGroups.count do
@@ -642,7 +818,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			(
 				append boneNames (readstring f)
 			)
-			PrintArrayInFull boneNames "boneNames"
+			--PrintArrayInFull boneNames "boneNames"
 			
 			boneInfo = #()
 			for i = 1 to numbones do
@@ -661,11 +837,12 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				p = readbyte f
 				c = readbyte f
 				s = readbyte f
-				
 				boneInfo[i] = #([v1X,v1Y,v1Z], [v2X,v2Y,v2Z], [v3X,v3Y,v3Z], p, c, s)
 				
 				
 				--format "%: \"%\" : { x:%   y:%   z:%} : { x:%   y:%   z:%} : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
+				
+				format "%: \"%\" : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v3X v3Y v3Z p c s
 			)
 			listOfBones = #()
 			select m
@@ -704,20 +881,32 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				listOfBones[i].position = newpos
 				listOfBones[i].name = boneNames[i]
 				
+				/*b = box()
+				bMin = boneInfo[i][1]
+				bMax = boneInfo[i][2]
+				boxpos = (ConvertFromCRSpace (bMax - bMin)) + bonePos
+				b.width = bMax.x - bMin.x
+				b.length = bMax.y - bMin.y
+				b.height = bMax.z - bMin.z
+				boxpos.z += b.height / 2
+				b.objectoffsetpos.z -= b.height / 2
+				b.transform = b.transform * newBone.transform
+				b.name = boneNames[i]+"_BBox"
+				*/
 				
 				
 				ik.SetAxisLimit newBone #rotational #{1, 2, 3}
 				ik.SetAxisEase newBone #rotational #{1, 2, 3}
-				format "boneInfo[%] = %\n" i boneInfo[i]
+				--format "boneInfo[%] = %\n" i boneInfo[i]
 				minLimit = ([boneInfo[i][1].x, boneInfo[i][1].y,boneInfo[i][1].z] * 360)-- * boneTransform
-				maxLimit = ([boneInfo[i][1].x, boneInfo[i][2].y,boneInfo[i][2].z] * 360)-- * boneTransform
+				maxLimit = ([boneInfo[i][2].x, boneInfo[i][2].y,boneInfo[i][2].z] * 360)-- * boneTransform
 				
 				ik.SetAxisMin newBone #rotational minLimit
 				ik.SetAxisMax newBone #rotational maxLimit
 				
 				--skinops.addbone skinMod listOfBones[i] 0
-				format "%: \"%\" {X: %    Y:%    Z: %   W: %}   {X: %    Y: %     Z:    %}  ???: %\n" i boneNames[i] qx qy qz qw posx posy posz unknown_f
-				format "unknown: float: %   long: %   unsigned long: %   shorts: % - %   unsigned shorts: %\n\n" unknown_f unknown_l unknown_lu unknown_s1 unknown_s2 unknown_su1 unknown_su2
+				--format "%: \"%\" {X: %    Y:%    Z: %   W: %}   {X: %    Y: %     Z:    %}  ???: %\n" i boneNames[i] qx qy qz qw posx posy posz unknown_f
+				--if unknown_f != 0 then format "unknown: float: %   long: %   unsigned long: %   shorts: % - %   unsigned shorts: % - %\n\n" unknown_f unknown_l unknown_lu unknown_s1 unknown_s2 unknown_su1 unknown_su2
 			)
 			
 			sortedBones = deepcopy boneNames
@@ -772,11 +961,16 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			for i = 1 to PREPvertcount do
 			(
 				weightCount = readshort f #unsigned
-				unknown = readshort f #unsigned
+				unknown = readbyte f #unsigned
+				unknown2 = readbyte f #unsigned
 				weightIndex = readlong f #unsigned
-				
-				format "%: %     %     %\n" i weightCount unknown weightIndex
-				printflagbits unknown 32 "Unknown Skin Data"
+				/*if unknown != 0 or unknown2 != 0 then
+				(
+					format "%: %     % - %     %\n" i weightCount unknown unknown2 weightIndex
+					printflagbits unknown 8 "Unknown Skin Data 1"
+					printflagbits unknown2 8 "Unknown Skin Data 2"
+					format "\n"
+				)*/
 				weightsPerVert[i] = #(weightCount, unknown, weightIndex, #(), #())
 			)
 			currentWeightIndex = 0
@@ -787,7 +981,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				(
 					currentWeightIndex += 1
 					boneIndex = readshort f #unsigned
-					weightsPerVert[i][4][j] = oldbonestonewbones[boneIndex + 1]
+					weightsPerVert[i][4][j] = boneIndex+1 --oldbonestonewbones[boneIndex + 1]
 				)
 			)
 			currentWeightIndex = 0
@@ -801,15 +995,15 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					--format "Vert %: weightIndex: % boneIndex: % weight: %\n" i currentWeightIndex weightsPerVert[i][4][j] weightsPerVert[i][5][j]
 				)
 			)
-			printarrayinfull bonenames "BoneNames"
+			/*printarrayinfull bonenames "BoneNames"
 			printarrayinfull sortedBones "SortedBoneNames"
 			printarrayinfull oldbonestonewbones "SortedBoneNames"
-			printarrayinfull newbonestooldbones "SortedBoneNames"
-			format "SkinMod Bones:\n"
+			printarrayinfull newbonestooldbones "SortedBoneNames"*/
+			/*format "SkinMod Bones:\n"
 			for i=1 to (skinops.getnumberbones skinmod) do
 			(
 				format "%: % (node: %)\n" i (skinops.getbonename skinmod i 1) (skinops.getbonename skinmod i 2)
-			)
+			)*/
 			
 			--format "\nnum skin verts: %\nnum uniqueVerts: %\n\n" (skinOps.GetNumberVertices skinMod) uniqueVerts.count
 			for i=1 to uniqueVerts.count do
@@ -825,9 +1019,9 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					boneId = skinOps.GetVertexWeightBoneID skinMod i x
 					boneName = skinOps.GetBoneName skinMod boneId 0
 					boneNum = 0
-					for j=1 to sortedBones.count do
+					for j=1 to boneNames.count do
 					(
-						if sortedBones[j] == boneName then 
+						if boneNames[j] == boneName then 
 						(
 							boneNum = j
 							break
@@ -842,7 +1036,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				(
 					--format "(% [%] - %), " sortedBones[weightsPerVert[vertIndex][4][x]] weightsPerVert[vertIndex][4][x] weightsPerVert[vertIndex][5][x]
 				)
-				for z=1 to sortedBones.count do
+
+				for z=1 to boneNames.count do
 				(
 					if (finditem weightsPerVert[vertIndex][4] z) == 0 then 
 					(
@@ -860,12 +1055,12 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					boneId = skinOps.GetVertexWeightBoneID skinMod i x
 					boneName = skinOps.GetBoneName skinMod boneId 0
 					boneNum = 0
-					for j=1 to sortedBones.count do
+					for j=1 to boneNames.count do
 					(
-						if sortedBones[j] == boneName then 
+						if boneNames[j] == boneName then 
 						(
 							boneNum = j
-							break
+							exit
 						)
 					)
 					weight = skinOps.GetVertexWeight  skinMod i x
@@ -889,6 +1084,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		fseek f (16 * PREPfaceCount) #seek_cur
 		
 		PREPvertcount = readlong f #unsigned
+		format "Number of PREP Faces: %\n Number of PREP Verts: %\n" PREPfaceCount PREPvertCount
+		format "Number of USER Faces: %\n Number of USER Verts: %\n" firstFaceCount uniqueVertexCount
 		fseek f (44 * PREPvertcount) #seek_cur
 		
 		matGroupCount = readshort f #unsigned
@@ -907,12 +1104,14 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		prepSkinDataSet = CheckBitIsSet flags 5
 		if prepSkinDataSet then
 		(
+		
+		format "Prep Skin Data Pos: %\n" (ftell f)
 			--format "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nOMG PANIC! THIS MDL HAS PREP SKIN DATA AND I DON'T KNOW WHAT TO DO WITH IT!!! At Position: %\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" (ftell f)
-			format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
+			--format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
 			numBones = readshort f #unsigned
 			unknown1 = readshort f #unsigned
 			unknown2 = readshort f #unsigned
-			format "Unknown1 = %\nUnknown2 = %\n" unknown1 unknown2
+			--format "Unknown1 = %\nUnknown2 = %\n" unknown1 unknown2
 			--skinMod = skin()
 			--addmodifier m skinMod
 			boneNames = #()
@@ -920,8 +1119,9 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			(
 				append boneNames (readstring f)
 			)
-			PrintArrayInFull boneNames "boneNames"
+			--PrintArrayInFull boneNames "boneNames"
 			
+		format "Prep Skin After Namees Pos: %\n" (ftell f)
 			boneInfo = #()
 			for i = 1 to numbones do
 			(
@@ -943,7 +1143,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				boneInfo[i] = #([v1X,v1Y,v1Z], [v2X,v2Y,v2Z], [v3X,v3Y,v3Z], p, c, s)
 				
 				
-				format "%: \"%\" : { x:%   y:%   z:%} : { x:%   y:%   z:%} : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
+				--format "%: \"%\" : { x:%   y:%   z:%} : { x:%   y:%   z:%} : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
 			)
 			listOfBones = #()
 			--select m
@@ -962,8 +1162,9 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				
 				unknown = readfloat f
 				
-				format "%: \"%\" {X: %    Y:%    Z: %   W: %}   {X: %    Y: %     Z:    %}  ???: %\n" i boneNames[i] qx qy qz qw posx posy posz unknown
+				--format "%: \"%\" {X: %    Y:%    Z: %   W: %}   {X: %    Y: %     Z:    %}  ???: %\n" i boneNames[i] qx qy qz qw posx posy posz unknown
 			)
+		format "Prep Skin After Bone Shit: %\n" (ftell f)
 			
 			for i=1 to listOfBones.count do
 			(
@@ -973,12 +1174,15 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			for i = 1 to PREPvertcount do
 			(
 				weightCount = readshort f #unsigned
-				unknown = readshort f #unsigned
+				unknown = readbyte f #unsigned
+				unknown2 = readbyte f #unsigned
 				weightIndex = readlong f #unsigned
 				
-				--format "%: %     %     %\n" i weightCount unknown weightIndex
+				--format "%: %     % - %     %\n" i weightCount unknown unknown2 weightIndex
 				weightsPerVert[i] = #(weightCount, unknown, weightIndex, #(), #())
 			)
+			
+		format "Prep Skin Data After Verts: %\n" (ftell f)
 			currentWeightIndex = 0
 			weightCount = readlong f #unsigned
 			for i=1 to weightsPerVert.count do
@@ -990,28 +1194,33 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					weightsPerVert[i][4][j] = boneIndex + 1
 				)
 			)
+			
+		format "Prep Skin Data After Bone Indices: %\n" (ftell f)
 			currentWeightIndex = 0
 			for i=1 to weightsPerVert.count do
 			(
+				format "Vert #% has % weights:\n" i weightsPerVert[i][1]
 				for j=1 to weightsPerVert[i][1] do
 				(
 					currentWeightIndex += 1
 					weight = readfloat f
 					weightsPerVert[i][5][j] = weight
+					format "\t% - % %\n" j weightsPerVert[i][4][j] weightsPerVert[i][5][j]
 					--format "Vert %: weightIndex: % boneIndex: % weight: %\n" i currentWeightIndex weightsPerVert[i][4][j] weightsPerVert[i][5][j]
 				)
 			)
+		--format "Prep Skin Data After Weights: %\n" (ftell f)
 		)
 	)
 	
 	if forcePREP == false then
 	(
-		
+		--format "User Data pos: %\n" (ftell f)
 		USERflags = readlong f #unsigned
 		USERskinSet = CheckBitIsSet USERflags 2
 		
 		--printFlagBits flags 32 "flags: "
-		--printFlagBits USERflags 32 "USER flags: "
+		printFlagBits USERflags 32 "USER flags: "
 		local m = trimesh()
 		setNumVerts m uniqueVertexCount
 		setNumTVerts m (PREPfaceCount*3)
@@ -1062,6 +1271,9 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			v2index = readlong f #unsigned
 			v3index = readlong f #unsigned
 			
+			
+			--format "Writing face #% - % / % / %\n" i v1index v2index v3index
+			
 			v1colR = readbyte f #unsigned
 			v1colG = readbyte f #unsigned
 			v1colB = readbyte f #unsigned
@@ -1094,6 +1306,14 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			
 			faceFlags = readbyte f #unsigned
 			faceAppFlags = readlong f #unsigned
+			if faceFlags != 0 then
+			(
+				printFlagBits faceFlags 8 "Face Flags"
+			)
+			if faceAppFlags != 0 then
+			(
+				printFlagBits faceAppFlags 32 "Face App Flags"
+			)
 			
 			setFace m i (v1index+1) (v3index+1) (v2index+1)
 			setEdgeVis m i 1 true
@@ -1184,7 +1404,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 							
 				boneTransformMatrix = matrix3 [m11,m12,m13] [m21,m22,m23] [m31,m32,m33] [m41,m42,m43]
 				boneTransformMatrix =  matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0] * boneTransformMatrix * inverse(matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0])
-				
+				boneTransformMatrix.row1 *= -1
 				format "boneName: % - parentBone - % \nTransform: %\n" boneName parentBone boneTransformMatrix
 				newBone = bonesys.createbone boneTransformMatrix.row4 (boneTransformMatrix.row4 - 0.1 * boneTransformMatrix.row1) (normalize boneTransformMatrix.row3)
 				newBone.transform = boneTransformMatrix

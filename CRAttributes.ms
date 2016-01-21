@@ -70,6 +70,15 @@ CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) ve
 		(
 			NodeTypeID = uiNodeType.selection
 			NodeType = uiNodeType.items[i]
+			if NodeType == "SKIN" then
+			(
+				
+				if $.modifiers["Ped Bones List"] == undefined then
+				(
+					
+					AddPedBonesListMod $
+				)
+			)
 		)
 	)
 )
@@ -2805,5 +2814,129 @@ CarSystemDamageUnitAttribute = attributes CarSysDamageUnit attribID:#(0x1a22add2
 	rollout SysDamageAttribRollout "System Damage Rollout"
 	(
 		
+	)
+)
+
+
+PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x5a597737) version:1
+(
+	parameters main rollout:PedSkelAttributeParams
+	(
+		
+		BoneList type:#maxObjectTab tabSizeVariable:true
+		
+	)
+	rollout PedSkelAttributeParams "Ped Bones List"
+	(
+	
+		pickbutton pck_Bone_Node "Pick Object" autodisplay:true across:2
+		button but_AddBone "Add" across:2
+		button but_AddBoneFromSkin "Add From Skin" across:1
+		dotnetcontrol lv_BonesList "listview" height: 300
+		--colorpicker colpick_DriverBox "Add Driver Box Vertex Colour"
+		
+		button but_RemoveBone "Remove" across:3
+		button but_MoveUp "Up" across:3
+		button but_MoveDown "Down" across:3
+		
+		on PedSkelAttributeParams open do
+		(
+			
+			lv_BonesList.view  = (dotnetclass "view").details
+			lv_BonesList.fullrowselect= true
+			
+			lv_BonesList.gridlines = true
+			lv_BonesList.multiselect =false
+			lv_BonesList.columns.add "Bone Name" 130
+			for i=1 to BoneList.count do
+			(
+				lv_BonesList.Items.add BoneList[i].node.name
+			)
+		
+			
+			for i=1 to BoneList.count do
+			(
+				if BoneList[i] == undefined or BoneList[i].node == undefined then
+				(
+					deleteitem BoneList i
+					i = i - 1;
+				)
+				else
+				(
+					lvItem = dotnetobject "listviewitem" BoneList[i].node.name
+					lv_BonesList.Items.add lvitem
+				)
+			)
+		)
+		fn AddBonesFromSkin = 
+		(
+			if $.modifiers["Skin"] != undefined then
+			(
+				skinbonesList = GetBonesFromSkin $.modifiers["Skin"]
+				for bone in skinbonesList do
+				(
+					boneIsInList = for b in BoneList where b.node == bone collect b
+					--messageBox boneIsInList.count
+					if boneIsInList.count == 0 then
+					(
+						append BoneList (nodeTransformMonitor node:bone forwardTransformChangeMsgs:false)
+						lv_BonesList.Items.add bone.name
+					)
+				)
+			)
+		)
+		on but_AddBoneFromSkin pressed do
+		(
+			AddBonesFromSkin()
+		)
+		on but_MoveUp pressed do
+		(
+			if lv_BonesList.SelectedIndices.count > 0 and lv_BonesList.SelectedIndices.Item[0] > 0 then
+			(
+				oldIndex = lv_BonesList.SelectedIndices.Item[0] + 1
+				targetIndex = oldIndex - 1
+				bone = BoneList[oldIndex]
+				otherBone = BoneList[targetIndex]
+				BoneList[oldIndex] = otherBone
+				BoneList[targetIndex] = bone
+				lv_BonesList.Items.removeAt (oldIndex - 1)
+				lvItem = dotnetobject "listviewitem" bone.node.name
+				lv_BonesList.Items.insert (targetIndex-1) lvItem
+				lvItem.Selected = true
+			)
+		)
+		on but_MoveDown pressed do
+		(
+			if lv_BonesList.SelectedIndices.count > 0 and lv_BonesList.SelectedIndices.Item[0] < lv_BonesList.Items.count then
+			(
+				oldIndex = lv_BonesList.SelectedIndices.Item[0] + 1
+				targetIndex = oldIndex + 1
+				bone = BoneList[oldIndex]
+				otherBone = BoneList[targetIndex]
+				BoneList[oldIndex] = otherBone
+				BoneList[targetIndex] = bone
+				lv_BonesList.Items.removeAt (oldIndex - 1)
+				lvItem = dotnetobject "listviewitem" bone.node.name
+				lv_BonesList.Items.insert (targetIndex-1) lvItem
+				lvItem.Selected = true
+			)
+		)
+		on but_AddBone pressed do
+		(
+			if pck_Bone_Node.object != undefined then
+			(
+				append BoneList (nodeTransformMonitor node:pck_Bone_Node.object forwardTransformChangeMsgs:false)
+				lvItem = dotnetobject "listviewitem" pck_Bone_Node.object.name
+				lv_BonesList.Items.add lvitem
+			)
+		)
+		on but_DeleteLumpRenderLevel pressed do
+		(
+			if lv_BonesList.SelectedIndices.count > 0 then
+			(
+				if BoneList.count > 0 then deleteItem BoneList (lv_BonesList.SelectedIndices.Item[0] + 1)
+				lv_BonesList.Items.removeat lv_BonesList.SelectedIndices.Item[0]
+			)
+		)
 	)
 )

@@ -77,6 +77,7 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	currentAccessoryType = ""
 	currentAccessoryLayer = ""
 	currentPosition = [0,0,0]
+	UniqueAccessoryList = #()
 	while (eof lolscript) == false do
 	(
 		curLine = trimright (trimleft (readline lolscript))
@@ -282,6 +283,7 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 						(
 							layerObject= LayerManager.newLayerFromName currentAccessoryLayer
 						)
+						appendIfUnique UniqueAccessoryList currentAccessoryType
 						newAccessoryObject = FindAndLoadLevelAccessory currentAccessoryType (getFilenamePath lolFileName) isPowerup:isPowerup
 						trans = matrix3 currentTransformRow1 currentTransformRow2 currentTransformRow3 currentTransformRow4
 						--if tolower currentAccessoryType == "c1checkpoint" then format "Accessory named % of type %\n\tCurrent Transform: %\n" currentAccessoryName currentAccessoryType trans
@@ -296,6 +298,7 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 			)
 		)
 	)
+	PrintArrayInFull UniqueAccessoryList "List Of Accessories: "
 	--format "The Level.lol file: %\n" lolscript
 )
 fn ParseLevelRoutesTXT txtFileName =

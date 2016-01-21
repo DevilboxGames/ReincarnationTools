@@ -901,6 +901,7 @@ plugin Helper AILink
 		Interior type:#boolean default:false ui:chk_Interior
 		Loop type:#boolean default:false ui:chk_Loop
 		Water type:#boolean default:false ui:chk_Water
+		ForceMeshUpdate type:#boolean default:false
 	)
 	rollout params "AI Link Parameters"
 	(
@@ -908,7 +909,7 @@ plugin Helper AILink
 		pickbutton pck_Node2 "Node 2" filter:target_ainode_filter autodisplay:true labelOnTop:true 
 		Spinner spn_Width "Width:" range:[0,1e9,1]
 		Checkbox chk_OneWay "One Way:" default: false
-		Checkbox chk_Loop "Lopp:" default: false
+		Checkbox chk_Loop "Loop:" default: false
 		Checkbox chk_Interior "Interior:" default: false
 		Checkbox chk_Water "Water:" default: false
 		
@@ -1020,16 +1021,23 @@ plugin Helper AILink
 			updateMesh = true
 			lastWidth = Width
 		)
+		if ForceMeshUpdate then
+		(
+			updateMesh = true
+			ForceMeshUpdate = false
+		)
 		if updateMesh then
 		(
 			--format "updating mesh\n"
 			
-			planeObj = createInstance plane width: lastWidth length:1 lengthsegs:1 widthsegs:1
+			--planeObj = createInstance plane width: lastWidth length:1 lengthsegs:2 widthsegs:1
 			
 			
-				planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
+				--planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
 			
-			m = planeObj.mesh
+			m = trimesh() --planeObj.mesh
+			setNumVerts m 4
+			setNumFaces m 1
 			
 				v = Node2pos - Node1pos
 				
@@ -1053,6 +1061,8 @@ plugin Helper AILink
 			setVert m 2 (verts[2] - tang)
 			setVert m 3 (verts[3] + tang)
 			setVert m 4 (verts[4] - tang)
+			setFace m 1 [1,2,3]
+			setFace m 2 [3,1,4]
 			meshObj = m
 		)
 		

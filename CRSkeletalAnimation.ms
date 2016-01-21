@@ -193,15 +193,15 @@ struct CRSkeletalAnimation
 fn TestSkeletalAnimation obj Frame:1=
 (
 	anim = CRSkeletalAnimation()
-	anim.Load FileToLoad:"E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core\Content\Peds\animations\m_gen_dance.anm"
+	anim.Load FileToLoad:"E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core_Update2\Content\Peds\animations\d_max_ambient.anm"
 	if obj != undefined then anim.ApplyToCharacter obj Frame:Frame
 )
 
 fn TestSaveSkeletonAnimation obj =
 (
 	anim = CRSkeletalAnimation()
-	anim.BuildFromCharacter $ StartFrame:1 EndFrame:61
-	anim.Save "E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core\Content\Peds\animations\m_gen_dance_gangnam.anm"
+	anim.BuildFromCharacter $ StartFrame:1 EndFrame:7
+	anim.Save "E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core\Content\Peds\animations\d_cow_windscreen.anm"
 )
 
 fn SetAnimFromMixamoBone boneToTransform boneMap =

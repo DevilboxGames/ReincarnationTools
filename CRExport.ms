@@ -661,12 +661,12 @@ fn StripperShakeItBaby faceCount &indices =
 			--format "RawStrips[%]" i to:stripname
 			--PrintArrayInFull strips[i] (stripname as string)
 	--)
-	format "Number Of Strips Before Merge: %\n" strips.count
+	--format "Number Of Strips Before Merge: %\n" strips.count
 	MergeStrips &strips
 	
 	--free tags
 	--free connectivity
-	format "Number Of Strips After Merge: %\n" strips.count
+	--format "Number Of Strips After Merge: %\n" strips.count
 	--gc()
 	return strips
 )
@@ -1060,7 +1060,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		append facesForMatID[faceMatID] i
 		
 		
-		USERFace =  mdlUserFace PlaneD:planeD PlaneX:planeNormal.x PlaneY:planeNormal.z PlaneZ:-planeNormal.y SmoothingGroup:smoothingGroup MaterialIndex:faceMatID v1Colour:v1Colour v2Colour:v2Colour v3Colour:v3Colour v1:VertInd1  v2:VertInd2  v3:VertInd3 v1NormX:rNorms[1].x v1NormY:rNorms[1].y v1NormZ:rNorms[1].z v2NormX:rNorms[2].x v2NormY:rNorms[2].y v2NormZ:rNorms[2].z v3NormX:rNorms[3].x v3NormY:rNorms[3].y v3NormZ:rNorms[3].z v1U:v1U v1V:v1V v1U2:v1U2 v1V2:v1V2 v2U:v2U v2V:v2V v2U2:v2U2 v2V2:v2V2 v3U:v3U v3V:v3V v3U2:v3U2 v3V2:v3V2
+		USERFace =  mdlUserFace PlaneD:planeD PlaneX:-planeNormal.x PlaneY:planeNormal.z PlaneZ:-planeNormal.y SmoothingGroup:smoothingGroup MaterialIndex:faceMatID v1Colour:v1Colour v2Colour:v2Colour v3Colour:v3Colour v1:VertInd1  v2:VertInd2  v3:VertInd3 v1NormX:rNorms[1].x v1NormY:rNorms[1].y v1NormZ:rNorms[1].z v2NormX:rNorms[2].x v2NormY:rNorms[2].y v2NormZ:rNorms[2].z v3NormX:rNorms[3].x v3NormY:rNorms[3].y v3NormZ:rNorms[3].z v1U:v1U v1V:v1V v1U2:v1U2 v1V2:v1V2 v2U:v2U v2V:v2V v2U2:v2U2 v2V2:v2V2 v3U:v3U v3V:v3V v3U2:v3U2 v3V2:v3V2
 		
 		append USERFaces USERFace
 		append mid faceMatID
@@ -1364,7 +1364,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			finalFaceCount = finalFaceCount + meshFaces.count
 		bbox = calcMeshBoundingBox USERVerts
 
-		PrintArrayInFull stripperVertInds "Verts before stripper"
+		--PrintArrayInFull stripperVertInds "Verts before stripper"
 		shakenStrips = StripperShakeItBaby meshFaceCount &stripperVertInds
 		
 		stripList = #()
@@ -1414,7 +1414,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	
 		uniqueVerts = #()
 		
-		
+		format "USERVerts: %\nPREPVerts: %\n" USERVerts.count PREPVerts.count
 	
 	f = fopen mdl_name "wb"
 	PREPflags = 1
@@ -1426,10 +1426,41 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	(
 		hasSkinData = true
 		PREPflags = bit.or PREPflags (bit.shift 1 5)
+		PREPflags = 41
 		USERflags = bit.or USERflags (bit.shift 1 2)
 		skinMod = model.modifiers["Skin"]
-		bonesList = GetBonesFromSkin skinMod
+		bonesList = GetBonesList model
+		/*bonesList =#()
+		for b in bonesList2 do
+		(
+			if b.name == "head" then bonesList[1] = b
+			else if b.name == "hips" then bonesList[2] = b
+			else if b.name == "left_arm" then bonesList[3] = b
+			else if b.name == "left_collar" then bonesList[4] = b
+			else if b.name == "left_fingers" then bonesList[5] = b
+			else if b.name == "left_foot" then bonesList[6] = b
+			else if b.name == "left_forearm" then bonesList[7] = b
+			else if b.name == "left_hand" then bonesList[8] = b
+			else if b.name == "left_leg" then bonesList[9] = b
+			else if b.name == "left_shin" then bonesList[10] = b
+			else if b.name == "left_thumb" then bonesList[11] = b
+			else if b.name == "left_toe" then bonesList[12] = b
+			else if b.name == "neck" then bonesList[13] = b
+			else if b.name == "ribs" then bonesList[14] = b
+			else if b.name == "right_arm" then bonesList[15] = b
+			else if b.name == "right_collar" then bonesList[16] = b
+			else if b.name == "right_fingers" then bonesList[17] = b
+			else if b.name == "right_foot" then bonesList[18] = b
+			else if b.name == "right_forearm" then bonesList[19] = b
+			else if b.name == "right_hand" then bonesList[20] = b
+			else if b.name == "right_leg" then bonesList[21] = b
+			else if b.name == "right_shin" then bonesList[22] = b
+			else if b.name == "right_thumb" then bonesList[23] = b
+			else if b.name == "right_toe" then bonesList[24] = b
+			else if b.name == "torso" then bonesList[25] = b
+		)*/
 	)
+	printFlagBits PREPflags 32 "PREP flags: "
 	
 	try
 	(
@@ -1450,7 +1481,41 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		--writebyte f 0
 		--writebyte f 0
 		--writebyte f 0
-		writelong f 1 #unsigned
+		prepDataSize = 4 + (PREPFaces.Count * 16) + 4 + (PREPVerts.count * 44) + 2
+		for mdlmsh in meshes do
+		(
+			prepDataSize += 52
+			prepDataSize += mdlmsh.StripList.count * 4
+			prepDataSize += 12
+			prepDataSize += mdlmsh.PatchList.count * 4
+			if hasSkinData then
+			(
+				select model
+				max modify mode
+				modPanel.setCurrentObject skinMod
+				prepDataSize += 6
+				for bn in bonesList do
+				(
+					prepDataSize += bn.name.count + 1
+				)
+				prepDataSize += bonesList.count * 43
+				
+				numWeights = 0
+			--format "Writing weight offsets\n"
+				prepDataSize += 8 * PREPVerts.count
+				for i=1 to PREPVerts.count do
+				(
+					vertNum = PREP2USERvertConv[i]
+					weightCount = skinOps.GetVertexWeightCount skinMod vertNum
+					
+					numWeights += weightCount
+					if weightCount == 1 then numWeights += 1
+				)
+				prepDataSize += 4
+				prepDataSize += numWeights * 6
+			)
+		)
+		writelong f 0 #unsigned
 		
 		--print "Writing Faces Count"
 		-- TODO Add Faces Count
@@ -1605,7 +1670,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				writelong f (mdlmsh.PatchList[j] - 1)
 			)
 		)
-		
+		doneSiblings = #()
 		if hasSkinData then
 		(
 			--format "Starting skin data\n"
@@ -1615,22 +1680,48 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			
 			--format "Writing bone names\n"
 			writeshort f bonesList.count #unsigned
-			writeshort f 0
-			writeshort f 0
+			
+			maximumBonesPerVert = 0
+			for i=1 to PREPVerts.count do
+			(
+				vertNum = PREP2USERvertConv[i]
+				w = skinOps.GetVertexWeightCount skinMod vertNum
+				if w > maximumBonesPerVert then maximumBonesPerVert = w
+			)
+			writeshort f 2
+			rootBonenum = 0
+			for i = 1 to bonesList.count do
+			(
+				if bonesList[i].parent == undefined then 
+				(
+					rootBonenum = i
+					exit
+				)
+			)
+			if rootBonenum == 0 then
+			(
+				if bonesList[i].name == "hips" then 
+				(
+					rootBonenum = i
+					exit
+				)
+			)
+			--format "RootBoneIndex: %\n" rootBonenum
+			writeshort f (rootBonenum - 1 )
 			for i=1 to bonesList.count do
 			(
 				writestring f bonesList[i].name
 			)
 			
 			--format "Writing bone info\n"
-			
+			printarrayinfull bonesList "Bones List: "
 			for i=1 to bonesList.count do
 			(
 				axisMin = (ik.getaxismin bonesList[i] #rotational)/360
 				-- Min Limit
 				writefloat f axisMin.x
 				writefloat f axisMin.y
-				writefloat f axisMin.z
+				writefloat f  axisMin.z
 				
 				axisMax = (ik.getaxismax bonesList[i] #rotational)/360
 				-- Max Limit
@@ -1649,16 +1740,16 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				
 				--format "Relative pos: %\n" relativepos
 				
-				writefloat f relativePos.x
+				writefloat f -relativePos.x
 				writefloat f relativePos.y
-				writefloat f relativePos.z
+				writefloat f -relativePos.z
 				
 				--format "Writing parent\n"
 				if bonesList[i].parent == undefined then writebyte f -1
 				else
 				(
 					parentNum = (findItem bonesList bonesList[i].parent) - 1
-					--format "ParentNum = \n" parentNum
+					--format "BoneNum = % - ParentNum = %\n" i parentNum
 					writebyte f parentNum
 				)
 				--format "Writing child = %\n" bonesList[i].children.count
@@ -1666,7 +1757,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				else
 				(
 					--format "finding child\n %\n %\n" boneslist boneslist[i].children[1]
-					childNum = (finditem bonesList bonesList[i].children[1])
+					childNum = (finditem bonesList bonesList[i].children[bonesList[i].children.count])
 					
 					--format "ChildNum = %\n" childNum
 					childNum = childNum - 1
@@ -1676,10 +1767,22 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				if bonesList[i].parent == undefined or bonesList[i].parent.children.count==1 then writebyte f -1
 				else
 				(
-					if bonesList[i].parent.children[1] != bonesList[i] then siblingNum = (finditem bonesList bonesList[i].parent.children[1]) - 1
-					else siblingNum = (finditem bonesList bonesList[i].parent.children[2]) - 1
-					
+					siblingNum = -1
+					for s = (finditem bonesList[i].parent.children bonesList[i]) to 1 by -1 do
+					(
+						potentialSiblingBone = bonesList[i].parent.children[s]
+						potentialSiblingBoneNum = (finditem bonesList potentialSiblingBone)
+						if potentialSiblingBone != bonesList[i] and (findItem doneSiblings potentialSiblingBoneNum) == 0 then
+						(
+							siblingNum = potentialSiblingBoneNum - 1
+							exit
+						)
+					)
+					--if bonesList[i].parent.children[1] != bonesList[i] then siblingNum = (finditem bonesList bonesList[i].parent.children[1]) - 1
+					--else siblingNum = (finditem bonesList bonesList[i].parent.children[2]) - 1
+					--format "BoneNum = % - SiblingBone = %\n" i siblingNum
 					writebyte f siblingNum
+					append doneSiblings (siblingNum+1)
 				)
 				
 			)
@@ -1696,7 +1799,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				writefloat f bonesList[i].position.z
 				writefloat f -bonesList[i].position.y
 				
-				writefloat f 0.5
+				writefloat f 0
 			)
 			firstWeightIndex = 0
 			--format "Writing weight offsets\n"
@@ -1705,10 +1808,15 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			(
 				vertNum = PREP2USERvertConv[i]
 				weightCount = skinOps.GetVertexWeightCount skinMod vertNum
+				if weightCount > 2 then
+				(
+					format "Vert % has % weights when it should only have 2!\n" i weightCount
+				)
+				if weightCount == 1 then weightCount = 2
 				writeshort f weightCount #unsigned
-				writeshort f i
+				writeshort f 0
 				writelong f firstWeightIndex #unsigned
-				format "%: %\t0\t%\n" i weightCount firstWeightIndex
+				--format "%: %\t0\t%\n" i weightCount firstWeightIndex
 				firstWeightIndex += weightCount
 			)
 			writelong f firstWeightIndex #unsigned
@@ -1718,7 +1826,8 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			(
 				vertNum = PREP2USERvertConv[i]
 				weightCount = skinOps.GetVertexWeightCount skinMod vertNum
-				for w=1 to weightCount do
+				if weightCount == 1 then writeshort f 1 #unsigned
+				for w=1 to weightCount do 
 				(
 					boneId = skinOps.GetVertexWeightBoneID skinMod vertNum w
 					boneName = skinOps.GetBoneName skinMod boneId 1
@@ -1731,7 +1840,8 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 							break
 						)
 					)
-					writeshort f boneNum #unsigned
+					format "Vertex #% (%)\tboneID: %\tboneNum: %\n\t\"%\"\t%\n" i vertNum boneID boneNum boneName bonesList[boneNum+1]
+					writeshort f (boneId - 1) #unsigned
 				)
 				
 			)
@@ -1739,8 +1849,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			format "Writing weights\n"
 			for i=1 to PREPVerts.count do
 			(
-				vertNum = PREP2USERvertConv[i]
+				vertNum = PREP2USERvertConv[i] as integer
+								
 				weightCount = skinOps.GetVertexWeightCount skinMod vertNum
+				if weightCount == 1 then writelong f 0 #unsigned
 				for w=1 to weightCount do
 				(
 					weight = skinOps.GetVertexWeight  skinMod vertNum w
@@ -1749,6 +1861,17 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				
 			)
 		)
+		
+		
+		/*sizeOfMDL = ftell f - 28
+		--format "Size Of MDL = %\n----------------\n" sizeOfMDL
+		--fclose f
+		--f = fopen mdl_name "ab"
+		fseek f 24 #seek_set
+		writelong f sizeOfMDL
+		exceptionHappened=false
+		return 0*/
+		
 		writelong f USERflags
 		
 		--print "Writing USER Vertices"
@@ -1772,8 +1895,8 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			--format "Writing % plane - " 1
 			writefloat f face.PlaneD
 			writefloat f face.PlaneX
+			writefloat f face.PlaneY
 			writefloat f face.PlaneZ
-			writefloat f -face.PlaneD
 			
 			matId = face.MaterialIndex
 			smoothingGroup = face.SmoothingGroup
@@ -1798,6 +1921,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			writelong f (face.v2-1) #unsigned
 			writelong f (face.v3-1) #unsigned
 			
+			--format "Writing face #% - % / % / %\n" i face.v1 face.v2 face.v3
 			--format "Writing % colours - " 3
 			writebyte f face.v1Colour.r #unsigned
 			writebyte f face.v1Colour.g #unsigned
@@ -1809,10 +1933,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			writebyte f face.v2Colour.b #unsigned
 			writebyte f face.v2Colour.a #unsigned
 			
-			writebyte f face.v2Colour.r #unsigned
-			writebyte f face.v2Colour.g #unsigned
-			writebyte f face.v2Colour.b #unsigned
-			writebyte f face.v2Colour.a #unsigned
+			writebyte f face.v3Colour.r #unsigned
+			writebyte f face.v3Colour.g #unsigned
+			writebyte f face.v3Colour.b #unsigned
+			writebyte f face.v3Colour.a #unsigned
 			
 			--format "Writing % texcoords\n" 6
 			writefloat f face.v1U
@@ -1830,16 +1954,19 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			writefloat f face.v3U2
 			writefloat f (1-face.v3V2)
 			
-			writelong f 0
 			writebyte f 0 #unsigned
+			writelong f 0 #unsigned
 		)
 		
 		--format "Writing PREP2USER face map data %\n" " "
 		--print "Writing Face Numbers"
 		-- TODO Write Sequence Of Faces Numbers ???
+		format "PREP2USER Face Conversion:\n"
 		for i=1 to PREP2USERfaceConv.count do
 		(
-			writelong f (i-1)
+			format "% % \t\t\t=> \t% [%, %, %]\n" i PREPFaces[i][1] PREP2USERfaceConv[i] USERFaces[PREP2USERfaceConv[i]].v1 USERFaces[PREP2USERfaceConv[i]].v2 USERFaces[PREP2USERfaceConv[i]].v3
+			
+			writelong f (PREP2USERfaceConv[i]-1)
 		)
 		
 		--print "Writing Vertex Count"
@@ -1847,15 +1974,17 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		
 		--format "Writing PREP2USER vert count data %\n" " "
 		writelong f PREP2USERvertConv.count
-		
+		format "PREPVerts.Count = %\n PREP2USERvertConv.Count = %\n" PREPVerts.count PREP2USERvertConv.count
 		
 		
 		--format "Writing PREP2USER vert map data %\n" " "
 		--print "Writing Vertex Numbers"
 		-- TODO Write Sequence Of Vertex Numbers ????????
+		format "PREP2USER Vert Conversion:\n"
 		for i=1 to PREP2USERvertConv.count do
 		(
-			writelong f (i-1)
+			format "% [%, %, %] \t\t\t=> \t% [%, %, %]\n" i PREPVerts[i].pos.x PREPVerts[i].pos.y PREPVerts[i].pos.z PREP2USERvertConv[i] USERVerts[PREP2USERvertConv[i]].x USERVerts[PREP2USERvertConv[i]].y USERVerts[PREP2USERvertConv[i]].z
+			writelong f (PREP2USERvertConv[i]-1)
 		)
 		
 		if hasSkinData then
@@ -1864,7 +1993,9 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			
 			for i=1 to bonesList.count do
 			(
-				boneTransformMatrix =  matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0] * bonesList[i].transform * inverse(matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0])
+				boneTransformMatrix = bonesList[i].transform
+				boneTransformMatrix.row1 *= -1
+				boneTransformMatrix =  matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * boneTransformMatrix * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
 				
 				writestring2 f bonesList[i].name
 				for s=bonesList[i].name.count to 31 do writebyte f 0
@@ -1896,16 +2027,19 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				
 				writefloat f boneTransformMatrix.row4.x
 				writefloat f boneTransformMatrix.row4.y
-				writefloat f -boneTransformMatrix.row4.z
+				writefloat f boneTransformMatrix.row4.z
 			)
 			
 			writelong f userverts.count #unsigned
 			
 			for i=1 to userverts.count do
 			(
-				weightcount= (skinops.getvertexweightcount skinmod i)
-				writeshort f weightcount #unsigned
-				
+			
+				weightCount = skinOps.GetVertexWeightCount skinMod i
+				--weightcount= (skinops.getvertexweightcount skinmod i)
+				weightcount2 = weightcount
+				if weightcount2 == 1 then weightcount2 = 2
+				writeshort f weightcount2 #unsigned
 				for w=1 to weightcount do
 				(
 					boneId = skinOps.GetVertexWeightBoneID skinMod i w
@@ -1920,10 +2054,30 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 						)
 					)
 					writeshort f boneNum #unsigned
+					
+					
 					writefloat f (skinops.getvertexweight skinMod i w)
-					writefloat f 0.5
-					writefloat f 0.5
-					writefloat f 0.5
+					if w==1 then
+					(
+						writefloat f USERVerts[i].x
+						writefloat f USERVerts[i].z
+						writefloat f -USERVerts[i].y
+					)
+					
+					else
+					(
+						writefloat f 0
+						writefloat f 0
+						writefloat f 0
+					)
+				)
+				if weightCount == 1 then
+				(
+					writeshort f 1
+					writefloat f 0
+					writefloat f 0
+					writefloat f 0
+					writefloat f 0
 				)
 			)
 		)

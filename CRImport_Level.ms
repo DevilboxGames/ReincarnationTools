@@ -38,13 +38,13 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 		--else 
 		--(
 			--format "Checking root accessory folder: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")
-			if ((dotnetclass "System.IO.File").exists (CarmaSettings.GamePath+"\\Data_Core\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")) then
+			if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")) then
 			(
-				accessory.accessoryFileName = CarmaSettings.GamePath+"\\Data_Core\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt"
+				accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt"
 			)
-			else if ((dotnetclass "System.IO.File").exists (CarmaSettings.GamePath+"\\Data_Core\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt")) then
+			else if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt")) then
 			(
-				accessory.accessoryFileName = CarmaSettings.GamePath+"\\Data_Core\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt"
+				accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt"
 			)
 		--)
 	)

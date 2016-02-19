@@ -92,29 +92,29 @@ fn GetMDLTexture folder materialName importTextures:false =
 			texmap = bitmaptexture()
 			texmap.filename = folder+"NON_VT\\"+textureName+".tga"
 		)
-		else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")) then
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".png")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
 			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png"
+			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".png"
 		)
-		else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")) then
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
 			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga"
+			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga"
 		)
-		else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".png")) then
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
 			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".png"
+			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png"
 		)
-		else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tga")) then
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
 			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tga"
+			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga"
 		)
 		else
 		(
@@ -124,8 +124,8 @@ fn GetMDLTexture folder materialName importTextures:false =
 			TDXFilename = undefined
 			if (doesFileExist (folder+texturename+".tdx")) then TDXFilename = folder+texturename+".tdx"
 			else if (doesFileExist (folder+"NON_VT\\"+texturename+".tdx")) then TDXFilename = folder+"NON_VT\\"+texturename+".tdx"
-			else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tdx"
-			else if (doesFileExist (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\NON_VT\\"+texturename+".tdx"
+			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx"
+			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx"
 			
 			--format "Looking for %.tdx in \"%\" or in \"%\"\n" texturename folder (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\")
 			--format "TDXFilename: %\n" TDXFilename
@@ -339,7 +339,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	uniqueVertexCount = readlong f #unsigned
 	
 	fileSize = readlong f #unsigned
-	if version63orhigher == false and filesize > 0 then
+	if filesize == 0 then forcePREP = false
+	if version63orhigher == false or filesize > 0 then
 	(
 		boundingSphereRadius = readfloat f
 		bboxMinX = readfloat f
@@ -1077,7 +1078,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		--update m
 		return m
 	)
-	else
+	else if filesize != 0 then
 	(
 		
 		PREPfaceCount = readlong f #unsigned
@@ -1218,7 +1219,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		--format "User Data pos: %\n" (ftell f)
 		USERflags = readlong f #unsigned
 		USERskinSet = CheckBitIsSet USERflags 2
-		
+		if PREPfaceCount == undefined then PREPfaceCount = firstFaceCount
 		--printFlagBits flags 32 "flags: "
 		printFlagBits USERflags 32 "USER flags: "
 		local m = trimesh()
@@ -1359,17 +1360,19 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			--format "Vert indices: % % %\n" v1index v2index v3index
 			--append smoothingGroups smoothingGroup
 		)
-		for i =1 to PREPfaceCount do
+		if filesize > 0 then
 		(
-			faceMap = readlong f #unsigned
+			for i =1 to PREPfaceCount do
+			(
+				faceMap = readlong f #unsigned
+			)
+			numPrepVerts = readlong f #unsigned
+			
+			for i=1 to numPrepVerts do
+			(
+				vertMap = readlong f #unsigned
+			)
 		)
-		numPrepVerts = readlong f #unsigned
-		
-		for i=1 to numPrepVerts do
-		(
-			vertMap = readlong f #unsigned
-		)
-		
 		m = mesh mesh:m
 		m.material = meshMaterial
 		if USERskinSet then
@@ -1680,7 +1683,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	
 		if ((dotnetclass "System.IO.File").exists fname) == false then
 		(
-			fname = CarmaSettings.GamePath + "\\Data_core\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
+			fname = CarmaSettings.DataCorePath+"\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
 		)
 		--format "Loading MDL from %\n" fname
 		

@@ -39,6 +39,9 @@ rollout carma_reincarnation_settings "Settings"
 	(
 		editText gameFolderTextBox "Game Folder:" fieldWidth: 210 across: 2 labelOnTop:true text:CarmaSettings.GamePath
 		button setGameFolder "Browse" align:#right offset:[0,16]
+		checkbox chk_AllowSeperateDataCore "Custom Data_Core folder"
+		editText dataCoreFolderTextBox "Data_Core Folder:" fieldWidth: 210 across: 2 labelOnTop:true text:CarmaSettings.DataCorePath
+		button setDataCoreFolder "Browse" align:#right offset:[0,16]
 		editText GibbedToolsLocationTextBox "Gibbed Tools Location:" fieldWidth: 210 across:2 labelOnTop:true text:CarmaSettings.GibbedTools
 		button setGibbedToolsLocation "Browse" align:#right offset:[0,16]
 		editText LOLDecoderLocationTextBox "LOL Decoder Location:" fieldWidth: 210 across:2 labelOnTop:true text:CarmaSettings.LOLDecoder
@@ -50,11 +53,29 @@ rollout carma_reincarnation_settings "Settings"
 	button saveButton "Save Settings" across:2
 	button cancelButton "Cancel" across:2
 	
+	on carma_reincarnation_settings open do
+	(
+		chk_AllowSeperateDataCore.checked = CarmaSettings.AllowSeperateDataCore
+	)
 	on setGameFolder pressed do
 	(
 		f = getSavePath initialDir:CarmaSettings.GamePath caption:"Browse To Game Folder..."
 		if f == undefined then gameFolderTextBox.text = CarmaSettings.GamePath
 		else gameFolderTextBox.text = f
+
+		if chk_AllowSeperateDataCore == false then dataCoreFolderTextBox.text = gameFolderTextBox.text + "\\Data_Core"
+	)
+	on setDataCoreFolder pressed do
+	(
+		f = getSavePath initialDir:CarmaSettings.DataCorePath caption:"Browse To Data_Core Folder..."
+		if f == undefined then dataCoreFolderTextBox.text = CarmaSettings.DataCorePath
+		else dataCoreFolderTextBox.text = f
+	)
+	on chk_AllowSeperateDataCore changed state do
+	(
+		dataCoreFolderTextBox.enabled = state
+		setDataCoreFolder.enabled = state
+		if state == false then dataCoreFolderTextBox.text = gameFolderTextBox.text + "\\Data_Core"
 	)
 	on setTextureFolder pressed do
 	(
@@ -84,12 +105,21 @@ rollout carma_reincarnation_settings "Settings"
 		
 		
 		CarmaSettings.GamePath = gameFolderTextBox.text
+		CarmaSettings.DataCorePath = dataCoreFolderTextBox.text
+		CarmaSettings.AllowSeperateDataCore = chk_AllowSeperateDataCore.checked
 		CarmaSettings.TexturePath = textureConversionFolderTextBox.text
 		CarmaSettings.GibbedTools = GibbedToolsLocationTextBox.text 
 		CarmaSettings.LOLDecoder = LOLDecoderLocationTextBox.text 
 		CarmaSettings.MaxResolutionID = maxTextureRes.Selection
 		CarmaSettings.MaxResolution = MaxTextureResolutionOptions[maxTextureRes.Selection] as Integer
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GamePath" CarmaSettings.GamePath
+
+		if CarmaSettings.AllowSeperateDataCore == true then
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "AllowSeperateDataCore" "true"
+		else
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "AllowSeperateDataCore" "false"
+
+		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath" CarmaSettings.DataCorePath
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "TextureConversionPath" CarmaSettings.TexturePath
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GibbedTools" CarmaSettings.GibbedTools
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder" CarmaSettings.LOLDecoder

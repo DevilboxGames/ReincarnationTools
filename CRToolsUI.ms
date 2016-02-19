@@ -113,6 +113,17 @@ fn ToolsStartup =
 		global CarmaSettings = CRSettings()
 
 		CarmaSettings.GamePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GamePath"
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "AllowSeperateDataCore") == "true" then
+		(	
+			CarmaSettings.AllowSeperateDataCore = true
+			CarmaSettings.DataCorePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath"
+		)
+		else
+		(
+			CarmaSettings.AllowSeperateDataCore = false
+			CarmaSettings.DataCorePath = CarmaSettings.GamePath+"\\Data_Core"
+		)
+		CarmaSettings.DataCorePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath"
 		CarmaSettings.TexturePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "TextureConversionPath"
 		CarmaSettings.GibbedTools = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GibbedTools"
 		CarmaSettings.LOLDecoder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder"

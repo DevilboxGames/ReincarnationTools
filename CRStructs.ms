@@ -1,5 +1,5 @@
 
-struct CRSettings (GamePath, TexturePath, GibbedTools, LOLDecoder, MaxResolution,MaxResolutionID)
+struct CRSettings (GamePath, DataCorePath, AllowSeperateDataCore, TexturePath, GibbedTools, LOLDecoder, MaxResolution,MaxResolutionID)
 
 struct AdjacentTriangle (ref, tri)
 struct AdjacentEdge (refa, refb, face)

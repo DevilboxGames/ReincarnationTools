@@ -119,7 +119,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 /*********************************
 ***** CAR STRUCT CHARACTERISTICS ATTRIBUTES
 *********************************/
-StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attribID:#(0x384aa405, 0x32e1fc9) version:1
+StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attribID:#(0x384aa405, 0x32e1fc9) version:2
 (
 	parameters main rollout:BasicCharacteristicsRollout
 	(
@@ -143,31 +143,134 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 		
 		ExtraFallingDamageFactor_Active type:#boolean default:false ui:chk_ExtraFallingDamageFactor_Active
 		ExtraFallingDamageFactor type:#float default:800 ui:spn_ExtraFallingDamageFactor
+		
+		
+		DownwardCrushingExtraOffence_Active type:#boolean default:false ui:chk_DownwardCrushingExtraOffence_Active
+		DownwardCrushingExtraOffence_0mph type:#float default:10.0 ui:spn_DownwardCrushingExtraOffence_0mph
+		DownwardCrushingExtraOffence_MaxMultSpeed type:#float default:5.0 ui:spn_DownwardCrushingExtraOffence_MaxMultSpeed
+		DownwardCrushingExtraOffence_MaxMult type:#float default:2.0 ui:spn_DownwardCrushingExtraOffence_MaxMult
+		
+		
+		RandomCrumplingRandomMax_Active type:#boolean default:false ui:chk_RandomCrumplingRandomMax_Active
+		RandomCrumplingRandomMax type:#float default:0.0375 ui:spn_RandomCrumplingRandomMax
+		
+		WBDRandomCrumplingRandomMax_Active type:#boolean default:false ui:chk_WBDRandomCrumplingRandomMax_Active
+		WBDRandomCrumplingRandomMax type:#float default:0.01 ui:spn_WBDRandomCrumplingRandomMax
+		
+		MaxDeflectionForDamageTexture_Active type:#boolean default:false ui:chk_MaxDeflectionForDamageTexture_Active
+		MaxDeflectionForDamageTexture type:#float default:0.05 ui:spn_MaxDeflectionForDamageTexture
+
+
+		ImmuneToWheelDamage_Active type:#boolean default:false ui:chk_ImmuneToWheelDamage_Active
+		CannotBeSplit_Active type:#boolean default:false ui:chk_CannotBeSplit_Active
+		AllowCOMZOutsideOfWheelbase_Active type:#boolean default:false ui:chk_AllowCOMZOutsideOfWheelbase_Active
+		
+		WheelRadius_Active type:#boolean default:false ui:chk_WheelRadius_Active
+		WheelRadius type:#float default:0.05 ui:spn_WheelRadius
+		WheelRadius_UseFactor type:#boolean default:false ui:chk_WheelRadius_UseFactor
+
+
+		TowingPowerMultiplier_Active type:#boolean default:false ui:chk_TowingPowerMultiplier_Active
+		TowingPowerMultiplier type:#float default:2.5 ui:spn_TowingPowerMultiplier
+
+		TowingTractionMultiplier_Active type:#boolean default:false ui:chk_TowingTractionMultiplier_Active
+		TowingTractionMultiplier type:#float default:2.0 ui:spn_TowingTractionMultiplier
+
+		TowingSteerSpeedMultiplier_Active type:#boolean default:false ui:chk_TowingSteerSpeedMultiplier_Active
+		TowingSteerSpeedMultiplier type:#float default:0.5 ui:spn_TowingSteerSpeedMultiplier
+
+
+
+		GridExtraSpace_Active type:#boolean default:false ui:chk_GridExtraSpace_Active
+		GridExtraSpace_x type:#float default:0 ui:spn_GridExtraSpace_x
+		GridExtraSpace_y type:#float default:0 ui:spn_GridExtraSpace_y
+		GridExtraSpace_z type:#float default:0 ui:spn_GridExtraSpace_z
+
+		
 		PermanentPowerups type:#stringTab tabSizeVariable:true
 	)
 	rollout BasicCharacteristicsRollout "Basic Characteristics"
 	(
-		checkbox chk_DefenceAgainstCars_Active "" default:false across:2
-		spinner spn_DefenceAgainstCars "Defence Against Cars" range:[0,100,1] type:#float fieldwidth:40
+		label lbl_DefenceAgainstCars "Defence Against Cars" across:1 align:#right
+		checkbox chk_DefenceAgainstCars_Active "" default:false  across:2 width:15
+		spinner spn_DefenceAgainstCars "" range:[0,100,1] type:#float fieldwidth:40 align:#right
 		
-		checkbox chk_DefenceGeneral_Active "" default:false across:2
-		spinner spn_DefenceGeneral "Defence (General)" range:[0,100,1] type:#float fieldwidth:40
+		label lbl_DefenceGeneral "Defence (General)" across:1 align:#right
+		checkbox chk_DefenceGeneral_Active "" default:false across:2 width:15
+		spinner spn_DefenceGeneral "" range:[0,100,1] type:#float fieldwidth:40
 		
-		checkbox chk_Offence_Active "" default:false across:2
-		spinner spn_Offence "Offence" range:[0,100,1] type:#float fieldwidth:40
+		label lbl_Offence "Offence" across:1 align:#right
+		checkbox chk_Offence_Active "" default:false across:2 width:15
+		spinner spn_Offence "" range:[0,100,1] type:#float fieldwidth:40
 		
-		checkbox chk_ValueFactor_Active "" default:false across:2
-		spinner spn_ValueFactor "Value Factor" range:[0,100,1] type:#float fieldwidth:40
+		label lbl_ValueFactor "Value Factor" across:1 align:#right
+		checkbox chk_ValueFactor_Active "" default:false across:2 width:15
+		spinner spn_ValueFactor "" range:[0,100,1] type:#float fieldwidth:40
 		
-		checkbox chk_WholeBodyDeformationFactor_Active "" default:false across:2
-		spinner spn_WholeBodyDeformationFactor "Deform Factor" range:[0,100,1] type:#float fieldwidth:40
+		label lbl_WholeBodyDeformationFactor "Deform Factor" across:1 align:#right
+		checkbox chk_WholeBodyDeformationFactor_Active "" default:false across:2 width:15
+		spinner spn_WholeBodyDeformationFactor "" range:[0,100,1] type:#float fieldwidth:40
 		
-		checkbox chk_ExtraFallingDamageThreshold_Active "" default:false across:2
-		spinner spn_ExtraFallingDamageThreshold "Extra Fall Damage Threshold" range:[0,1000,1] type:#float fieldwidth:40
+		label lbl_ExtraFallingDamageThreshold "Extra Fall Damage Threshold" across:1 align:#right
+		checkbox chk_ExtraFallingDamageThreshold_Active "" default:false across:2 width:15
+		spinner spn_ExtraFallingDamageThreshold "" range:[0,1000,1] type:#float fieldwidth:40 
 		
-		checkbox chk_ExtraFallingDamageFactor_Active "" default:false across:2
-		spinner spn_ExtraFallingDamageFactor "Extra Fall Damage Factor" range:[0,10000,1] type:#float fieldwidth:40
+		label lbl_ExtraFallingDamageFactor "Extra Fall Damage Factor" across:1 align:#right
+		checkbox chk_ExtraFallingDamageFactor_Active "" default:false across:2 width:15
+		spinner spn_ExtraFallingDamageFactor "" range:[0,1000,1] type:#float fieldwidth:40
 		
+		group "Downward Crushing Force"
+		(
+			checkbox chk_DownwardCrushingExtraOffence_Active "Enabled" default:false across:1 align:#center --width:15
+			--label lbl_DownwardCrushingExtraOffence "Downward Crushing Force" acrosss:2
+			label lbl_DownwardCrushingExtraOffence_0mph "Multiplier At 0mph" align:#right
+			spinner spn_DownwardCrushingExtraOffence_0mph "" range:[0,10000,1] type:#float fieldwidth:40
+
+			label lbl_DownwardCrushingExtraOffence_MaxMultSpeed "Max Downward Speed" align:#right
+			spinner spn_DownwardCrushingExtraOffence_MaxMultSpeed "" range:[0,10000,1] type:#float fieldwidth:40
+
+			label lbl_DownwardCrushingExtraOffence_MaxMult "Multiplier At That Speed" align:#right
+			spinner spn_DownwardCrushingExtraOffence_MaxMult "" range:[0,10000,1] type:#float fieldwidth:40
+		)
+
+		label lbl_RandomCrumplingRandomMax "Random Crumpling Max" across:1 align:#right
+		checkbox chk_RandomCrumplingRandomMax_Active "" default:false across:2 width:15
+		spinner spn_RandomCrumplingRandomMax "" range:[0,1000,1] type:#float fieldwidth:40
+
+		label lbl_WBDRandomCrumplingRandomMax "WBD Random Crumpling Max" across:1 align:#right
+		checkbox chk_WBDRandomCrumplingRandomMax_Active "" default:false across:2 width:15
+		spinner spn_WBDRandomCrumplingRandomMax "" range:[0,1000,1] type:#float fieldwidth:40
+
+		label lbl_MaxDeflectionForDamageTexture "Dmg Texture Max Deflection" across:1 align:#right
+		checkbox chk_MaxDeflectionForDamageTexture_Active "" default:false across:2 width:15
+		spinner spn_MaxDeflectionForDamageTexture "" range:[0,1000,1] type:#float fieldwidth:40
+		
+
+		checkbox chk_ImmuneToWheelDamage_Active "Immune To Wheel Damage" default:false 
+		checkbox chk_CannotBeSplit_Active "Cannot Be Split" default:false
+		checkbox chk_AllowCOMZOutsideOfWheelbase_Active "Allow COM Z Outside Wheelbase" default:false
+
+		checkbox chk_WheelRadius_Active "" default:false across:2
+		spinner spn_WheelRadius "Wheel Radius" range:[0,1000,1] type:#float fieldwidth:40
+		checkbox chk_WheelRadius_UseFactor "Radius is a %?" default:false 
+
+
+		checkbox chk_GridExtraSpace_Active "" default:false across:2
+		label lbl_GridExtraSpace "Extra Grid Space" acrosss:2
+		spinner spn_GridExtraSpace_x "" range:[0,10000,1] type:#float fieldwidth:40 across:3
+		spinner spn_GridExtraSpace_y "" range:[0,10000,1] type:#float fieldwidth:40 across:3
+		spinner spn_GridExtraSpace_z "" range:[0,10000,1] type:#float fieldwidth:40 across:3
+
+
+		checkbox chk_TowingPowerMultiplier_Active "" default:false across:2
+		spinner spn_TowingPowerMultiplier "Towing Power Multiplier" range:[0,1000,1] type:#float fieldwidth:40
+
+		checkbox chk_TowingTractionMultiplier_Active "" default:false across:2
+		spinner spn_TowingTractionMultiplier "Towing Traction Multiplier" range:[0,1000,1] type:#float fieldwidth:40
+
+		checkbox chk_TowingSteerSpeedMultiplier_Active "" default:false across:2
+		spinner spn_TowingSteerSpeedMultiplier "Towing Steer Speed Multiplier" range:[0,1000,1] type:#float fieldwidth:40
+
 		edittext txt_PowerupName "Permenant Powerup" labelOnTop:true fieldwidth: 100 across:2
 		button but_AddToPowerups "Add"
 		dotnetcontrol lv_Powerups "listview" height: 100
@@ -177,12 +280,39 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 		(			
 			
 			chk_DefenceAgainstCars_Active.pos = [chk_DefenceAgainstCars_Active.pos.x-7, chk_DefenceAgainstCars_Active.pos.y]
+			--lbl_DefenceAgainstCars.pos = [25, lbl_DefenceAgainstCars.pos.y]
+
 			chk_DefenceGeneral_Active.pos = [chk_DefenceGeneral_Active.pos.x-7, chk_DefenceGeneral_Active.pos.y]
+			--lbl_DefenceGeneral.pos = [25, lbl_DefenceGeneral.pos.y]
+
 			chk_Offence_Active.pos = [chk_Offence_Active.pos.x-7, chk_Offence_Active.pos.y]
+			--lbl_Offence.pos = [25, lbl_Offence.pos.y]
+			
 			chk_ValueFactor_Active.pos = [chk_ValueFactor_Active.pos.x-7, chk_ValueFactor_Active.pos.y]
+			--lbl_ValueFactor.pos = [25, lbl_ValueFactor.pos.y]
+			
 			chk_WholeBodyDeformationFactor_Active.pos = [chk_WholeBodyDeformationFactor_Active.pos.x-7, chk_WholeBodyDeformationFactor_Active.pos.y]
+			--lbl_WholeBodyDeformationFactor.pos = [25, lbl_WholeBodyDeformationFactor.pos.y]
+			
 			chk_ExtraFallingDamageThreshold_Active.pos = [chk_ExtraFallingDamageThreshold_Active.pos.x-7, chk_ExtraFallingDamageThreshold_Active.pos.y]
+			--lbl_ExtraFallingDamageThreshold.pos = [25, lbl_ExtraFallingDamageThreshold.pos.y]
+			
 			chk_ExtraFallingDamageFactor_Active.pos = [chk_ExtraFallingDamageFactor_Active.pos.x-7, chk_ExtraFallingDamageFactor_Active.pos.y]
+			--lbl_ExtraFallingDamageFactor.pos = [25, lbl_ExtraFallingDamageFactor.pos.y]
+			
+			
+			--chk_DownwardCrushingExtraOffence_Active.pos = [chk_DownwardCrushingExtraOffence_Active.pos.x-7, chk_DownwardCrushingExtraOffence_Active.pos.y]
+			--lbl_DownwardCrushingExtraOffence.pos = [25, chk_DownwardCrushingExtraOffence_Active.pos.y]
+
+			chk_RandomCrumplingRandomMax_Active.pos = [chk_RandomCrumplingRandomMax_Active.pos.x-7, chk_RandomCrumplingRandomMax_Active.pos.y]
+			chk_WBDRandomCrumplingRandomMax_Active.pos = [chk_WBDRandomCrumplingRandomMax_Active.pos.x-7, chk_WBDRandomCrumplingRandomMax_Active.pos.y]
+			chk_MaxDeflectionForDamageTexture_Active.pos = [chk_MaxDeflectionForDamageTexture_Active.pos.x-7, chk_MaxDeflectionForDamageTexture_Active.pos.y]
+			chk_WheelRadius_Active.pos = [chk_WheelRadius_Active.pos.x-7, chk_WheelRadius_Active.pos.y]
+			
+			chk_GridExtraSpace_Active.pos = [chk_GridExtraSpace_Active.pos.x-7, chk_GridExtraSpace_Active.pos.y]
+			chk_TowingPowerMultiplier_Active.pos = [chk_TowingPowerMultiplier_Active.pos.x-7, chk_TowingPowerMultiplier_Active.pos.y]
+			chk_TowingTractionMultiplier_Active.pos = [chk_TowingTractionMultiplier_Active.pos.x-7, chk_TowingTractionMultiplier_Active.pos.y]
+			chk_TowingSteerSpeedMultiplier_Active.pos = [chk_TowingSteerSpeedMultiplier_Active.pos.x-7, chk_TowingSteerSpeedMultiplier_Active.pos.y]
 			
 			if DefenceAgainstCars_Active then spn_DefenceAgainstCars.enabled = true
 			else spn_DefenceAgainstCars.enabled = false
@@ -204,6 +334,62 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 			
 			if ExtraFallingDamageFactor_Active then spn_ExtraFallingDamageFactor.enabled = true
 			else spn_ExtraFallingDamageFactor.enabled = false
+			
+			if DownwardCrushingExtraOffence_Active then 
+			(
+				spn_DownwardCrushingExtraOffence_0mph.enabled = true
+				spn_DownwardCrushingExtraOffence_MaxMult.enabled = true
+				spn_DownwardCrushingExtraOffence_MaxMultSpeed.enabled = true
+			)
+			else
+			(
+				spn_DownwardCrushingExtraOffence_0mph.enabled = false
+				spn_DownwardCrushingExtraOffence_MaxMult.enabled = false
+				spn_DownwardCrushingExtraOffence_MaxMultSpeed.enabled = false
+			)
+
+			if RandomCrumplingRandomMax_Active then spn_RandomCrumplingRandomMax.enabled = true
+			else spn_RandomCrumplingRandomMax.enabled = false
+			
+			if WBDRandomCrumplingRandomMax_Active then spn_WBDRandomCrumplingRandomMax.enabled = true
+			else spn_WBDRandomCrumplingRandomMax.enabled = false
+			
+			if MaxDeflectionForDamageTexture_Active then spn__MaxDeflectionForDamageTexture.enabled = true
+			else spn_MaxDeflectionForDamageTexture.enabled = false
+			
+			if WheelRadius_Active then
+			(
+				spn_WheelRadius.enabled = true
+				chk_WheelRadius_UseFactor.enabled = true
+			)
+			else
+			(
+				spn_WheelRadius.enabled = false
+				chk_WheelRadius_UseFactor.enabled = false
+			)
+			
+			if GridExtraSpace_Active then
+			(
+				spn_GridExtraSpace_x.enabled = true
+				spn_GridExtraSpace_y.enabled = true
+				spn_GridExtraSpace_z.enabled = true
+			)
+			else
+			(
+				spn_GridExtraSpace_x.enabled = false
+				spn_GridExtraSpace_y.enabled = false
+				spn_GridExtraSpace_z.enabled = false
+			)
+			
+			if TowingPowerMultiplier_Active then spn_TowingPowerMultiplier.enabled = true
+			else spn_TowingPowerMultiplier.enabled = false
+
+			if TowingTractionMultiplier_Active then spn_TowingTractionMultiplier.enabled = true
+			else spn_TowingTractionMultiplier.enabled = false
+
+			if TowingSteerSpeedMultiplier_Active then spn_TowingSteerSpeedMultiplier.enabled = true
+			else spn_TowingSteerSpeedMultiplier.enabled = false
+
 			
 			but_AddToPowerups.pos = [120, but_AddToPowerups.pos.y+15]
 			lv_Powerups.view  = (dotnetclass "view").details
@@ -244,6 +430,47 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 		on chk_ExtraFallingDamageFactor_Active changed state do
 		(
 			spn_ExtraFallingDamageFactor.enabled = state
+		)
+		on chk_DownwardCrushingExtraOffence_Active changed state do
+		(
+			spn_DownwardCrushingExtraOffence_0mph.enabled = state
+			spn_DownwardCrushingExtraOffence_MaxMult.enabled = state
+			spn_DownwardCrushingExtraOffence_MaxMultSpeed.enabled = state
+		)
+		on chk_RandomCrumplingRandomMax_Active changed state do
+		(
+			spn_RandomCrumplingRandomMax.enabled = state
+		)
+		on chk_WBDRandomCrumplingRandomMax_Active changed state do
+		(
+			spn_WBDRandomCrumplingRandomMax.enabled = state
+		)
+		on chk_MaxDeflectionForDamageTexture_Active changed state do
+		(
+			spn_MaxDeflectionForDamageTexture.enabled = state
+		)
+		on chk_WheelRadius_Active changed state do
+		(
+			spn_WheelRadius.enabled = state
+			chk_WheelRadius_UseFactor.enabled = state
+		)
+		on chk_GridExtraSpace_Active changed state do
+		(
+			spn_GridExtraSpace_x.enabled = state
+			spn_GridExtraSpace_y.enabled = state
+			spn_GridExtraSpace_z.enabled = state
+		)
+		on chk_TowingPowerMultiplier_Active changed state do
+		(
+			spn_TowingPowerMultiplier.enabled = state
+		)
+		on chk_TowingTractionMultiplier_Active changed state do
+		(
+			spn_TowingTractionMultiplier.enabled = state
+		)
+		on chk_TowingSteerSpeedMultiplier_Active changed state do
+		(
+			spn_TowingSteerSpeedMultiplier.enabled = state
 		)
 		on BasicCharacteristicsRollout close do
 		(
@@ -536,7 +763,472 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 			if AerofoilSoundLump != undefined then undo "Select Aerofoil Sound Lump" on select AerofoilSoundLump.node
 		)
 	)
+
+	parameters caterpillarTracks rollout:CaterpillarTracksRollout
+	(
+		CaterpillerTracks_Enabled type:#boolean default:false ui:chk_CaterpillerTracks_Enabled
+
+		SegmentDefinition_Name type:#stringTab  tabSizeVariable:true
+		SegmentDefinition_SegmentPitch type:#floatTab tabSizeVariable:true
+		SegmentDefinition_XOffset type:#floatTab tabSizeVariable:true
+
+		SagHeight_AmbientLowestPoint type:#floattab tabSizeVariable:true
+		SagHeight_LowestAllowablePoint type:#floattab tabSizeVariable:true
+
+		DamageMode_NumParts type:#inttab tabSizeVariable:true
+		DamageMode_Restitution type:#floatTab tabSizeVariable:true
+		DamageMode_MassPerSegment type:#floatTab tabSizeVariable:true
+
+		DamageWobble_SpeedForMaxWobble type:#floatTab tabSizeVariable:true
+		DamageWobble_FreqOfMaxWobble type:#floatTab tabSizeVariable:true
+		DamageWobble_AmpOfMaxWobble type:#floatTab tabSizeVariable:true
+		DamageWobble_RandomVariance type:#floatTab tabSizeVariable:true
+
+		Sound_ClunkVolume_VolumeAtZero type:#floatTab tabSizeVariable:true
+		Sound_ClunkVolume_SpeedAtSlopeChange type:#floatTab tabSizeVariable:true
+		Sound_ClunkVolume_VolumeAtSlopeChange type:#floatTab tabSizeVariable:true
+		Sound_ClunkVolume_SpeedAtMaxVolume type:#floatTab tabSizeVariable:true
+		Sound_ClunkVolume_MaxVolume type:#floatTab tabSizeVariable:true
+
+		Sound_HighSpeedClunkVolume_VolumeAtZero type:#floatTab tabSizeVariable:true
+		Sound_HighSpeedClunkVolume_SpeedAtSlopeChange type:#floatTab tabSizeVariable:true
+		Sound_HighSpeedClunkVolume_VolumeAtSlopeChange type:#floatTab tabSizeVariable:true
+		Sound_HighSpeedClunkVolume_SpeedAtMaxVolume type:#floatTab tabSizeVariable:true
+		Sound_HighSpeedClunkVolume_MaxVolume type:#floatTab tabSizeVariable:true
+
+		Damaged_FrictionFactor_Active type:#boolean default:false ui:chk_Damaged_FrictionFactor_Active
+		Damaged_FrictionFactor type:#float default: 1.0 ui:spn_Damaged_FrictionFactor 
+
+		Damaged_RollingResistance_Active type:#boolean default:false ui:chk_Damaged_RollingResistance_Active
+		Damaged_RollingResistance type:#float default: 1.0 ui:spn_Damaged_RollingResistance
+
+		DamagedAll_FrictionFactor_Active type:#boolean default:false ui:chk_DamagedAll_FrictionFactor_Active
+		DamagedAll_FrictionFactor type:#float default: 1.0 ui:spn_DamagedAll_FrictionFactor 
+
+		DamagedAll_RollingResistance_Active type:#boolean default:false ui:chk_DamagedAll_RollingResistance_Active
+		DamagedAll_RollingResistance type:#float default: 1.0 ui:spn_DamagedAll_RollingResistance 
+
+		Sound_WhineVolume_Active type:#boolean default:false ui:chk_Sound_WhineVolume_Active
+		Sound_WhineVolume_VolumeAtZero type:#float default:-30.0 ui:spn_Sound_WhineVolume_VolumeAtZero
+		Sound_WhineVolume_SpeedAtSlopeChange type:#float default:25 ui:spn_Sound_WhineVolume_SpeedAtSlopeChange
+		Sound_WhineVolume_VolumeAtSlopeChange type:#float default:-3.0 ui:spn_Sound_WhineVolume_VolumeAtSlopeChange
+		Sound_WhineVolume_SpeedAtMaxVolume type:#float default:80 ui:spn_Sound_WhineVolume_SpeedAtMaxVolume
+		Sound_WhineVolume_MaxVolume type:#float default:80 ui:spn_Sound_WhineVolume_MaxVolume
+
+
+		Sound_WhinePitch_Active type:#boolean default:false ui:chk_Sound_WhinePitch_Active
+		Sound_WhinePitch_PitchAtZero type:#float default:-3.0 ui:spn_Sound_WhinePitch_PitchAtZero
+		Sound_WhinePitch_MaxSpeed type:#float default:80 ui:spn_Sound_WhinePitch_MaxSpeed
+		Sound_WhinePitch_PitchAtMaxSpeed type:#float default:3.0 ui:spn_Sound_WhinePitch_PitchAtMaxSpeed
+
+	)
+
+	Rollout CaterpillarTracksRollout "Caterpillar Track Settings"
+	(
+		checkbox chk_CaterpillerTracks_Enabled "Enable Caterpillar Tracks" default:false
+
+		button btn_AddNewTrack "Add New Track" across:2
+		button btn_DeleteTrack "Delete Track" across:2
+		dropdownlist drpdn_CaterpillerTracksList "Track Number" items:#() tooltip:"List of Caterpillar Tracks"
+
+		group "Segment Definition"
+		(
+			edittext txt_SegmentDefinition_Name "Segment CNT Name" labelOnTop:true
+			spinner spn_SegmentDefinition_Pitch "Seg Pitch" range:[-100,100,0]
+			spinner spn_SegmentDefinition_XOffset "X Offset" range:[-10,10,0]
+		)
+
+		on txt_SegmentDefinition_Name changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			SegmentDefinition_Name[index] = val
+			items = drpdn_CaterpillerTracksList.items
+			items[index] = (((index-1) as String ) + ": " + val)
+			drpdn_CaterpillerTracksList.items = items
+		)
+		on spn_SegmentDefinition_Pitch changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			SegmentDefinition_SegmentPitch[index] = val
+		)
+		on spn_SegmentDefimition_XOffset changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			SegmentDefinition_XOffset[index] = val
+		)
+
+		group "Track Sagging"
+		(
+			spinner spn_SagHeight_Ambient "Lowest Ambient Point" labelOnTop:true
+			spinner spn_SagHeight_Lowest "Lowest Allowable Point"
+		)
+
+		on spn_SagHeight_Ambient changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			SagHeight_AmbientLowestPoint[index] = val
+		)
+		on spn_SagHeight_Lowest changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			SagHeight_LowestAllowablePoint[index] = val
+		)
+
+		group "Segment Damage"
+		(
+			spinner spn_DamageNumParts "Num Parts" range:[-1,100,-1] type:#integer
+			spinner spn_DamageRestitution "Restitution" range:[0,100,0]
+			spinner spn_DamageMassPerSegment "Mass Per Segment" range:[0,10000,0]
+		)
+		on spn_DamageNumParts changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageMode_NumParts[index]=val
+		)
+		on spn_DamageRestitution changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageMode_Restitution[index]=val
+		)
+		
+		on spn_DamageMassPerSegment changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageMode_MassPerSegment[index]=val
+		)
+		
+		group "Wobble"
+		(
+			spinner spn_DamageWobble_SpeedForMaxWobble "Speed (MPH)" range:[0,100,20]
+			spinner spn_DamageWobble_FreqOfMaxWobble "Frequency" range:[0,10000,20]
+			spinner spn_DamageWobble_AmpOfMaxWobble "Amplitude" range:[0,10000,20]
+			spinner spn_DamageWobble_RandomVariance "Random Variance" range:[0,10000,20]
+		)
+
+		on spn_DamageWobble_SpeedForMaxWobble changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageWobble_SpeedForMaxWobble[index] = val
+		)
+		on spn_DamageWobble_FreqOfMaxWobble changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageWobble_FreqOfMaxWobble[index] = val
+		)
+		on spn_DamageWobble_AmpOfMaxWobble changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageWobble_AmpOfMaxWobble[index] = val
+		)
+		on spn_DamageWobble_RandomVariance changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			DamageWobble_RandomVariance[index] = val
+		)
+		group "Clunk Volume"
+		(
+			spinner spn_ClunkVolume_VolumeAtZero "Volume At Zero" range:[-100,100,-6]
+			spinner spn_ClunkVolume_SpeedAtSlopeChange "Speed At Slope Change" range:[0,300,20]
+			spinner spn_ClunkVolume_VolumeAtSlopeChange "Volume At Slope Change" range:[-100,100,-3]
+			spinner spn_ClunkVolume_SpeedAtMaxVolume "Max Speed" range:[0,300,80]
+			spinner spn_ClunkVolume_MaxVolume "Volume At Max Speed" range:[-100,100,0]
+		)
+		on spn_ClunkVolume_VolumeAtZero changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_ClunkVolume_VolumeAtZero[index] = val
+		)
+		on spn_ClunkVolume_SpeedAtSlopeChange changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_ClunkVolume_SpeedAtSlopeChange[index] = val
+		)
+		on spn_ClunkVolume_VolumeAtSlopeChange changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_ClunkVolume_VolumeAtSlopeChange[index] = val
+		)
+		on spn_ClunkVolume_SpeedAtMaxVolume changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_ClunkVolume_SpeedAtMaxVolume[index] = val
+		)
+		on spn_ClunkVolume_MaxVolume changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_ClunkVolume_MaxVolume[index] = val
+		)
+
+		group "High Speed Clunk Volume"
+		(
+			spinner spn_HighSpeedClunkVolume_VolumeAtZero "Volume At Zero" range:[-100,100,-6]
+			spinner spn_HighSpeedClunkVolume_SpeedAtSlopeChange "Speed At Slope Change" range:[0,300,20]
+			spinner spn_HighSpeedClunkVolume_VolumeAtSlopeChange "Volume At Slope Change" range:[-100,100,-3]
+			spinner spn_HighSpeedClunkVolume_SpeedAtMaxVolume "Max Speed" range:[0,300,80]
+			spinner spn_HighSpeedClunkVolume_MaxVolume "Volume At Max Speed" range:[-100,100,0]
+		)
+		on spn_HighSpeedClunkVolume_VolumeAtZero changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_HighSpeedClunkVolume_VolumeAtZero[index] = val
+		)
+		on spn_HighSpeedClunkVolume_SpeedAtSlopeChange changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_HighSpeedClunkVolume_SpeedAtSlopeChange[index] = val
+		)
+		on spn_HighSpeedClunkVolume_VolumeAtSlopeChange changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_HighSpeedClunkVolume_VolumeAtSlopeChange[index] = val
+		)
+		on spn_HighSpeedClunkVolume_SpeedAtMaxVolume changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_HighSpeedClunkVolume_SpeedAtMaxVolume[index] = val
+		)
+		on spn_HighSpeedClunkVolume_MaxVolume changed val do
+		(
+			index = drpdn_CaterpillerTracksList.selection
+			Sound_HighSpeedClunkVolume_MaxVolume[index] = val
+		)
+
+		group "Track Whine"
+		(
+
+			checkbox chk_Sound_WhineVolume_Active "" default:false across:2
+			spinner spn_Sound_WhineVolume_VolumeAtZero "Volume At Zero" range:[-100,100,-6]
+			spinner spn_Sound_WhineVolume_SpeedAtSlopeChange "Speed At Slope Change" range:[0,300,20]
+			spinner spn_Sound_WhineVolume_VolumeAtSlopeChange "Volume At Slope Change" range:[-100,100,-3]
+			spinner spn_Sound_WhineVolume_SpeedAtMaxVolume "Max Speed" range:[0,300,80]
+			spinner spn_Sound_WhineVolume_MaxVolume "Volume At Max Speed" range:[-100,100,0]
+
+
+			checkbox chk_Sound_WhinePitch_Active "" default:false across:2
+			spinner spn_Sound_WhinePitch_PitchAtZero "Pitch At Zero" range:[-100,100,-6]
+			spinner spn_Sound_WhinePitch_MaxSpeed "Max Speed" range:[0,300,80]
+			spinner spn_Sound_WhinePitch_PitchAtMaxSpeed "Pitch At Max Speed" range:[-100,100,0]
+
+		)
+
+		group "Misc Settings"
+		(
+			checkbox chk_Damaged_FrictionFactor_Active "" default: false across:2
+			spinner spn_Damaged_FrictionFactor "Damaged Friction Factor" range:[0,100,0]
+			checkbox chk_Damaged_RollingResistance_Active "" default: false across:2
+			spinner spn_Damaged_RollingResistance "Damaged Rolling Resistance" range:[0,100,0]
+
+			checkbox chk_DamagedAll_FrictionFactor_Active "" default: false across:2
+			spinner spn_DamagedAll_FrictionFactor "All Damaged Friction Factor" range:[0,100,0]
+			checkbox chk_DamagedAll_RollingResistance_Active "" default: false across:2
+			spinner spn_DamagedAll_RollingResistance "All Damaged Rolling Resistance" range:[0,100,0]
+		)
+
+		fn ChangeSelectedTrack index =
+		(
+			if SegmentDefinition_Name.count >= index then
+			(
+				txt_SegmentDefinition_Name.text = SegmentDefinition_Name[index]
+				spn_SegmentDefinition_Pitch.value = SegmentDefinition_SegmentPitch[index]
+				spn_SegmentDefinition_XOffset.value = SegmentDefinition_XOffset[index]
+
+				spn_SagHeight_Lowest.value = SagHeight_LowestAllowablePoint[index]
+				spn_SagHeight_Ambient.value = SagHeight_AmbientLowestPoint[index]
+
+				spn_DamageNumParts.value = DamageMode_NumParts[index]
+				spn_DamageRestitution.value = DamageMode_Restitution[index]
+				spn_DamageMassPerSegment.value = DamageMode_MassPerSegment[index]
+
+				spn_DamageWobble_SpeedForMaxWobble.value = DamageWobble_SpeedForMaxWobble[index]
+				spn_DamageWobble_FreqOfMaxWobble.value = DamageWobble_FreqOfMaxWobble[index]
+				spn_DamageWobble_AmpOfMaxWobble.value = DamageWobble_AmpOfMaxWobble[index]
+				spn_DamageWobble_RandomVariance.value = DamageWobble_RandomVariance[index]
+
+				spn_ClunkVolume_VolumeAtZero.value = Sound_ClunkVolume_VolumeAtZero[index]
+				spn_ClunkVolume_SpeedAtSlopeChange.value = Sound_ClunkVolume_SpeedAtSlopeChange[index]
+				spn_ClunkVolume_VolumeAtSlopeChange.value = Sound_ClunkVolume_VolumeAtSlopeChange[index]
+				spn_ClunkVolume_SpeedAtMaxVolume.value = Sound_ClunkVolume_SpeedAtMaxVolume[index]
+				spn_ClunkVolume_MaxVolume.value = Sound_ClunkVolume_MaxVolume[index]
+
+				spn_HighSpeedClunkVolume_VolumeAtZero.value = Sound_HighSpeedClunkVolume_VolumeAtZero[index]
+				spn_HighSpeedClunkVolume_SpeedAtSlopeChange.value = Sound_HighSpeedClunkVolume_SpeedAtSlopeChange[index]
+				spn_HighSpeedClunkVolume_VolumeAtSlopeChange.value = Sound_HighSpeedClunkVolume_VolumeAtSlopeChange[index]
+				spn_HighSpeedClunkVolume_SpeedAtMaxVolume.value = Sound_HighSpeedClunkVolume_SpeedAtMaxVolume[index]
+				spn_HighSpeedClunkVolume_MaxVolume.value = Sound_HighSpeedClunkVolume_MaxVolume[index]
+			)
+
+		)
+		fn CreateNewCaterpillarTrack trackname addToDropDown:true=
+		(
+			append SegmentDefinition_Name trackname
+			append SegmentDefinition_SegmentPitch 0.175
+			append SegmentDefinition_XOffset 0.0
+
+			append SagHeight_AmbientLowestPoint 0.9
+			append SagHeight_LowestAllowablePoint 0.72
+
+			append DamageMode_NumParts -1
+			append DamageMode_Restitution 0
+			append DamageMode_MassPerSegment 2.0
+
+			append DamageWobble_SpeedForMaxWobble 10.0
+			append DamageWobble_FreqOfMaxWobble 5.0
+			append DamageWobble_AmpOfMaxWobble 0.02
+			append DamageWobble_RandomVariance 1.0
+
+			append Sound_ClunkVolume_VolumeAtZero -6.0
+			append Sound_ClunkVolume_SpeedAtSlopeChange 20
+			append Sound_ClunkVolume_VolumeAtSlopeChange -3.0
+			append Sound_ClunkVolume_SpeedAtMaxVolume 80
+			append Sound_ClunkVolume_MaxVolume 0.0
+
+			append Sound_HighSpeedClunkVolume_VolumeAtZero -30.0
+			append Sound_HighSpeedClunkVolume_SpeedAtSlopeChange 40
+			append Sound_HighSpeedClunkVolume_VolumeAtSlopeChange -6.0
+			append Sound_HighSpeedClunkVolume_SpeedAtMaxVolume 80
+			append Sound_HighSpeedClunkVolume_MaxVolume 0.0
+
+			if addToDropDown then
+			(
+				append drpdn_CaterpillerTracksList.items (((SegmentDefinition_Name.count-1) as String ) + ": " + trackname)
+				drpdn_CaterpillerTracksList.items = drpdn_CaterpillerTracksList.items
+				drpdn_CaterpillerTracksList.selection = SegmentDefinition_Name.count
+				ChangeSelectedTrack SegmentDefinition_Name.count
+			)
+		)
+		fn DeleteCaterpillarTrack index =
+		(
+			if index > 0 then
+			(
+				deleteItem SegmentDefinition_Name index --name
+				deleteItem SegmentDefinition_SegmentPitch index --0.175
+				deleteItem SegmentDefinition_XOffset index --0.0
+
+				deleteItem SagHeight_AmbientLowestPoint index --0.9
+				deleteItem SagHeight_LowestAllowablePoint index --0.72
+
+				deleteItem DamageMode_NumParts index ---1
+				deleteItem DamageMode_Restitution index --0
+				deleteItem DamageMode_MassPerSegment index --2.0
+
+				deleteItem DamageWobble_SpeedForMaxWobble index --10.0
+				deleteItem DamageWobble_FreqOfMaxWobble index --5.0
+				deleteItem DamageWobble_AmpOfMaxWobble index --0.02
+				deleteItem DamageWobble_RandomVariance index --1.0
+
+				deleteItem Sound_ClunkVolume_VolumeAtZero index ---6.0
+				deleteItem Sound_ClunkVolume_SpeedAtSlopeChange index --20
+				deleteItem Sound_ClunkVolume_VolumeAtSlopeChange index ---3.0
+				deleteItem Sound_ClunkVolume_SpeedAtMaxVolume index --80
+				deleteItem Sound_ClunkVolume_MaxVolume index --0.0
+
+				deleteItem Sound_HighSpeedClunkVolume_VolumeAtZero index ---30.0
+				deleteItem Sound_HighSpeedClunkVolume_SpeedAtSlopeChange index --40
+				deleteItem Sound_HighSpeedClunkVolume_VolumeAtSlopeChange index ---6.0
+				deleteItem Sound_HighSpeedClunkVolume_SpeedAtMaxVolume index --80
+				deleteItem Sound_HighSpeedClunkVolume_MaxVolume index --0.0
+				drpdn_CaterpillerTracksList.items = deleteItem drpdn_CaterpillerTracksList.items index
+				items = drpdn_CaterpillerTracksList.items
+				for i=index to items.count do
+				(
+					items[i] = (((i-1) as String) + ": "+ SegmentDefinition_Name[i])
+				)
+				drpdn_CaterpillerTracksList.items = items
+
+				ChangeSelectedTrack index
+			)
+			if SegmentDefinition_Name.count == 0 then CreateNewCaterpillarTrack "Track"
+		)
+
+		fn EnableTracks state =
+		(
+
+			btn_DeleteTrack.enabled = state
+			btn_AddNewTrack.enabled = state
+			txt_SegmentDefinition_Name.enabled = state
+			spn_SegmentDefinition_Pitch.enabled =  state
+			spn_SegmentDefinition_XOffset.enabled =  state
+
+			spn_SagHeight_Lowest.enabled = state
+			spn_SagHeight_Ambient.enabled = state
+
+			spn_DamageNumParts.enabled =  state
+			spn_DamageRestitution.enabled = state
+			spn_DamageMassPerSegment.enabled = state
+
+			spn_DamageWobble_SpeedForMaxWobble.enabled = state
+			spn_DamageWobble_FreqOfMaxWobble.enabled =  state
+			spn_DamageWobble_AmpOfMaxWobble.enabled =  state
+			spn_DamageWobble_RandomVariance.enabled =  state
+
+			spn_ClunkVolume_VolumeAtZero.enabled = state
+			spn_ClunkVolume_SpeedAtSlopeChange.enabled = state
+			spn_ClunkVolume_VolumeAtSlopeChange.enabled =  state
+			spn_ClunkVolume_SpeedAtMaxVolume.enabled =  state
+			spn_ClunkVolume_MaxVolume.enabled =  state
+
+			spn_HighSpeedClunkVolume_VolumeAtZero.enabled = state
+			spn_HighSpeedClunkVolume_SpeedAtSlopeChange.enabled =  state
+			spn_HighSpeedClunkVolume_VolumeAtSlopeChange.enabled = state
+			spn_HighSpeedClunkVolume_SpeedAtMaxVolume.enabled =  state
+			spn_HighSpeedClunkVolume_MaxVolume.enabled = state
+
+
+		)
+
+		on CaterpillarTracksRollout open do
+		(
+
+			chk_Damaged_FrictionFactor_Active.pos = [chk_Damaged_FrictionFactor_Active.pos.x-7, chk_Damaged_FrictionFactor_Active.pos.y]
+			chk_Damaged_RollingResistance_Active.pos = [chk_Damaged_RollingResistance_Active.pos.x-7, chk_Damaged_RollingResistance_Active.pos.y]
+			chk_DamagedAll_FrictionFactor_Active.pos = [chk_DamagedAll_FrictionFactor_Active.pos.x-7, chk_DamagedAll_FrictionFactor_Active.pos.y]
+			chk_DamagedAll_RollingResistance_Active.pos = [chk_DamagedAll_RollingResistance_Active.pos.x-7, chk_DamagedAll_RollingResistance_Active.pos.y]
+
+			chk_Sound_WhineVolume_Active.pos = [chk_Sound_WhineVolume_Active.pos.x-7, chk_Sound_WhineVolume_Active.pos.y]
+			chk_Sound_WhinePitch_Active.pos = [chk_Sound_WhinePitch_Active.pos.x-7, chk_Sound_WhinePitch_Active.pos.y]
+
+			if SegmentDefinition_Name.count < 1 then
+			(
+				CreateNewCaterpillarTrack "Track" addToDropDown:false
+				CaterpillerTracks_Enabled = false
+			)
+			else
+			(
+				CaterpillerTracks_Enabled = true
+			)
+
+			for i=1 to SegmentDefinition_Name.count do
+			(
+				drpdn_CaterpillerTracksList.items = append drpdn_CaterpillerTracksList.items (((i-1) as String ) + ": " + SegmentDefinition_Name[i])
+			)
+			drpdn_CaterpillerTracksList.selection = 1
+			ChangeSelectedTrack 1
+			EnableTracks chk_CaterpillerTracks_Enabled.checked
+		)
+
+		on btn_AddNewTrack pressed do
+		(
+			CreateNewCaterpillarTrack "Track"
+			ChangeSelectedTrack SegmentDefinition_Name.count
+		)
+
+		on btn_DeleteTrack pressed do
+		(
+			DeleteCaterpillarTrack drpdn_CaterpillerTracksList.selection
+		)
+
+		on chk_CaterpillerTracks_Enabled changed state do
+		(
+			EnableTracks state
+		)
+
+		on drpdn_CaterpillerTracksList selected index do
+		(
+			ChangeSelectedTrack index
+		)
+	)
 )
+
 /*********************************
 ***** CAR STRUCT PreIK/PostIK ATTRIBUTES
 *********************************/

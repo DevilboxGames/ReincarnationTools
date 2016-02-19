@@ -163,7 +163,7 @@ fn BatchLevelRoutesButton_Pressed sender arg =
 (
 	global CarmaSettings
 	
-	levelsPath = CarmaSettings.GamePath+"/Data_Core/Content/Levels/"
+	levelsPath = CarmaSettings.DataCorePath+"/Content/Levels/"
 	
 	levelsList= getDirectories(levelsPath+"*")
 	
@@ -261,7 +261,7 @@ fn BatchCarSetupLOLsButton_Pressed sender arg =
 (
 	global CarmaSettings
 	
-	vehiclesPath = CarmaSettings.GamePath+"/Data_Core/Content/Vehicles/"
+	vehiclesPath = CarmaSettings.DataCorePath+"/Content/Vehicles/"
 	
 	vehiclesList = getDirectories(vehiclesPath+"*")
 	
@@ -418,7 +418,7 @@ fn BatchCarStructuresButton_Pressed sender arg =
 (
 	global CarmaSettings
 	
-	vehiclesPath = CarmaSettings.GamePath+"/Data_Core/Content/Vehicles/"
+	vehiclesPath = CarmaSettings.DataCorePath+"/Content/Vehicles/"
 	
 	vehiclesList = getDirectories(vehiclesPath+"*")
 	

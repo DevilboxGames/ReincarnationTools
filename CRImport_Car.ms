@@ -13,7 +13,7 @@ fn ParseStructurePartCData cData obj =
 			objectType = (filterstring splitLine[1] "\t ")
 			if objectType[1][1] == "-" and objectType[1][2]=="-" then
 			(
-				format "This line is a comment: %\n" splitcdata[i]
+				--format "This line is a comment: %\n" splitcdata[i]
 				continue
 			)
 			 case (tolower splitline[2]) of
@@ -141,7 +141,7 @@ fn ParseStructurePartCData cData obj =
 				"set_driverejectionsmash":
 				(
 					isTrue = (filterstring splitline[3] " ")[1]
-					format "Driver Ejection Smash isTrue: \"%\"\n" isTrue
+					--format "Driver Ejection Smash isTrue: \"%\"\n" isTrue
 					if isTrue=="true" then obj.modifiers["Car Structure Part"].DriverEjectionSmash = true
 					else obj.modifiers["Car Structure Part"].DriverEjectionSmash = false
 				)
@@ -1025,7 +1025,7 @@ fn ParseStructurePartCData cData obj =
 					splitArguments = filterstring splitline[3] ", \""
 					newDummyName= obj.name+"_RotatePointToLine_ThisPart"
 					newDummyPosition = ((ConvertFromCRSpace [splitArguments[1] as float,splitArguments[2] as float,splitArguments[3] as float]) * obj.transform) -- + obj.position
-					format "% - matrix: %\n" obj obj.transform
+					--format "% - matrix: %\n" obj obj.transform
 					newDummy= FindObjectByPosition newDummyPosition notTheseObjs:#(obj)
 					if newDummy==undefined or newDummy == obj then 
 					(
@@ -1934,16 +1934,16 @@ fn ParseStructureWeldCData cData obj weldModifier =
 	(
 		--format "\nline #% of cdata: %\n" i splitcdata[i]
 		splitLine = filterstring splitcdata[i] ":()"
-		format "before Splitline.count = % \n" splitLine.count
+		--format "before Splitline.count = % \n" splitLine.count
 		splitLine = for i=1 to splitLine.count where (skipSpace splitLine[i]) != "" collect splitLine[i]
 		
-		format "after Splitline.count = % \n\n\n" splitLine.count
+		--format "after Splitline.count = % \n\n\n" splitLine.count
 		if splitline.count > 1 then
 		(
 			objectType = (filterstring splitLine[1] "\t ")
 			if objectType[1][1] == "-" and objectType[1][2]=="-" then
 			(
-				format "This line is a comment: %\n" splitcdata[i]
+				--format "This line is a comment: %\n" splitcdata[i]
 				continue
 			)
 			 case (tolower splitline[2]) of
@@ -2027,7 +2027,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 					objectType = (filterstring splitLine[1] "\t ")
 					if objectType[1][1] == "-" and objectType[1][2]=="-" then
 					(
-						format "This line is a comment: %\n" splitcdata[i]
+						--format "This line is a comment: %\n" splitcdata[i]
 						continue
 					)
 					case (tolower splitline[2]) of
@@ -2036,7 +2036,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 						(
 							
 							isTrue = (filterstring splitline[3] " ")[1]
-							format "% Hinge Joint: %\n" jointObj.name isTrue
+							--format "% Hinge Joint: %\n" jointObj.name isTrue
 							if isTrue=="true" then
 							(
 								JointObj.JointType=1
@@ -2048,7 +2048,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 						"set_balljoint":
 						(
 							isTrue = (filterstring splitline[3] " ")[1]
-							format "% Ball Joint: %\n" jointObj.name  isTrue
+							--format "% Ball Joint: %\n" jointObj.name  isTrue
 							if isTrue=="true" then
 							(
 								JointObj.JointType=2
@@ -2059,7 +2059,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 						"set_uj":
 						(
 							isTrue = (filterstring splitline[3] " ")[1]
-							format "% UJ Joint: %\n" jointObj.name  isTrue
+							--format "% UJ Joint: %\n" jointObj.name  isTrue
 							if isTrue=="true" then
 							(
 								JointObj.JointType=3
@@ -2070,7 +2070,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 						"set_slide":
 						(
 							isTrue = (filterstring splitline[3] " ")[1]
-							format "% Slide Joint: %\n" jointObj.name  isTrue
+							--format "% Slide Joint: %\n" jointObj.name  isTrue
 							if isTrue=="true" then
 							(
 								JointObj.JointType=4
@@ -2249,7 +2249,7 @@ fn ParseStructureCharacteristicsCData CData obj =
 			objectType = (filterstring splitLine[1] "\t ")
 			if objectType[1][1] == "-" and objectType[1][2]=="-" then
 			(
-				format "This line is a comment: %\n" splitcdata[i]
+				--format "This line is a comment: %\n" splitcdata[i]
 				continue
 			)
 			case (tolower splitline[2]) of
@@ -2379,6 +2379,183 @@ fn ParseStructureCharacteristicsCData CData obj =
 					--format "===============\nAerofoilsoundlump: %\n===========\n" (GetDescendantByName $ lumpName)
 					obj.modifiers["Car Characteristics"].aerofoilsoundlump = (nodeTransformMonitor node:(GetDescendantByName $ lumpName) forwardTransformChangeMsgs:false)
 				)
+				"set_downwardcrushingextraoffence":
+				(
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].DownwardCrushingExtraOffence_Active = true
+					obj.modifiers["Car Characteristics"].DownwardCrushingExtraOffence_0mph = params[1] as float
+					obj.modifiers["Car Characteristics"].DownwardCrushingExtraOffence_MaxMultSpeed = params[2] as float
+					obj.modifiers["Car Characteristics"].DownwardCrushingExtraOffence_MaxMult = params[3] as float
+				)
+				"set_damage_randomcrumplingrandommax":
+				(
+					obj.modifiers["Car Characteristics"].RandomCrumplingRandomMax_Active = true
+					obj.modifiers["Car Characteristics"].RandomCrumplingRandomMax =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_damage_wbdrandomcrumplingrandommax":
+				(
+					obj.modifiers["Car Characteristics"].WBDRandomCrumplingRandomMax_Active = true
+					obj.modifiers["Car Characteristics"].WBDRandomCrumplingRandomMax =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_damage_maxdeflectionfordamagetexture":
+				(
+					obj.modifiers["Car Characteristics"].MaxDeflectionForDamageTexture_Active = true
+					obj.modifiers["Car Characteristics"].MaxDeflectionForDamageTexture =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_immunetowheldamage":
+				(
+					isTrue = (filterstring splitline[3] " ")[1]
+					if isTrue == true then
+						obj.modifiers["Car Characteristics"].ImmuneToWheelDamage_Active = true
+					else
+						obj.modifiers["Car Characteristics"].ImmuneToWheelDamage_Active = false
+				)
+				"set_cannotbesplit":
+				(
+					isTrue = (filterstring splitline[3] " ")[1]
+					if isTrue == true then
+						obj.modifiers["Car Characteristics"].CannotBeSplit_Active = true
+					else
+						obj.modifiers["Car Characteristics"].CannotBeSplit_Active = false
+				)
+				"set_allowcomzoutsideofwheelbase":
+				(
+					isTrue = (filterstring splitline[3] " ")[1]
+					if isTrue == true then
+						obj.modifiers["Car Characteristics"].AllowCOMZOutsideOfWheelbase_Active = true
+					else
+						obj.modifiers["Car Characteristics"].AllowCOMZOutsideOfWheelbase_Active = true
+				)
+				"set_wheelradius":
+				(
+					obj.modifiers["Car Characteristics"].WheelRadius_Active = true
+					obj.modifiers["Car Characteristics"].WheelRadius = (filterstring splitline[3] " \",")[1] as float
+					obj.modifiers["Car Characteristics"].WheelRadius_UseFactor = false
+				)
+				"set_wheelradiusfactor":
+				(
+					obj.modifiers["Car Characteristics"].WheelRadius_Active = true
+					obj.modifiers["Car Characteristics"].WheelRadius = (filterstring splitline[3] " \",")[1] as float
+					obj.modifiers["Car Characteristics"].WheelRadius_UseFactor = true
+				)
+				"set_gridextraspace":
+				(
+
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].GridExtraSpace_Active = true
+					obj.modifiers["Car Characteristics"].GridExtraSpace_x = params[1] as float
+					obj.modifiers["Car Characteristics"].GridExtraSpace_y = params[2] as float
+					obj.modifiers["Car Characteristics"].GridExtraSpace_z = params[3] as float
+				)
+				"set_towingpowermultiplier":
+				(
+					obj.modifiers["Car Characteristics"].TowingPowerMultiplier_Active = true
+					obj.modifiers["Car Characteristics"].TowingPowerMultiplier =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_towingtractionmultiplier":
+				(
+					obj.modifiers["Car Characteristics"].TowingTractionMultiplier_Active = true
+					obj.modifiers["Car Characteristics"].TowingTractionMultiplier =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_towingsteerspeedmultiplier":
+				(
+					obj.modifiers["Car Characteristics"].TowingSteerSpeedMultiplier_Active = true
+					obj.modifiers["Car Characteristics"].TowingSteerSpeedMultiplier =  (filterstring splitline[3] " \",")[1]  as float
+				)
+				"set_caterpillartrack_segmentdefinition":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].SegmentDefinition_Name params[2]
+					append obj.modifiers["Car Characteristics"].SegmentDefinition_SegmentPitch (params[3] as float)
+					append obj.modifiers["Car Characteristics"].SegmentDefinition_XOffset (params[4] as float)
+				)
+				
+				"set_caterpillartrack_sagheights":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].SagHeight_AmbientLowestPoint (params[2] as float)
+					append obj.modifiers["Car Characteristics"].SagHeight_LowestAllowablePoint (params[3] as float)
+				)
+				"set_caterpillartrack_damagemode":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].DamageMode_NumParts (params[2] as int)
+					append obj.modifiers["Car Characteristics"].DamageMode_Restitution (params[3] as float)
+					append obj.modifiers["Car Characteristics"].DamageMode_MassPerSegment (params[4] as float)
+				)
+				"set_caterpillartrack_damagewobble":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].DamageWobble_SpeedForMaxWobble (params[2] as float)
+					append obj.modifiers["Car Characteristics"].DamageWobble_FreqOfMaxWobble (params[3] as float)
+					append obj.modifiers["Car Characteristics"].DamageWobble_AmpOfMaxWobble (params[4] as float)
+					append obj.modifiers["Car Characteristics"].DamageWobble_RandomVariance (params[5] as float)
+				) 
+				"set_damage_caterpillartrack_damaged_frictionfactor":
+				(
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].Damaged_FrictionFactor_active = true
+					obj.modifiers["Car Characteristics"].Damaged_FrictionFactor = (params[1] as float)
+				)
+				"set_damage_caterpillartrack_damaged_rollingresistance":
+				(
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].Damaged_RollingResistance_active = true
+					obj.modifiers["Car Characteristics"].Damaged_RollingResistance = (params[1] as float)
+				)
+				"set_damage_caterpillartrack_alldamaged_frictionfactor":
+				(
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].DamagedAll_FrictionFactor_active = true
+					obj.modifiers["Car Characteristics"].DamagedAll_FrictionFactor = (params[1] as float)
+				)
+				"set_damage_caterpillartrack_alldamaged_rollingresistance":
+				(
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].DamagedAll_RollingResistance_active = true
+					obj.modifiers["Car Characteristics"].DamagedAll_RollingResistance = (params[1] as float)
+				)
+
+				"set_damage_caterpillartrack_soundwhinevolume":
+				(
+
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_Active = true
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_VolumeAtZero = params[1] as float
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_SpeedAtSlopeChange = params[2] as float
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_VolumeAtSlopeChange = params[3] as float
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_SpeedAtMaxVolume = params[4] as float
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_MaxVolume = params[5] as float
+				)
+				"set_damage_caterpillartrack_soundwhinepitch":
+				(
+
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].Sound_WhineVolume_Active = true
+					obj.modifiers["Car Characteristics"].Sound_WhinePitch_PitchAtZero = params[1] as float
+					obj.modifiers["Car Characteristics"].Sound_WhinePitch_MaxSpeed = params[2] as float
+					obj.modifiers["Car Characteristics"].Sound_WhinePitch_PitchAtMaxSpeed = params[3] as float
+				)
+
+				"set_damage_caterpillartrack_soundclunkvolume":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtZero (params[2] as float)
+					append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtSlopeChange (params[3] as float)
+					append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtSlopeChange (params[4] as float)
+					append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtMaxVolume (params[5] as float)
+					append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_MaxVolume (params[6] as float)
+				) 
+				"set_damage_caterpillartrack_soundhighspeedclunkvolume":
+				(
+					params = (filterstring splitline[3] " \",")
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtZero (params[2] as float)
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtSlopeChange (params[3] as float)
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtSlopeChange (params[4] as float)
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtMaxVolume (params[5] as float)
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_MaxVolume (params[6] as float)
+				) 
+
 				default:
 				(
 					format "Vehicle Characteristic: Not Yet Implemented \"%:%(%)\"\n" splitline[1] splitline[2] splitline[3]
@@ -2415,7 +2592,7 @@ fn LoadStructureXML file rootMesh =
 		--showProperties xmlDoc
 		--format "\nMethods\n"
 		--showMethods xmlDoc
-	format "filename: %\n\n" file
+	--format "filename: %\n\n" file
 		xmlDoc.load (file)
 	select rootMesh
 	
@@ -2514,7 +2691,7 @@ fn LoadVehicleConfig obj folderName =
 		seek f 0
 		mode = ""
 		submode = ""
-		format "Starting to read Vehicle_Setup.cfg\n"
+		--format "Starting to read Vehicle_Setup.cfg\n"
 		while (filePos f) != endOfFile do
 		(
 			curLine = trimLeft (trimRight (readline f))
@@ -2522,24 +2699,24 @@ fn LoadVehicleConfig obj folderName =
 			(
 				"[attachment]":
 				(
-					format "Attachment node\n"
+					--format "Attachment node\n"
 					mode="attachment"
 				)
 				"complicatedwheels":
 				(
-					format "ComplicatedWheels Node\n"
+					--format "ComplicatedWheels Node\n"
 					submode="ComplicatedWheels"
 				)
 				default:
 				(
 					if mode == "attachment" and submode=="ComplicatedWheels" then
 					(
-						format "this is an attachment node for complicatedwheels\n"
+						--format "this is an attachment node for complicatedwheels\n"
 						splitLine = filterstring curLine " \t"
 						typeToDo = splitline[1] --readtoken curLine
-						format "read typeToDo: %\n" typeToDo
+						--format "read typeToDo: %\n" typeToDo
 						wheelFolder = splitline[2] --readtoken curLine
-						format "read wheelFolder: %\n" wheelFolder
+						--format "read wheelFolder: %\n" wheelFolder
 						case tolower(typeToDo) of
 						(
 							"wheel_folder_name":

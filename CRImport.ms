@@ -5,70 +5,12 @@ fn readCNTheader f =
 	readbyte f #unsigned
 	readbyte f #unsigned
 )
-
-fn GetMDLTexture folder materialName importTextures:false =
+fn LoadCRTexture folder texturename =
 (
-	texmap = undefined
-	--format "Checking if material \"%\" exists: result = % importTextures =\n" (folder+materialName+".MT2") (((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))  as string) (importTextures as string)
-	
 	global CarmaSettings
-	if importTextures and ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) then
-	(
-		--format "Material \"%\" exists!\n" (folder+materialName+".MT2")
-		dotNet.loadAssembly "system.xml"
-		xmlDoc=dotNetObject "system.xml.xmlDocument"
-		--clearListener()
-		--format "Properties\n"
-		--showProperties xmlDoc
-		--format "\nMethods\n"
-		--showMethods xmlDoc
-		xmlDoc.load (folder+materialName+".MT2")
-		if (xmlDoc.HasChildNodes)==false then xmlDoc.load (folder+materialName+".mt2")
-
-		basedOffTag = (xmlDoc.GetElementsByTagName "BasedOffOf").item 0
-		basedOffOf = (basedOffTag.Attributes.GetNamedItem "Name").Value
-		textureTags = xmlDoc.GetElementsByTagName "Texture"
-		
-		--clearListener()
-		--format "Properties\n"
-		--showProperties textureTags
-		--format "\nMethods\n"
-		--showMethods textureTags
-		textureName = undefined
+	texmap = undefined
 		--format "\n------------\n"
-		for i=1 to textureTags.count do
-		(
-			textureItem = textureTags.item (i-1)
-			textureAlias = (textureItem.Attributes.GetNamedItem "Alias").Value
-			--format "Texture Tag #%: Alias = \"%\" Filename = \"%\"\n" i textureAlias (textureItem.Attributes.GetNamedItem "FileName").Value
-			if textureAlias == "DiffuseColour" or textureAlias == "Side1_DiffuseColour"  or textureAlias == "Side1_DiffuseColour2" or textureAlias == "Decals" then
-			(
-				textureName = (textureItem.Attributes.GetNamedItem "FileName").Value
-				--format "Found diffuse texture %!\n" textureName
-			)
-		)
-		if textureName == undefined then
-		(
-			
-		texmap = checker()
-		texmap.coords.U_Tiling =10
-		texmap.coords.V_Tiling =10
-			return texmap
-		)
-		--format "\n------------\n"
-		if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".png")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.TexturePath+"\\"+textureName+".png")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
-		)
-		else if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".tga")) then
-		(
-			--format "Texture is already converted: %\n"  (CarmaSettings.TexturePath+"\\"+textureName+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".tga"
-		)
-		else if (doesFileExist (folder+textureName+".png")) then
+		if (doesFileExist (folder+textureName+".png")) then
 		(
 			--format "Texture is already converted: %\n" (folder+textureName+".png")
 			texmap = bitmaptexture()
@@ -116,7 +58,19 @@ fn GetMDLTexture folder materialName importTextures:false =
 			texmap = bitmaptexture()
 			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga"
 		)
-		else
+		else if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".png")) then
+		(
+			--format "Texture is already converted: %\n" (CarmaSettings.TexturePath+"\\"+textureName+".png")
+			texmap = bitmaptexture()
+			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
+		)
+		else if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".tga")) then
+		(
+			--format "Texture is already converted: %\n"  (CarmaSettings.TexturePath+"\\"+textureName+".tga")
+			texmap = bitmaptexture()
+			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".tga"
+		)
+		else 
 		(
 			--format "Texture needs convertng!\n"
 			startPath = CarmaSettings.TexturePath
@@ -144,12 +98,70 @@ fn GetMDLTexture folder materialName importTextures:false =
 				texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
 			)
 		)
+	return texmap
+)
+fn GetMDLTexture folder materialName importTextures:false =
+(
+	texmap = undefined
+	--format "Checking if material \"%\" exists: result = % importTextures =\n" (folder+materialName+".MT2") (((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))  as string) (importTextures as string)
+	
+	global CarmaSettings
+	if importTextures and ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) then
+	(
+		--format "Material \"%\" exists!\n" (folder+materialName+".MT2")
+		if (dotnetclass "system.xml.xmldocument") == undefined then
+			dotNet.loadAssembly "system.xml"
+		xmlDoc=dotNetObject "system.xml.xmlDocument"
+		--clearListener()
+		--format "Properties\n"
+		--showProperties xmlDoc
+		--format "\nMethods\n"
+		--showMethods xmlDoc
+		xmlDoc.load (folder+materialName+".MT2")
+		if (xmlDoc.HasChildNodes)==false then xmlDoc.load (folder+materialName+".mt2")
+
+		basedOffTag = (xmlDoc.GetElementsByTagName "BasedOffOf").item 0
+		basedOffOf = (basedOffTag.Attributes.GetNamedItem "Name").Value
+		textureTags = xmlDoc.GetElementsByTagName "Texture"
+		
+		--clearListener()
+		--format "Properties\n"
+		--showProperties textureTags
+		--format "\nMethods\n"
+		--showMethods textureTags
+		textureName = undefined
+		--format "\n------------\n"
+
+		for i=1 to textureTags.count do
+		(
+			textureItem = textureTags.item (i-1)
+			textureAlias = (textureItem.Attributes.GetNamedItem "Alias").Value
+			--format "Texture Tag #%: Alias = \"%\" Filename = \"%\"\n" i textureAlias (textureItem.Attributes.GetNamedItem "FileName").Value
+			if textureAlias == "DiffuseColour" or textureAlias == "Side1_DiffuseColour"  or textureAlias == "Side1_DiffuseColour2" or textureAlias == "Decals" then
+			(
+				textureName = (textureItem.Attributes.GetNamedItem "FileName").Value
+				--format "Found diffuse texture %!\n" textureName
+			)
+		)
+		if textureName == undefined then
+		(
+			
+		texmap = checker()
+		texmap.coords.U_Tiling =10
+		texmap.coords.V_Tiling =10
+			return texmap
+		)
+		texmap = LoadCRTexture folder textureName
 		--matFile = openfile folder+materialName+".MT2" "r"
 		
+		if texmap==undefined do
+		(
+			format "texmap undefined for \"%\" in material %, using checker!\n" (folder+textureName+".tdx") materialName
+		)
 	)
 	if texmap==undefined do
 	(
-		--format "texmap undefined for \"%\", using checker!\n" materialName
+		format "texmap undefined for \"%\" in %, using checker!\n" materialName folder
 		texmap = checker()
 		texmap.coords.U_Tiling =10
 		texmap.coords.V_Tiling =10
@@ -159,12 +171,12 @@ fn GetMDLTexture folder materialName importTextures:false =
 fn BlankUnknownSkinData fileName =
 (
 	backupFileName = (getFilenamePath fileName)
-	format "%\n" backupFileName
+	--format "%\n" backupFileName
 	backupFileName = backupFileName+(getFilenameFile fileName)
-	format "%\n" backupFileName
+	--format "%\n" backupFileName
 	backupFileName = backupFileName+"_backup"+(getFilenameType fileName)
-	format "%\n" backupFileName
-	format "Renaming \"%\" to \n\"%\"\n" fileName backupFileName
+	--format "%\n" backupFileName
+	--format "Renaming \"%\" to \n\"%\"\n" fileName backupFileName
 	renameFile fileName backupFileName
 	
 	f = fopen backupFileName "rb"
@@ -316,7 +328,98 @@ fn BlankUnknownSkinData fileName =
 	fclose f
 	fclose fw
 )
-fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true =
+fn ImportMDL_TR filenames importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0]=
+(
+	MaxMDLProcessor = dotNetObject "ToxicRagers.MaxTools.MaxMDLProcessor"
+	loadedMDLs = MaxMDLProcessor.LoadMDLs filenames
+
+	for mdl in loadedMDLs do
+	(
+		local m = trimesh()
+		setNumVerts m mdl.PREPVertexCount
+		setNumTVerts m (mdl.prepFaceCount*3)
+		setNumCPVVerts m (mdl.prepFaceCount*3)
+		
+		setNumFaces m mdl.prepFaceCount
+		buildTVFaces m
+		buildVCFaces m
+		meshop.setNumMaps m 3 keep:true
+		meshop.setMapSupport m 2 true
+		meshop.setNumMapVerts m 2 (mdl.prepFaceCount * 3)
+		meshop.setNumMapFaces m 2 mdl.prepFaceCount
+		userVerts = #()
+		showProps mdl.Vertices.Item[1]
+		format "Vert: %\n" mdl.Vertices.Item[1].Position
+		format "[%, %, %]\n" mdl.Vertices.Item[1].normal.X mdl.Vertices.Item[1].normal.Y mdl.Vertices.Item[1].normal.Z
+		format "PREPVertexCount: %\nVertices Size: %\n" mdl.PREPVertexCount mdl.Vertices.Count
+		for i=0 to mdl.PREPVertexCount-1 do
+		(
+			vert =mdl.Vertices.Item[i] 
+
+			vX = vert.Position.X
+			vY = vert.Position.Y
+			vZ = vert.Position.Z
+			setVert m (i+1) [-vX,-vZ,vY]
+
+			meshop.setVertAlpha m -2 #((i+1)) (mdl.Vertices.Item[i].colour.a/255)
+			
+			setTVert m (i+1) mdl.Vertices.Item[i].UV.x mdl.Vertices.Item[i].UV.y 0
+			--meshop.setMapVert m 2 i [verts[i].tex2.x, verts[i].tex2.y, 0]
+			setVertColor m (i+1) (color mdl.Vertices.Item[i].colour.r mdl.Vertices.Item[i].colour.g mdl.Vertices.Item[i].colour.b mdl.Vertices.Item[i].colour.a)
+		)
+		
+		userFaces = #()
+		smoothingGroups = #()
+		for i=0 to mdl.prepFaceCount-1 do
+		(
+			j = i + 1
+			face = mdl.Faces.Item[i]
+			facev1 = face.verts[1]
+			facev2 = face.verts[2]
+			facev3 = face.verts[3]
+			setFace m j (face.verts[1]+1) (face.verts[3]+1) (face.verts[2]+1)
+			setEdgeVis m j 1 true
+			setEdgeVis m j 2 true
+			setEdgeVis m j 3 true
+			--setFaceNormal m i (normalize ((verts[rawfaces[i].v1].norm+verts[rawfaces[i].v2].norm+verts[rawfaces[i].v3].norm))/3)
+			
+			if mergeMDLs == true then
+			(
+				if matID+1 > merge_OldMatIDsToNew.count then 
+					setFaceMatID m j (merge_OldMatIDsToNew[merge_OldMatIDsToNew.count])
+				else
+					setFaceMatID m j (merge_OldMatIDsToNew[matID+1])
+			)
+			else
+			(
+				setFaceMatID m i (face.MaterialID+1)
+			)
+			norm1 = [mdl.Vertices.Item[facev1].normal.x, mdl.Vertices.Item[facev1].normal.y, mdl.Vertices.Item[facev1].normal.z]
+			norm2 = [mdl.Vertices.Item[facev2].normal.x, mdl.Vertices.Item[facev2].normal.y, mdl.Vertices.Item[facev2].normal.z]
+			norm3 = [mdl.Vertices.Item[facev3].normal.x, mdl.Vertices.Item[facev3].normal.y, mdl.Vertices.Item[facev3].normal.z]
+			setFaceNormal m j (normalize ((norm1+norm2+norm3)/3))
+
+			setTVFace m j (j*3-2) (j*3) (j*3-1)
+			
+			--meshop.setMapVert m 2 (i*3-2) [v1U2, 1-v1V2, 0]
+			--meshop.setMapVert m 2 (i*3-1) [v2U2, 1-v2V2, 0]
+			--meshop.setMapVert m 2 (i*3) [v3U2, 1-v3V2, 0]
+			
+			--meshop.setMapFace m 2 i [i*3-2, i*3-1, i*3]
+			--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
+			--format "vert #% alpha: %\n" v1Index v1colA
+			--format "vert #% alpha: %\n" v2Index v2colA
+			--format "vert #% alpha: %\n" v3Index v3colA
+			setVCFace m j (j*3-2) (j*3) (j*3-1)
+		)
+		m = mesh mesh:m
+	)
+	free loadedMDLs
+	
+	format "Loaded MDLs using ToxicRagers: %\n" loadedMDLs
+
+)
+fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0]=
 (
 	f = fopen filename "r"
 	
@@ -442,6 +545,10 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				append globalMaterialNames materialName
 				subMat = StandardMaterial()
 				subMat.shaderType = 1
+				if materialName == "pup_outline" then
+				(
+					subMat.opacity = 5
+				)
 				
 				--format "\nAbout To Call GetMDLTexture for %\n" materialName
 				subMat.diffuseMap = GetMDLTexture (getFilenamePath filename) materialName importTextures:importTextures
@@ -558,6 +665,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		totalMatGroupTriangles=0
 		for i = 1 to matGroupCount do
 		(
+			KeepMaxAlive()
 			--format "Importing Mat Group %\n" i
 			if useTriStrips then
 			(
@@ -682,7 +790,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			)
 			setTVert m i verts[i].tex.x verts[i].tex.y 0
 			--meshop.setMapVert m 2 i [verts[i].tex2.x, verts[i].tex2.y, 0]
-			setVertColor m i verts[i].colour
+			setVertColor m i (color verts[i].colour.b verts[i].colour.g verts[i].colour.r verts[i].colour.a)
 		)
 		if useTriStrips then setNumFaces m totalMatGroupTriangles
 		else setNumFaces m rawfaces.count
@@ -807,11 +915,11 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		if prepSkinDataSet then
 		(
 			--format "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nOMG PANIC! THIS MDL HAS PREP SKIN DATA AND I DON'T KNOW WHAT TO DO WITH IT!!! At Position: %\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" (ftell f)
-			format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
+			--format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
 			numBones = readshort f #unsigned
 			unknown1 = readshort f #unsigned
 			unknown2 = readshort f #unsigned
-			format "Unknown1 = %\nUnknown2 = %\n" unknown1 unknown2
+			--format "Unknown1 = %\nUnknown2 = %\n" unknown1 unknown2
 			skinMod = skin()
 			addmodifier m skinMod
 			boneNames = #()
@@ -843,7 +951,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				
 				--format "%: \"%\" : { x:%   y:%   z:%} : { x:%   y:%   z:%} : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
 				
-				format "%: \"%\" : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v3X v3Y v3Z p c s
+				--format "%: \"%\" : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v3X v3Y v3Z p c s
 			)
 			listOfBones = #()
 			select m
@@ -873,7 +981,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				unknown_su2 = readshort f #unsigned
 				
 				boneTransform = (quat qz -qx qw qy) as matrix3
-				bonePos =  [-posX, -posZ, posY] 
+				bonePos =  [-posX, -posZ, posY]
 				newBone = bonesys.createbone bonePos (bonePos + 0.1 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
 				listOfBones[i] = newBone
 				listOfBones[i].rotation = quat qz -qx qw qy
@@ -958,6 +1066,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				if boneInfo[i][4]+1 > 0 then listOfBones[i].parent = listOfBones[boneInfo[i][4]+1]
 			)
 			completeRedraw ()
+
 			weightsPerVert = #()
 			for i = 1 to PREPvertcount do
 			(
@@ -1072,7 +1181,14 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			--format "\nnum skin verts: %\n\n" (skinOps.GetNumberVertices skinMod)
 			
 		)
-		
+		if listOfBones != undefined  then 
+		(
+			for x = 1 to listOfBones.count do
+			(
+				if listOfBones[x].parent == undefined then
+					listOfBones[x].pos = listOfBones[x].pos + origin
+			)
+		)
 		
 		gc()
 		--update m
@@ -1085,8 +1201,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		fseek f (16 * PREPfaceCount) #seek_cur
 		
 		PREPvertcount = readlong f #unsigned
-		format "Number of PREP Faces: %\n Number of PREP Verts: %\n" PREPfaceCount PREPvertCount
-		format "Number of USER Faces: %\n Number of USER Verts: %\n" firstFaceCount uniqueVertexCount
+		--format "Number of PREP Faces: %\n Number of PREP Verts: %\n" PREPfaceCount PREPvertCount
+		--format "Number of USER Faces: %\n Number of USER Verts: %\n" firstFaceCount uniqueVertexCount
 		fseek f (44 * PREPvertcount) #seek_cur
 		
 		matGroupCount = readshort f #unsigned
@@ -1106,7 +1222,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		if prepSkinDataSet then
 		(
 		
-		format "Prep Skin Data Pos: %\n" (ftell f)
+		--format "Prep Skin Data Pos: %\n" (ftell f)
 			--format "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nOMG PANIC! THIS MDL HAS PREP SKIN DATA AND I DON'T KNOW WHAT TO DO WITH IT!!! At Position: %\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" (ftell f)
 			--format "Num Verts: %\nNum Faces: %\n" PREPvertcount PREPfacecount
 			numBones = readshort f #unsigned
@@ -1122,7 +1238,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			)
 			--PrintArrayInFull boneNames "boneNames"
 			
-		format "Prep Skin After Namees Pos: %\n" (ftell f)
+		--format "Prep Skin After Namees Pos: %\n" (ftell f)
 			boneInfo = #()
 			for i = 1 to numbones do
 			(
@@ -1165,7 +1281,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				
 				--format "%: \"%\" {X: %    Y:%    Z: %   W: %}   {X: %    Y: %     Z:    %}  ???: %\n" i boneNames[i] qx qy qz qw posx posy posz unknown
 			)
-		format "Prep Skin After Bone Shit: %\n" (ftell f)
+		--format "Prep Skin After Bone Shit: %\n" (ftell f)
 			
 			for i=1 to listOfBones.count do
 			(
@@ -1183,7 +1299,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				weightsPerVert[i] = #(weightCount, unknown, weightIndex, #(), #())
 			)
 			
-		format "Prep Skin Data After Verts: %\n" (ftell f)
+		--format "Prep Skin Data After Verts: %\n" (ftell f)
 			currentWeightIndex = 0
 			weightCount = readlong f #unsigned
 			for i=1 to weightsPerVert.count do
@@ -1196,17 +1312,17 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				)
 			)
 			
-		format "Prep Skin Data After Bone Indices: %\n" (ftell f)
+		--format "Prep Skin Data After Bone Indices: %\n" (ftell f)
 			currentWeightIndex = 0
 			for i=1 to weightsPerVert.count do
 			(
-				format "Vert #% has % weights:\n" i weightsPerVert[i][1]
+				--format "Vert #% has % weights:\n" i weightsPerVert[i][1]
 				for j=1 to weightsPerVert[i][1] do
 				(
 					currentWeightIndex += 1
 					weight = readfloat f
 					weightsPerVert[i][5][j] = weight
-					format "\t% - % %\n" j weightsPerVert[i][4][j] weightsPerVert[i][5][j]
+					--format "\t% - % %\n" j weightsPerVert[i][4][j] weightsPerVert[i][5][j]
 					--format "Vert %: weightIndex: % boneIndex: % weight: %\n" i currentWeightIndex weightsPerVert[i][4][j] weightsPerVert[i][5][j]
 				)
 			)
@@ -1309,7 +1425,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			faceAppFlags = readlong f #unsigned
 			if faceFlags != 0 then
 			(
-				printFlagBits faceFlags 8 "Face Flags"
+				--printFlagBits faceFlags 8 "Face Flags"
 			)
 			if faceAppFlags != 0 then
 			(
@@ -1321,9 +1437,13 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			setEdgeVis m i 2 true
 			setEdgeVis m i 3 true
 			--setFaceNormal m i (normalize ((verts[rawfaces[i].v1].norm+verts[rawfaces[i].v2].norm+verts[rawfaces[i].v3].norm))/3)
+			
 			if mergeMDLs == true then
 			(
-				setFaceMatID m i (merge_OldMatIDsToNew[matID+1])
+				if matID+1 > merge_OldMatIDsToNew.count then 
+					setFaceMatID m i (merge_OldMatIDsToNew[merge_OldMatIDsToNew.count])
+				else
+					setFaceMatID m i (merge_OldMatIDsToNew[matID+1])
 			)
 			else
 			(
@@ -1384,7 +1504,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			select m
 			max modify mode
 			modPanel.setCurrentObject skinMod
-			format "USER Bone Count: %\n" USERBoneCount
+			--format "USER Bone Count: %\n" USERBoneCount
 			listOfBones = #()
 			boneParents = #()
 			for i=1 to USERboneCount do
@@ -1408,7 +1528,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				boneTransformMatrix = matrix3 [m11,m12,m13] [m21,m22,m23] [m31,m32,m33] [m41,m42,m43]
 				boneTransformMatrix =  matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0] * boneTransformMatrix * inverse(matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0])
 				boneTransformMatrix.row1 *= -1
-				format "boneName: % - parentBone - % \nTransform: %\n" boneName parentBone boneTransformMatrix
+				--format "boneName: % - parentBone - % \nTransform: %\n" boneName parentBone boneTransformMatrix
 				newBone = bonesys.createbone boneTransformMatrix.row4 (boneTransformMatrix.row4 - 0.1 * boneTransformMatrix.row1) (normalize boneTransformMatrix.row3)
 				newBone.transform = boneTransformMatrix
 				newBone.name = boneName
@@ -1448,12 +1568,12 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			)
 			
 			numWeightedVerts = readlong f
-			format "Num Weighted Verts: %\n" numWeightedVerts
+			--format "Num Weighted Verts: %\n" numWeightedVerts
 			for v=1 to numWeightedVerts do
 			(
 				
 				numWeights = readshort f #unsigned
-				format "Vert % - num weights: %\n" v numweights
+				--format "Vert % - num weights: %\n" v numweights
 				vertBones = #()
 				vertWeights = #()
 				for w=1 to numWeights do
@@ -1466,7 +1586,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					f1 = readfloat f
 					f2 = readfloat f
 					f3 = readfloat f
-					format "\t% - % % (%, %, %)\n" w bonenum weight f1 f2 f3
+					--format "\t% - % % (%, %, %)\n" w bonenum weight f1 f2 f3
 					--format "%.%] % : % - {%, %, %}\n" v w boneNum weight f1 f2 f3
 				)
 			
@@ -1654,7 +1774,19 @@ fn ImportCNTNode f parentNode =
 fn MergeCNTNodes outMesh inMesh =
 (
 	global mergedNodesToDelete
-	append mergedNodesToDelete inMesh
+	if IsObjectACNT inMesh and inMesh.modifiers["CNT Hierarchy"].NodeType == "LITg" then
+	(
+		layerObject = LayerManager.getLayerFromName "sys_accessory_lighting_layer"
+		if layerObject == undefined then
+		(
+			layerObject= LayerManager.newLayerFromName "sys_accessory_lighting_layer"
+		)
+		layerObject.addNode inMesh
+	)
+	else
+	(
+		append mergedNodesToDelete inMesh
+	)
 	if IsObjectACNT inMesh  and inMesh.modifiers["CNT Hierarchy"].NodeType != "MODL" and inMesh.modifiers["CNT Hierarchy"].NodeType != "SKIN" then
 	(
 		--format "Not Merging % in to %, it is a null\n" inMesh.name outMesh.name
@@ -1674,10 +1806,12 @@ fn MergeCNTNodes outMesh inMesh =
 	
 	return outMesh
 )
-fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true =
+fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0]=
 (
+	format "Parsing Node Type: %\n" cntNode.nodeType
 	if cntNode.nodeType == "MODL" or cntNode.nodetype == "SKIN" then
 	(
+		format "This is a MESH or SKIN node!\n"
 		fname = folderName + cntNode.nodeData.objectName + ".mdl"
 		
 	
@@ -1691,7 +1825,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		(
 			--fname = CarmaSettings.GamePath + "\\Data_core\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
 		
-			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits
+			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin
 			newMesh.name = cntNode.nodeName
 			newMesh.transform = cntNode.combinedMatrix
 		)
@@ -1706,8 +1840,20 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		--newMesh.transform = cntNode.combinedMatrix
 		
 	)
+	else if cntNode.nodeType == "LITg" then
+	(
+		format "loading light %\n" cntNode.nodeData.objectName
+		fname = folderName + cntNode.nodeData.objectName + ".light"
+		newmesh = omniLight name:cntNode.nodeName
+			newMesh.transform = cntNode.combinedMatrix
+			newmesh.transform = matrix3 cntNode.combinedMatrix.row1 -cntNode.combinedMatrix.row3 cntNode.combinedMatrix.row2 cntNode.combinedMatrix.row4
+		lightObj = CRLight()
+		lightObj.LoadLight fname
+		lightObj.SetToLight newMesh
+	)
 	else
 	(
+		format "This is a null node!\n"
 		if (toLower cntNode.nodeName) == "wheel_fr" or (toLower cntNode.nodeName) == "wheel_fl" or (toLower cntNode.nodeName) == "wheel_rr" or (toLower cntNode.nodeName) == "wheel_rl" then
 		(
 			--newMesh = CreateNewWheelNode cntNode.combinedMatrix cntNode.nodeName addCNTAttributes:false
@@ -1716,16 +1862,18 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		--else
 			newMesh = CreateNewNULLNode cntNode.combinedMatrix cntNode.nodeName addAttributes:false 
 	)
+	format "Gone past the node setting shit\n"
+	newMesh.pos = newMesh.pos + origin
 	for i=1 to cntNode.numChildren do
 	(
-		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs
+		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs origin:origin
 		
 			childMesh.parent = newMesh
 		
 	)
 	
 	cntNodeFileName = newMesh.name
-	if cntNode.nodetype == "LITG" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do cntNodeFileName = cntNode.nodeData.objectName
+	if cntNode.nodetype == "LITg" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do cntNodeFileName = cntNode.nodeData.objectName
 	SetToCNTNodes newMesh nodeType:cntNode.nodetype fileName: cntNodeFileName
 	/*
 	custAttributes.add newMesh CNTAttribute #unique BaseObject:true
@@ -1733,9 +1881,10 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	newMesh.CNTCustAttribute.FileName = newMesh.name
 	if cntNode.nodetype == "LITG" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do newMesh.CNTCustAttribute.FileName = cntNode.nodeData.objectName
 	*/
+	KeepMaxAlive()
 	return newMesh
 )
-fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false mergeMDLs:false mergeSplits:true =
+fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false mergeMDLs:false mergeSplits:true origin:[0,0,0] =
 (
 	global merge_MatsIDsToNames = #()
 	global merge_SubMat
@@ -1754,12 +1903,12 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 	readCNTHeader f
 	
 	cntNode = ImportCNTNode f undefined
-	--format "Root cnt node is %\n" cntNode.nodeName
+	format "Root cnt node is %\n" cntNode
 	global globalMaterials = #()
 	globalMaterials = #()
 	global globalMaterialNames =#()
 	globalMaterialNames =#()
-	rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits
+	rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin
 	
 	fclose f
 	
@@ -1784,7 +1933,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 
 fn ImportMDLButtonPressed sender arg =
 (
-	
+	global UseTR
 	/*format "Sender:\n%\n" sender
 	format "Arg:\n%\n" arg
 	format "Parent Text: %\n" sender.parent.text
@@ -1795,26 +1944,52 @@ fn ImportMDLButtonPressed sender arg =
 		format "% is checked: %\n" "ForcePREP" sender.parent.controls.Item["ForcePREP"].checked
 		format "% is checked: %\n" "ImportTextures" sender.parent.controls.Item["ImportTextures"].checked
 	*/
-	undo "Import C:R MDL" on
+	stopwatch = dotNetObject "System.Diagnostics.Stopwatch"
+	stopwatch.start()
+	undo "Import C:R MDL/Light" on
 	(
-		
-		mdl_name = GetOpenFileName caption:"Open MDL File" types:"MDL(*.MDL)|*.mdl"
+		oldheapfree = heapfree
+		format "heapfree before: %\n" heapfree
+		mdl_name = GetOpenFileName caption:"Open MDL File" types:"C:R Object (*.MDL, *.LIGHT)|*.mdl;*.light|C:R Model (*.MDL)|*.mdl|C:R Light (*.LIGHT)|*.light"
 		if mdl_name != undefined do
 		(
-			
-			global globalMaterials = #()
-			globalMaterials = #()
-			global globalMaterialNames =#()
-			globalMaterialNames =#()
-			ImportMDL mdl_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
-			--ImportMDL mdl_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
+			filetype = tolower (getFilenameType mdl_name)
+			if filetype == ".light" then
+			(
+				newmesh = omniLight name:(getFilenameFile mdl_name)
+				lightObj = CRLight()
+				lightObj.LoadLight mdl_name
+				lightObj.SetToLight newMesh
+			)
+			else
+			(
+				global globalMaterials = #()
+				globalMaterials = #()
+				global globalMaterialNames =#()
+				globalMaterialNames =#()
+				if UseTR == true then
+					ImportMDL_TR #(mdl_name) importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
+				
+			--format "heapfree after tr: %\n" heapfree
+		--stopwatch.stop()
+		--format "----------------------------\nMDL Loaded In %:%.% ms\n" stopwatch.Elapsed.Minutes stopwatch.Elapsed.Seconds stopwatch.Elapsed.Milliseconds 
+				--stopwatch.reset()
+				--stopwatch.start()
+				else
+					ImportMDL mdl_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
+				--ImportMDL mdl_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
+			)
 		)
+		format "heapfree after: %\n" heapfree
+		format "bytes used for mdl load: %\n" (oldheapfree - heapfree)
 	)
+	stopwatch.stop()
+	format "----------------------------\nMDL Loaded In %:%.% ms\n" stopwatch.Elapsed.Minutes stopwatch.Elapsed.Seconds stopwatch.Elapsed.Milliseconds 
 	--gc() light:true
 )
 fn ImportCNTButtonPressed sender arg=
 (
-
+	
 	undo "Import C:R CNT" on
 	(
 		--CreateNewNULLNode [1,1,0] 1

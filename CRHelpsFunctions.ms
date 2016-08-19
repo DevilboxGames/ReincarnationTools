@@ -1,3 +1,46 @@
+fn KeepMaxAlive =
+(
+	 if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+)
+
+fn DisableProcessWindowsGhosting =
+(
+    if classof (dotnet.GetType "DisableWindowsGhosting")!=dotNetObject do
+    (
+        local source = StringStream ("
+            using System.Runtime.InteropServices;
+
+public class DisableWindowsGhosting
+{
+    [DllImport(\"user32.dll\")]
+    public static extern bool DisableProcessWindowsGhosting();
+}")
+
+        compilerParams = dotnetobject "System.CodeDom.Compiler.CompilerParameters"
+        compilerParams.ReferencedAssemblies.Add("System.dll");
+        compilerParams.GenerateInMemory = on
+        csharpProvider = dotnetobject "Microsoft.CSharp.CSharpCodeProvider"
+        compilerResults = csharpProvider.CompileAssemblyFromSource compilerParams #(source as String)
+        flush source
+        close source
+        if (compilerResults.Errors.Count > 0 ) then
+        (
+            local errs = stringstream ""
+            for i = 0 to (compilerResults.Errors.Count-1) do
+            (
+                local err = compilerResults.Errors.Item[i]
+                format "Error:% Line:% Column:% %\n" err.ErrorNumber err.Line err.Column err.ErrorText to:errs
+            )
+            format "%\n" errs
+            undefined
+        )
+        else
+        (
+            compilerResults.CompiledAssembly.CreateInstance "DisableWindowsGhosting"
+        )
+    )
+)
+
 fn StringIsInt str = 
 (
 	return (str as integer) as string == str
@@ -63,6 +106,10 @@ fn FindObjectByPosition pos notTheseObjs:#() onlyPointHelpers:false =
 	else return undefined
 )
 
+fn quatdot q1 q2 =
+(
+	return q1.w*q2.w + q1.x* q2.x + q1.y*q2.y + q1.z*q2.z
+)
 fn ConvertFromCRSpace pos =
 (
 	return [-pos.x,-pos.z,pos.y]
@@ -78,6 +125,15 @@ fn ConvertQuatFromCRSpace q =
 fn ConvertQuatToCRSpace q =
 (
 	return (quat -q.y q.x q.w q.z)
+)
+
+fn ConvertQuatFromCRSpace2 q =
+(
+	return (quat -q.x q.z -q.y q.w)
+)
+fn ConvertQuatToCRSpace2 q =
+(
+	return (quat -q.x -q.z q.y q.w)
 )
 fn GetAllChildren obj &arr:#() =
 (
@@ -97,6 +153,7 @@ fn GetDescendantByName obj nodeName =
 	(
 		if tolower(nodeName) == tolower(c.name) then return c
 	)
+	return undefined
 )
 fn getNodeByName2 nodeName =
 (

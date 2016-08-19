@@ -52,7 +52,7 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 		--format "Found accessory in: %\n" accessory.AccessoryFileName
 	--else
 		--format "No accessory found matching %\n" accessoryType
-	
+	KeepMaxAlive()
 	return accessory
 )
 fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
@@ -77,6 +77,7 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	currentAccessoryType = ""
 	currentAccessoryLayer = ""
 	currentPosition = [0,0,0]
+	currentAccessoryColour = Color 0 0 0
 	UniqueAccessoryList = #()
 	while (eof lolscript) == false do
 	(
@@ -262,12 +263,30 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 				else if curLine == "colour = {" then
 				(
 					readingColour = true
+					nextComponent = "R"
 				)
 				else if readingColour == true then
 				(
 					if curLine == "}" or curLine == "}," then
 					(
 						readingColour = false
+					)
+					else if nextComponent == "R" then
+					(
+						filteredValue = filterString curLine ","
+						currentAccessoryColour.r = filteredValue[1] as float
+						nextComponent = "G"
+					)
+					else if nextComponent == "G" then
+					(
+						filteredValue = filterString curLine ","
+						currentAccessoryColour.g = filteredValue[1] as float
+						nextComponent = "B"
+					)
+					else if nextComponent == "B" then
+					(
+						filteredValue = filterString curLine ","
+						currentAccessoryColour.b = filteredValue[1] as float
 					)
 				)
 				else if curLine == "}" or curLine == "}," then
@@ -292,6 +311,9 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 						
 						--if tolower currentAccessoryType == "c1checkpoint" then format "\tConverted Transform: %\n\n" trans
 						newAccessoryObject.transform = trans
+						newAccessoryObject.accessoryName = currentAccessoryName2
+						newAccessoryObject.accessoryID = currentAccessoryName
+						newAccessoryObject.accessoryColour = currentAccessoryColour
 						layerObject.addnode newAccessoryObject
 					--)
 				)
@@ -369,7 +391,9 @@ fn ParseLevelRoutesTXT txtFileName =
 							)
 							"<RADIUS>":
 							(
+
 								currentAINode.Radius = curline as float
+								if currentAINode.Radius < 0.1 then currentAINode.Radius = 0.1
 							)
 							"<RACE_LINE>":
 							(
@@ -435,7 +459,10 @@ fn ImportLevelButtonPressed sender arg=
 			with redraw off
 			(
 				--ImportCNT cnt_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
-				rootMesh = ImportCNT cnt_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked
+				if sender.parent.controls.Item["LoadGeometryCheckbox"].checked then
+				(
+					rootMesh = ImportCNT cnt_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked
+				)
 				--AddVehilceCFGModifier rootMesh
 				--LoadVehicleConfig rootMesh (getFilenamePath cnt_name)
 				--SetAllCNTsToBakeScale rootMesh

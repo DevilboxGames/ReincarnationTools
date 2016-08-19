@@ -122,7 +122,7 @@ fn CR_SetupExportTab tabPage =
 	GenericExportGroup.controls.Add ExportCNTButton
 	
 	ExportMDLButton = (dotNetObject "system.windows.forms.button")
-	ExportMDLButton.Text = "Export MDL"
+	ExportMDLButton.Text = "Export Object"
 	SetControlLayout ExportMDLButton (DN_ControlLayout Width:((GenericExportGroup.Width - 15)/2) Height:30 Left: (ExportCNTButton.Right+5) Top: 20)
 	GenericExportGroup.controls.Add ExportMDLButton
 	

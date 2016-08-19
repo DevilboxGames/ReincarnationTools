@@ -153,7 +153,7 @@ fn CR_SetupCarToolsTab tabPage =
 fn SettingsButton_Pressed sender arg =
 (
 	parentDialog = windows.getChildHWND 0 "Carmageddon Reincarnation Tools"
-	createDialog carma_reincarnation_settings 300 300 parent:parentDialog[1]
+	createDialog carma_reincarnation_settings 300 350 parent:parentDialog[1]
 )
 
 fn CR_SetupCommonToolsTab tabPage =
@@ -219,6 +219,12 @@ fn CR_SetupCommonToolsTab tabPage =
 	SetControlLayout FixMirrorButton (DN_ControlLayout Height: 30 Left: (15) Top: (20) Width: 160)
 	ModelingTools.controls.add FixMirrorButton
 	SetClickHandler FixMirrorButton FixMirrorButton_Pressed
+
+	ConverToCRLightButton = dotnetobject "button"
+	ConverToCRLightButton.text = "Convert Light to CRLight"
+	SetControlLayout ConverToCRLightButton (DN_ControlLayout Height: 30 Left: (FixMirrorButton.right+5) Top: (20) Width: 160)
+	ModelingTools.controls.add ConverToCRLightButton
+	SetClickHandler ConverToCRLightButton ConverToCRLightButton_Pressed
 	
 	DebugToolsGroup = dotnetobject "groupbox"
 	DebugToolsGroup.Text = "Trent's Debug Tools (DON'T USE THESE!)"

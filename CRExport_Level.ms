@@ -1,4 +1,4 @@
-fn ExportLevelAccessories levelLOLfile ExportPowerups:false =
+fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:True =
 (
 	powerupsScriptText = "module((...), level_accessory_setup)\n"
 	powerupsScriptText = powerupsScriptText + "accessories = {\n"
@@ -11,7 +11,7 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false =
 	(
 		curLayer = layerManager.getLayer i
 		layerName = curLayer.name
-		if (substring layerName 0 4) == "sys_" then continue
+		if (substring layerName 1 4) == "sys_" then continue
 		refLayer = ILayerManager.getLayerObject i
 		layerNodes = refs.dependents refLayer
 		
@@ -35,6 +35,10 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false =
 				
 				nodetext = nodetext + "\t\ttransform = {\n"
 				tm = curNode.transform
+				if dot (normalize (cross tm.row3 tm.row1)) tm.row2 < 0.9 then tm.row1 = -tm.row1
+				tm.row1 = normalize tm.row1
+				tm.row2 = normalize tm.row2
+				tm.row3 = normalize tm.row3
 				tm = matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
 				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row1.x as string)+",\n\t\t\t\t"+(tm.row1.y as string)+",\n\t\t\t\t"+(tm.row1.z as string)+"\n\t\t\t},\n"
 				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row2.x as string)+",\n\t\t\t\t"+(tm.row2.y as string)+",\n\t\t\t\t"+(tm.row2.z as string)+"\n\t\t\t},\n"
@@ -62,9 +66,12 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false =
 	
 	lolScriptText = lolScriptText + "}\n";
 	powerupsScriptText = powerupsScriptText + "}\n";
-	f = openFile levelLOLfile mode:"wt"
-	format "%" lolScriptText to:f
-	close f
+	if ExportAccessories == true then
+	(
+		f = openFile levelLOLfile mode:"wt"
+		format "%" lolScriptText to:f
+		close f
+	)
 	if ExportPowerups == true then
 	(
 		powerupFileName = (getFilenamePath levelLOLfile)+"powerups.lol"

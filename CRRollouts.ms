@@ -16,7 +16,7 @@ rollout carma_reincarnation_dockfloater "Carmageddon Reincarnation Tools" width:
 	
 	on carma_reincarnation_dockfloater resized size do
 	(
-		format "Rollout size: %\n" size
+		--format "Rollout size: %\n" size
 		eh.width = size.x
 		eh.height = size.y
 	)

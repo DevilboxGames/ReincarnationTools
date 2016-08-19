@@ -11,10 +11,17 @@ fn CR_SetupImportLevelTab tabPage =
 	
 	SetClickHandler ImportLevelButton ImportLevelButtonPressed
 	
+	LoadGeometryCheckbox = (dotnetobject "system.windows.forms.checkbox")
+	LoadGeometryCheckbox.checked = true
+	LoadGeometryCheckbox.Text = "Load Geometry"
+	LoadGeometryCheckbox.Name = "LoadGeometryCheckbox"
+	SetControlLayout LoadGeometryCheckbox (DN_ControlLayout Top:(ImportLevelButton.bottom+5) Width: 250 height: 30 Left: 10)
+	tabPage.controls.Add LoadGeometryCheckbox
+
 	LoadAccessoriesCheckbox = (dotnetobject "system.windows.forms.checkbox")
 	LoadAccessoriesCheckbox.Text = "Load Accessories (WIP)"
 	LoadAccessoriesCheckbox.Name = "LoadAccessoriesCheckbox"
-	SetControlLayout LoadAccessoriesCheckbox (DN_ControlLayout Top:(ImportLevelButton.bottom+5) Width: 250 height: 30 Left: 10)
+	SetControlLayout LoadAccessoriesCheckbox (DN_ControlLayout Top:(LoadGeometryCheckbox.bottom+5) Width: 250 height: 30 Left: 10)
 	tabPage.controls.Add LoadAccessoriesCheckbox
 	
 	LoadPowerupsCheckbox = (dotnetobject "system.windows.forms.checkbox")
@@ -115,7 +122,7 @@ fn CR_SetupImportTab tabPage =
 	
 	
 	ImportMDLButton = (dotNetObject "system.windows.forms.button")
-	ImportMDLButton.Text = "Import MDL"
+	ImportMDLButton.Text = "Import MDL or Light"
 	SetControlLayout ImportMDLButton (DN_ControlLayout Width:150 Height:30 Left: ((GenericImportGroup.Width - 150)/2) Top: 20)
 	GenericImportGroup.controls.Add ImportMDLButton
 	

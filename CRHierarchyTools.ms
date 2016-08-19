@@ -49,6 +49,10 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 			mdl.CNTCustAttribute.FileName = ""
 			
 		)
+		else if classof mdl == freeSpot or classof mdl == omnilight or classof mdl == Directionallight then
+		(
+			SetCNTNodeType mdl "LITg"
+		)
 		else
 		(
 			if nodeType != undefined then SetCNTNodeType mdl nodeType

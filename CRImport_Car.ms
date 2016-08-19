@@ -198,8 +198,12 @@ fn ParseStructurePartCData cData obj =
 				"add_lumprenderlevel":
 				(
 					splitArguments = filterstring splitline[3] ", \""
-					append obj.modifiers["Car Structure Part"].LumpRenderLevel_Node (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[1]) forwardTransformChangeMsgs:false)
-					append obj.modifiers["Car Structure Part"].LumpRenderLevel_Value (splitArguments[2] as integer)
+					targetNode = GetDescendantByName $ splitArguments[1]
+					if targetNode != undefined then
+					(
+						append obj.modifiers["Car Structure Part"].LumpRenderLevel_Node (nodeTransformMonitor node:targetNode forwardTransformChangeMsgs:false)
+						append obj.modifiers["Car Structure Part"].LumpRenderLevel_Value (splitArguments[2] as integer)
+					)
 				)
 				"set_collisionboundsmultiplier":
 				(
@@ -2697,19 +2701,19 @@ fn LoadVehicleConfig obj folderName =
 			curLine = trimLeft (trimRight (readline f))
 			case tolower(curLine) of
 			(
-				"[attachment]":
+				"[wheel_map]":
 				(
 					--format "Attachment node\n"
-					mode="attachment"
+					mode="wheel_map"
 				)
-				"complicatedwheels":
+				"default":
 				(
 					--format "ComplicatedWheels Node\n"
-					submode="ComplicatedWheels"
+					submode="default"
 				)
 				default:
 				(
-					if mode == "attachment" and submode=="ComplicatedWheels" then
+					if mode == "wheel_map" and submode=="default" then
 					(
 						--format "this is an attachment node for complicatedwheels\n"
 						splitLine = filterstring curLine " \t"

@@ -734,6 +734,13 @@ struct AccessoryManager (
 			
 			return loadedMesh
 		)
+	),
+	fn ClearAccessories =
+	(
+		delete ExistingAccessoryTypes
+		delete ExistingAccessoryMeshes
+		ExistingAccessoryTypes = #()
+		ExistingAccessoryMeshes = #()
 	)
 	
 )
@@ -754,6 +761,7 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 		accessoryFileName type:#string animatable:false ui:txt_accessoryFileName
 		accessoryType type:#string animatable:false ui:txt_accessoryType
 		accessoryName type:#string animatable:false ui:txt_accessoryName
+		accessoryID type:#string animatable:false ui:txt_accessoryID
 		accessoryColour type:#color animatable:false ui:colpick_accessoryColour
 		isPowerup type:#boolean animatable:false ui:chk_isPowerup
 	)
@@ -778,6 +786,7 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 	)
 	rollout accessoryParams "Accessory Parameters"
 	(
+		edittext txt_accessoryID "Accessory Unique ID" labelOnTop:true
 		edittext txt_accessoryName "Accessory Name" labelOnTop:true
 		edittext txt_accessoryType "Accessory Type" labelOnTop:true
 		edittext txt_accessoryFileName "Accessory Folder" labelOnTop:true 
@@ -901,7 +910,7 @@ plugin Helper AILink
 		Interior type:#boolean default:false ui:chk_Interior
 		Loop type:#boolean default:false ui:chk_Loop
 		Water type:#boolean default:false ui:chk_Water
-		ForceMeshUpdate type:#boolean default:false
+		ForceMeshUpdate type:#boolean default:false ui:chk_ForceUpdateMesh
 	)
 	rollout params "AI Link Parameters"
 	(
@@ -912,6 +921,7 @@ plugin Helper AILink
 		Checkbox chk_Loop "Loop:" default: false
 		Checkbox chk_Interior "Interior:" default: false
 		Checkbox chk_Water "Water:" default: false
+		Checkbox chk_ForceUpdateMesh "Update Mehs" default: false
 		
 		on pck_Node1 picked obj do
 		(
@@ -1030,14 +1040,14 @@ plugin Helper AILink
 		(
 			--format "updating mesh\n"
 			
-			--planeObj = createInstance plane width: lastWidth length:1 lengthsegs:2 widthsegs:1
+			planeObj = createInstance plane width: lastWidth length:1 lengthsegs:1 widthsegs:1
 			
 			
-				--planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
+				planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
 			
-			m = trimesh() --planeObj.mesh
-			setNumVerts m 4
-			setNumFaces m 1
+			m = planeObj.mesh
+			--setNumVerts m 4
+			--setNumFaces m 1
 			
 				v = Node2pos - Node1pos
 				
@@ -1061,12 +1071,12 @@ plugin Helper AILink
 			setVert m 2 (verts[2] - tang)
 			setVert m 3 (verts[3] + tang)
 			setVert m 4 (verts[4] - tang)
-			setFace m 1 [1,2,3]
-			setFace m 2 [3,1,4]
+			--setFace m 1 [1,2,3]
+			--setFace m 2 [3,1,4]
 			meshObj = m
 		)
 		
-		meshObj
+		return meshObj
 	)
 	tool create
 	(
@@ -1101,7 +1111,7 @@ plugin Helper AINode
   local lastSize, meshObj, raceLineObj, lastRaceLine
   parameters pblock rollout:params
   (
-		Index type:#integer default: 0
+		Index type:#integer default: 0 ui:spn_Index
 		Type type:#integer default: 0
 		Radius type:#float default: 0.0 ui: spn_Radius
 		Position type:#point3 default: [0,0,0]
@@ -1114,6 +1124,7 @@ plugin Helper AINode
   (
     Spinner spn_Radius "Radius:" range:[0, 1e9, 0]
 	Checkbox chk_ShowRaceLine "Show Race Line:" default: true
+	Spinner spn_Index "Index:" type:#integer range:[0,1000000,0]
   )
   on getDisplayMesh do
   (
@@ -1219,7 +1230,62 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		AILinks_Water type:#boolTab tabSizeVariable:true
 		
 	)
-	
+	fn CreateNode type:0 radius:1 position:[0,0,0] raceLine:undefined racelineoffset:0 =
+	(
+		append AINodes_Type type
+		append AINodes_Radius radius
+		append AINodes_Position position
+		if raceline != undefined then
+			append AINodes_RaceLine raceline
+	)
+	rollout RouteParameters "Route Parameters"
+	(
+		group "Race Routes"
+		(
+			dotnetcontrol lv_Races "listview" height:100
+			button but_AddRace "Add Race" across:2
+			button but_DelRace "Delete Race"
+
+		)
+		group "AI Nodes"
+		(
+			dotnetcontrol lv_AINodes "listview" height:100
+			button but_AddNode "New Node" across: 2
+			button but_DelNode "Delete Node" across: 2
+
+			spinner spn_NodeRadius "Radius"
+
+			label lbl_NodePos "Position" across:2
+			button but_MoveNode "Move"
+			spinner spn_NodePosX "" across:3
+			spinner spn_NodePosY "" across:3
+			spinner spn_NodePosZ "" across:3
+
+			label lbl_NodeRaceLine "Race Line" across:2
+			button but_MoveRaceLine "Move"
+			spinner spn_NodeRaceLineX "" across:3
+			spinner spn_NodeRaceLineY "" across:3
+			spinner spn_NodeRaceLineZ "" across:3
+		)
+		group "AI Links"
+		(
+			dotnetcontrol lv_AILinks "listview" height:100
+			button but_AddLink "New Node" across: 2
+			button but_DelLink "Delete Node" across: 2
+
+			label lbl_Routes "Races"
+			dotnetcontrol pnl_LinkTypes "panel"
+
+			spinner spn_LinkNode1 "Node 1" type:#integer across:2
+			button but_LinkNode1Pick "Pick"
+			spinner spn_LinkNode2 "Node 2" type:#integer across:2
+			button but_LinkNode2Pick "Pick"
+
+			spinner spn_LinkWidth "Width"
+
+
+		)
+	)
 	on postLoad do
 	(
 		thisNode = NodeStorage.node
@@ -1282,10 +1348,6 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		setTVFace mesh 1 faces[1]
 		setTVFace mesh 2 faces[2]
 		
-	)
-	rollout RouteParameters "Route Parameters"
-	(
-		button tstbutton "Test"
 	)
 	
 	tool create

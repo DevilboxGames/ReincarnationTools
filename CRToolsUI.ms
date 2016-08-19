@@ -156,6 +156,8 @@ fn ToolsStartup =
 				local gibbedAssembly = dotNet.loadAssembly (loldecdllpath+"LOLDecoderLib.dll")
 				local LDdotNetType = gibbedAssembly.GetType "LOLDecoder.LOLDecoderLib"
 				local lolDecoderClass = (dotnetClass "System.Activator").CreateInstance dotNetType
+
+				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll");
 		format "GamePath: %\nTexturePath: %\n GibbedTools: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools
 		if CarmaSettings.GamePath == undefined or CarmaSettings.GamePath == "" then
 		(

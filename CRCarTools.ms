@@ -269,8 +269,8 @@ fn CreateNewWheelNode trans wheelType selectAndFocus:false addAttributes:true wh
 	m.transform = trans
 	m.name = wheelType
 	m.previewWheel=true
-	format "\n\nAbout to set wheel filename to: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt")
-	m.wheelFilename = CarmaSettings.GamePath+"\\Data_Core\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt"
+	format "\n\nAbout to set wheel filename to: %\n" (CarmaSettings.DataCorePath+"\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt")
+	m.wheelFilename = CarmaSettings.DataCorePath+"\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt"
 	format "Just set wheel filename to: %\n" m.wheelFilename
 --	name:wheelType wheelType:CarmaHelper_WheelPlaceholder transform: trans
 		

@@ -1719,6 +1719,18 @@ fn ImportCNTNode f parentNode =
 			append newNode.nodeData.bytes (readbyte f)
 		)
 	)
+	else if newNode.nodeType == "shrb" then
+	(
+		newNode.nodeData = MODLnode objectNameLength:0 objectName:""
+		
+		newNode.nodeData.objectNameLength = readlong f #unsigned
+		newNode.nodeData.objectName = readstring2 f newNode.nodeData.objectNameLength
+		nodePadding = CalculateCNTNamePadding newNode.nodeData.objectNameLength
+		for i=1 to nodePadding do
+		(
+			readbyte f
+		)
+	)
 	else if newNode.nodeType == "MODL" then
 	(
 		newNode.nodeData = MODLnode objectNameLength:0 objectName:""

@@ -4,7 +4,7 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:Tr
 	powerupsScriptText = powerupsScriptText + "accessories = {\n"
 	lolScriptText = "module((...), level_accessory_setup)\n"
 	lolScriptText = lolScriptText + "accessories = {\n"
-	
+	maxFileNameFixed = substituteString (substituteString (getFilenameFile maxFileName) "-" "_") " " "_"
 	accessoryCount = 0
 	
 	for i = 1 to layerManager.count-1 do
@@ -49,12 +49,12 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:Tr
 				nodetext = nodetext + "\t\tcolour = {\n\t\t\t\t"+((curNode.accessoryColour.r as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.g as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.b as integer) as string)+"\n\t\t},\n"
 				if curNode.isPowerup then
 				(
-					nodetext = "\t"+(getFilenameFile maxFileName)+"_powerup_"+(accessoryCount as string) + nodetext + "\n\t},\n"
+					nodetext = "\t"+maxFileNameFixed+"_powerup_"+(accessoryCount as string) + nodetext + "\n\t},\n"
 					powerupsScriptText = powerupsScriptText + nodeText
 				)
 				else
 				(
-					nodetext = "\t"+(getFilenameFile maxFileName)+"_accessory_"+(accessoryCount as string) + nodetext + "\n\t},\n"
+					nodetext = "\t"+maxFileNameFixed+"_accessory_"+(accessoryCount as string) + nodetext + "\n\t},\n"
 					lolScriptText = lolScriptText + nodetext
 				)
 				accessoryCount = accessoryCount+1

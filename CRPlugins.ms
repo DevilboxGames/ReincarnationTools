@@ -762,7 +762,7 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 		accessoryType type:#string animatable:false ui:txt_accessoryType
 		accessoryName type:#string animatable:false ui:txt_accessoryName
 		accessoryID type:#string animatable:false ui:txt_accessoryID
-		accessoryColour type:#color animatable:false ui:colpick_accessoryColour
+		accessoryColour type:#color animatable:false ui:colpick_accessoryColour default:(color 255 255 255)
 		isPowerup type:#boolean animatable:false ui:chk_isPowerup
 	)
 	

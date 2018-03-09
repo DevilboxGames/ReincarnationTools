@@ -16,6 +16,7 @@ fileIn "CRHierarchyTools.ms"
 
 fileIn "CRPlugins.ms"
 fileIn "CRCarTools.ms"
+fileIn "CRAccessory.ms"
 fileIn "CRExport.ms"
 fileIn "CRExport_car.ms"
 fileIn "CRExport_level.ms"

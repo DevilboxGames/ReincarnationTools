@@ -415,7 +415,7 @@ fn ParseLevelRoutesTXT txtFileName =
 				else if currentAILink != undefined then
 				(
 					if toupper curline == "<ONEWAY>" then currentAILink.OneWay = true
-					else if toupper curline == "WATER" then currentAILink.Water = true
+					--else if toupper curline == "WATER" then currentAILink.Water = true
 					else if toupper curline == "\"\"LOOP\"\"" then currentAILink.Loop = true
 					else if toupper curline == "\"\"INTERIOR\"\"" then currentAILink.Interior = true
 					if curline[1] == "<" then currentMode = toupper curLine
@@ -432,6 +432,21 @@ fn ParseLevelRoutesTXT txtFileName =
 							(
 								currentAILink.Width = curline as float
 							)
+							"<TYPE>":
+							(
+								append currentAILink.LinkType (curline as integer)
+							)
+							"<RACE_VALUE>":
+							(
+								if curline == "water" then
+								(
+								append currentAILink.Water 1
+								)
+								else
+								(
+									append currentAILink.Water 0
+								)
+							)
 						)
 					)
 					
@@ -447,6 +462,7 @@ fn ParseLevelRoutesTXT txtFileName =
 	
 	oldCurrentLayer.current = true
 )
+
 fn ImportLevelButtonPressed sender arg=
 (
 
@@ -491,4 +507,220 @@ fn ImportLevelButtonPressed sender arg=
 		)
 	)
 	gc()
+)
+
+struct C2MapCheckpoint
+(
+	NumQuads,
+	Quads = #()
+)
+struct C2MapText
+(
+	Version,
+	DirectLightColour,
+	AmbientLight0,
+	AmbientLight1,
+	AmbientLight2,
+	GridPos,
+	GridRot,
+	CheckPointCount,
+	CheckPoints = #()
+)
+struct C2TextParser (
+	f,
+	curline,
+	tokens = #(),
+	nextTokenNum,
+	currentToken,
+	fn Start filename = (
+		
+		f = openfile fileName mode:"r"
+		lineTokenNum = 0
+		curline = ""
+		tokens = #()
+		currentToken = ""
+		return f
+	),
+	fn GetLine = (
+			while not (eof f) do (
+				curline = trimLeft (trimRight (readline f))
+					if curline != "" and (substring curline 1 2) != "//" then (
+						nextTokenNum = 1
+						tokens = filterstring curline " ,"
+						return curline;
+					)
+			)
+			curline = undefined
+			return ""
+		),
+		fn GetToken = (
+			while (nextTokenNum > tokens.count or substring tokens[nextTokenNum] 1 2) == "//" and not (eof f) do
+			(
+				GetLine()
+				if eof f then return undefined
+			)
+			
+			currentToken = tokens[nextTokenNum]
+			nextTokenNum = nextTokenNum + 1
+			return currentToken
+		)
+)
+fn ImportC2LevelTXT txtFileName checkExisitingNodes:false =
+(
+	if ((dotnetclass "System.IO.File").exists txtFileName) then
+	(
+		parser = C2TextParser()
+		f =parser.Start txtFileName
+		
+		activeType=undefined
+			activeSubType = undefined
+			
+			currentAINode = undefined
+			AINodes = #()
+			AINodeCount = 0
+			currentAILink = undefined
+			AILinkCount = 0
+			currentMode = undefined
+			lineNum=0
+		AINodeMap = #()
+			
+		mapData = C2MapText()
+		Parser.GetToken()
+		mapData.Version = Parser.GetToken() as integer
+		mapData.DirectLightColour = Color (Parser.GetToken() as integer) (Parser.GetToken() as integer) (Parser.GetToken() as integer)
+		mapData.AmbientLight0 =[ (Parser.GetToken() as float), (Parser.GetToken() as float)]
+		mapData.AmbientLight1 =[ (Parser.GetToken() as float), (Parser.GetToken() as float)]
+		mapData.AmbientLight2 =[ (Parser.GetToken() as float), (Parser.GetToken() as float)]
+		
+		gridX = Parser.GetToken() as float
+		gridZ = Parser.GetToken() as float
+		gridY = -(Parser.GetToken() as float)
+		mapData.GridPos = [gridX, gridY, gridZ]
+		mapData.GridRot = Parser.GetToken() as integer
+		
+		mapData.CheckPointCount = Parser.GetToken() as integer
+		for i=1 to mapData.CheckPointCount do
+		(
+			Parser.GetToken()
+			Parser.GetToken()
+			Parser.GetToken()
+			cp = C2MapCheckpoint()
+			cp.NumQuads = Parser.GetToken() as integer
+			for cp = 1 to cp.NumQuads do
+			(
+				cpX = Parser.GetToken() as float
+				cpZ = Parser.GetToken() as float
+				cpY = -(Parser.GetToken() as float)
+				append cp.Quads [cpX, cpY, cpZ]
+			)
+			append mapData.CheckPoints cp
+		)
+		
+			while not (eof f) do
+			(
+				lineNum += 1
+				
+				curline = trimLeft (trimRight (readline f))
+				if curline == "" then continue
+					
+				splitval = filterstring curline " "
+				
+				
+					if curline == "START OF OPPONENT PATHS" then 
+					(
+						currentMode = "OpponentPaths"
+					)
+						
+					else (
+							if currentMode == "OpponentPaths" then
+							(
+								if(splitval.count < 1) then continue
+								numNodes = splitval[1] as number
+								
+								for i = 1 to numNodes do (
+									
+									pointLine = trimLeft (trimRight (readline f))
+										splitPoint = filterString pointLine ", "
+								if(splitPoint.count < 1) then 
+									(
+										i = i-1
+										continue
+									)
+									nodePos = [(splitPoint[1] as float) * 6.9, -(splitpoint[3] as float) * 6.9, (splitPoint[2] as float) * 6.9]
+									createNewNode = true
+									if checkExisitingNodes then
+									(
+										for obj in objects where classof obj == AINode do ( 
+											if (length (obj.pos - nodePos)) < 0.001 then 
+											(
+												format "% = %\n" ("AINode_"+(i as string)) obj.name 
+													createNewNode = false
+													append AINodes  obj
+													break
+											)
+										)
+											
+									)
+									if createNewNode == true then
+									(
+								currentAINode = AINode name:("AINode_"+(i as string))
+									currentAINode.radius = 1.0
+									currentAINode.type = 0
+										currentAINode.pos = nodePos
+									AINodeMap[i] = currentAI
+										append AINodes currentAINode
+									)
+								)
+								currentMode = "OpponentPaths_Links"
+							)
+							else if currentMode == "OpponentPaths_Links" then
+							(
+								splitval = filterstring curline " "
+								if(splitval.count < 1) then continue
+					
+								numLinks = splitval[1] as number
+								for i = 1 to numLinks do (
+									
+									linkLine = trimLeft (trimRight (readline f))
+										splitlink = filterString linkLine ", "
+								if(splitlink.count < 1) then
+									(
+										i = i-1
+										continue
+									)
+									createNewNode = true
+									if checkExisitingNodes then
+									(
+										for obj in objects where classof obj == AILink do ( 
+											if obj.node1.node == AINodes[(splitlink[1] as integer)+1] and obj.node2.node == AINodes[(splitlink[2] as integer)+1] then 
+											(
+												format "% = %\n" ("AILink_"+(i as string)) obj.name 
+													createNewNode = false
+													linktype = (splitlink[8] as integer)
+									if linktype > 0 then linktype = 1
+									
+									append currentAILink.LinkType linktype
+													break
+											)
+										)
+											
+									)
+									if createNewNode == true then
+									(
+								currentAILink = AILink name:("AILink_"+(i as string))
+									currentAILink.Width = (splitlink[7] as float) * 6.9
+									linktype = (splitlink[8] as integer)
+									if linktype > 0 then linktype = 1
+									
+									append currentAILink.LinkType linktype
+										currentAILink.Node1 = nodeTransformMonitor node:(AINodes[(splitlink[1] as integer)+1]) forwardTransformChangeMsgs:false
+										currentAILink.Node2 = nodeTransformMonitor node:(AINodes[(splitlink[2] as integer)+1]) forwardTransformChangeMsgs:false
+									)	
+								)
+								currentMode = undefined
+							)
+							
+						)
+			)
+	)
 )

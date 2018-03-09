@@ -186,17 +186,7 @@ plugin simpleObject CarmaHelper_JointHelper
 	)
 	on attachedToNode nodeVar do
 	(
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
-		format "===========================================\n"
+		
 		thisNode = nodeVar
 		NodeStorage =  nodeTransformMonitor node:nodeVar forwardTransformChangeMsgs:false
 	)
@@ -704,7 +694,7 @@ struct AccessoryManager (
 	
 	fn loadAccessoryMesh cnt_name =
 	(
-		accessoryMesh = ImportCNT cnt_name importTextures:true forcePREP:false useTriStrips:false mergeMDLs:true
+		accessoryMesh = ImportCNT cnt_name importTextures:true forcePREP:true useTriStrips:false mergeMDLs:true
 		actualMeshObj = copy accessoryMesh.mesh
 		
 		actualMeshMat =accessoryMesh.material
@@ -891,13 +881,12 @@ plugin simpleObject CarmaHelper_AccessoryPlaceholder
 
 fn target_ainode_filter obj = ( (classof obj) == AINode)
 fn target_ailink_filter obj = ( (classof obj) == AILink)
-plugin Helper AILink
+plugin SimpleObject AILink
 	name:"Level AI Link"
-	classID:#(0x726998ab, 0x6dfa99f8)
+	classID:#(0x726998ab, 0x6dfa99f9)
 	category:"Carmageddon: Reincarnation"
-	extends: dummy
 (
-	local lastWidth, lastNode1Radius, lastNode2Radius, lastNode1Pos, lastNode2Pos, lastOneWay, meshObj, thisNode
+	local lastWidth, lastNode1Radius, lastNode2Radius, lastNode1Pos, lastNode2Pos, lastOneWay, meshObj, thisNode, node1ChangeHandler, node2ChangeHandler
 	
 	parameters paramblock rollout:params
 	(
@@ -905,11 +894,11 @@ plugin Helper AILink
 		Node1 type:#maxObject
 		Node2 type:#maxObject
 		Width type:#float default: 1 ui:spn_Width
-		LinkType type:#integer default: 0
 		OneWay type:#boolean default:false ui:chk_OneWay
 		Interior type:#boolean default:false ui:chk_Interior
 		Loop type:#boolean default:false ui:chk_Loop
-		Water type:#boolean default:false ui:chk_Water
+		LinkType type:#intTab tabSizeVariable:true
+		Water type:#intTab tabSizeVariable: true
 		ForceMeshUpdate type:#boolean default:false ui:chk_ForceUpdateMesh
 	)
 	rollout params "AI Link Parameters"
@@ -921,7 +910,7 @@ plugin Helper AILink
 		Checkbox chk_Loop "Loop:" default: false
 		Checkbox chk_Interior "Interior:" default: false
 		Checkbox chk_Water "Water:" default: false
-		Checkbox chk_ForceUpdateMesh "Update Mehs" default: false
+		Checkbox chk_ForceUpdateMesh "Update Mesh" default: false
 		
 		on pck_Node1 picked obj do
 		(
@@ -935,9 +924,14 @@ plugin Helper AILink
 				vLen = vLen / 2
 				vLen += Node1.node.Radius
 				vNorm = normalize v
-				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				--format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
 				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
 				thisNode
+			)
+			if node1ChangeHandler != undefined then deleteChangeHandler node1ChangeHandler
+			node1ChangeHandler = when transform Node1.node changes do
+			(
+				ForceMeshUpdate = true
 			)
 		)
 		on pck_Node2 picked obj do
@@ -952,8 +946,31 @@ plugin Helper AILink
 				vLen = vLen / 2
 				vLen += Node1.node.Radius
 				vNorm = normalize v
-				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
+				--format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
 				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+			)
+			if node2ChangeHandler != undefined then deleteChangeHandler node2ChangeHandler
+			node2ChangeHandler = when transform Node2.node changes do
+			(
+				ForceMeshUpdate = true
+			)
+		)
+		on Node1 set val do 
+		(
+			format "setting Node1\n"
+			if node1ChangeHandler != undefined then deleteChangeHandler node1ChangeHandler
+			node1ChangeHandler = when transform val.node changes do
+			(
+				ForceMeshUpdate = true
+			)
+		)
+		on Node2 set val do 
+		(
+			format "setting Node1\n"
+			if node2ChangeHandler != undefined then deleteChangeHandler node2ChangeHandler
+			node2ChangeHandler = when transform val.node changes do
+			(
+				ForceMeshUpdate = true
 			)
 		)
 		on params open do
@@ -964,8 +981,22 @@ plugin Helper AILink
 	)
 	on attachedToNode nodeVar do
 	(
+		
 		thisNode = nodeVar
 		NodeStorage = nodeTransformMonitor node:nodeVar forwardTransformChangeMsgs:false
+		if(Node2 != undefined and Node1 != undefined) do
+		(
+			if node1ChangeHandler != undefined then deleteChangeHandler node1ChangeHandler
+			if node2ChangeHandler != undefined then deleteChangeHandler node2ChangeHandler
+			node1ChangeHandler = when transform Node1.node changes do
+			(
+				ForceMeshUpdate = true
+			)
+			node2ChangeHandler = when transform Node2.node changes do
+			(
+				ForceMeshUpdate = true
+			)
+		)
 	)
 	on postload do
 	(
@@ -980,6 +1011,16 @@ plugin Helper AILink
 				vNorm = normalize v
 				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
 				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+				if node1ChangeHandler != undefined then deleteChangeHandler node1ChangeHandler
+				if node2ChangeHandler != undefined then deleteChangeHandler node2ChangeHandler
+				node1ChangeHandler = when transform Node1.node changes do
+				(
+					ForceMeshUpdate = true
+				)
+				node2ChangeHandler = when transform Node2.node changes do
+				(
+					ForceMeshUpdate = true
+				)
 		)
 	)
 	on postcreate do
@@ -995,10 +1036,20 @@ plugin Helper AILink
 				vNorm = normalize v
 				format " Node1 pos: %\n Node2 pos: %\n v: %\n vLen: %\n vNorm: %\n" Node1.node.pos  Node2.node.pos v vLen vNorm
 				thisNode.pos = vNorm * (vLen ) + Node1.node.pos
+				--if node1ChangeHandler != undefined then deleteChangeHandler node1ChangeHandler
+				if node2ChangeHandler != undefined then deleteChangeHandler node2ChangeHandler
+				node1ChangeHandler = when transform Node1.node changes do
+				(
+					ForceMeshUpdate = true
+				)
+				node2ChangeHandler = when transform Node2.node changes do
+				(
+					ForceMeshUpdate = true
+				)
 		)
 	)
 	
-	on getDisplayMesh do
+	on buildmesh do
 	(
 		updateMesh  =false
 		node1Pos = [0,-1,0]
@@ -1039,11 +1090,10 @@ plugin Helper AILink
 		if updateMesh then
 		(
 			--format "updating mesh\n"
-			
 			planeObj = createInstance plane width: lastWidth length:1 lengthsegs:1 widthsegs:1
 			
 			
-				planeObj.length = (length (Node2pos - Node2pos)) - Node1Radius - Node2Radius
+				planeObj.length = (length (Node2pos - Node1pos)) - Node1Radius - Node2Radius
 			
 			m = planeObj.mesh
 			--setNumVerts m 4
@@ -1067,16 +1117,37 @@ plugin Helper AILink
 				(
 					tang = (cross vNorm [0,0,1]) * width
 				)
-			setVert m 1 (verts[1] + tang)
-			setVert m 2 (verts[2] - tang)
-			setVert m 3 (verts[3] + tang)
-			setVert m 4 (verts[4] - tang)
+				tang = tang 
+			setVert m 1 (verts[1] - tang)
+			setVert m 2 (verts[2] + tang)
+			setVert m 3 (verts[3] - tang)
+			setVert m 4 (verts[4] + tang)
 			--setFace m 1 [1,2,3]
 			--setFace m 2 [3,1,4]
 			meshObj = m
 		)
+		if LinkType.count == 0 then
+		(
+		thisNode.wirecolor = color 255 0 0
+		)
+		else
+		(
+			colorR = 0
+			colorB = 0
+			colorG = 0
+			for i=1 to LinkType.count do (
+				if LinkType[i] == 1 then
+				(
+					if i == 1 then colorR  = 128
+					if i == 2 then colorG = 128
+					if i == 3 then colorB = 128
+				)
+			)
+			thisNode.wirecolor = color colorR colorG colorB
+		)
+		--return meshObj
 		
-		return meshObj
+		setmesh mesh meshObj
 	)
 	tool create
 	(

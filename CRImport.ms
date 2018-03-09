@@ -1725,11 +1725,7 @@ fn ImportCNTNode f parentNode =
 		
 		newNode.nodeData.objectNameLength = readlong f #unsigned
 		newNode.nodeData.objectName = readstring2 f newNode.nodeData.objectNameLength
-		nodePadding = CalculateCNTNamePadding newNode.nodeData.objectNameLength
-		for i=1 to nodePadding do
-		(
-			readbyte f
-		)
+		
 	)
 	else if newNode.nodeType == "MODL" then
 	(
@@ -1820,10 +1816,10 @@ fn MergeCNTNodes outMesh inMesh =
 )
 fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0]=
 (
-	format "Parsing Node Type: %\n" cntNode.nodeType
+	--format "Parsing Node Type: %\n" cntNode.nodeType
 	if cntNode.nodeType == "MODL" or cntNode.nodetype == "SKIN" then
 	(
-		format "This is a MESH or SKIN node!\n"
+		--format "This is a MESH or SKIN node!\n"
 		fname = folderName + cntNode.nodeData.objectName + ".mdl"
 		
 	
@@ -1854,7 +1850,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	)
 	else if cntNode.nodeType == "LITg" then
 	(
-		format "loading light %\n" cntNode.nodeData.objectName
+		--format "loading light %\n" cntNode.nodeData.objectName
 		fname = folderName + cntNode.nodeData.objectName + ".light"
 		newmesh = omniLight name:cntNode.nodeName
 			newMesh.transform = cntNode.combinedMatrix
@@ -1865,7 +1861,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	)
 	else
 	(
-		format "This is a null node!\n"
+		--format "This is a null node!\n"
 		if (toLower cntNode.nodeName) == "wheel_fr" or (toLower cntNode.nodeName) == "wheel_fl" or (toLower cntNode.nodeName) == "wheel_rr" or (toLower cntNode.nodeName) == "wheel_rl" then
 		(
 			--newMesh = CreateNewWheelNode cntNode.combinedMatrix cntNode.nodeName addCNTAttributes:false
@@ -1874,7 +1870,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		--else
 			newMesh = CreateNewNULLNode cntNode.combinedMatrix cntNode.nodeName addAttributes:false 
 	)
-	format "Gone past the node setting shit\n"
+	--format "Gone past the node setting shit\n"
 	newMesh.pos = newMesh.pos + origin
 	for i=1 to cntNode.numChildren do
 	(
@@ -1915,7 +1911,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 	readCNTHeader f
 	
 	cntNode = ImportCNTNode f undefined
-	format "Root cnt node is %\n" cntNode
+	--format "Root cnt node is %\n" cntNode
 	global globalMaterials = #()
 	globalMaterials = #()
 	global globalMaterialNames =#()
@@ -1992,11 +1988,11 @@ fn ImportMDLButtonPressed sender arg =
 				--ImportMDL mdl_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
 			)
 		)
-		format "heapfree after: %\n" heapfree
-		format "bytes used for mdl load: %\n" (oldheapfree - heapfree)
+		--format "heapfree after: %\n" heapfree
+		--format "bytes used for mdl load: %\n" (oldheapfree - heapfree)
 	)
 	stopwatch.stop()
-	format "----------------------------\nMDL Loaded In %:%.% ms\n" stopwatch.Elapsed.Minutes stopwatch.Elapsed.Seconds stopwatch.Elapsed.Milliseconds 
+	--format "----------------------------\nMDL Loaded In %:%.% ms\n" stopwatch.Elapsed.Minutes stopwatch.Elapsed.Seconds stopwatch.Elapsed.Milliseconds 
 	--gc() light:true
 )
 fn ImportCNTButtonPressed sender arg=

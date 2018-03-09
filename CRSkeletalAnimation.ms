@@ -10,6 +10,7 @@ struct CRSkeletalAnimation
 	FramesPerSecond,
 	NumberOfBones,
 	BoneNames=#(),
+	
 	NumberOfFrames,
 	Frames=#(),
 	
@@ -79,7 +80,7 @@ struct CRSkeletalAnimation
 			)
 		)
 	),
-	fn ApplyFrameToBone boneToTransform Frame =
+	fn ApplyFrameToBone boneToTransform Frame useMatrix:false =
 	(
 		boneNum = 0
 		for b=1 to NumberOfBones do
@@ -90,12 +91,19 @@ struct CRSkeletalAnimation
 		parent = boneToTransform.parent
 		pos = boneToTransform.pos
 		--boneToTransform.parent=undefined
+		if useMatrix then
+		(
+			boneToTransform.transform = Frames[Frame].BoneTransforms[boneNum]
+		)
+		else
+		(
 		boneToTransform.rotation = Frames[Frame].BoneRotations[boneNum]
+		)
 		boneToTransform.pos = pos
 		--boneToTransform.parent=parent
 		for child in boneToTransform.children do
 		(
-			ApplyFrameToBone child Frame
+			ApplyFrameToBone child Frame useMatrix:useMatrix
 		)
 	),
 	fn ApplyToCharacter obj=
@@ -116,6 +124,125 @@ struct CRSkeletalAnimation
 			(
 				at time t rootBone.pos = Frames[t].RootPosition
 				at time t ApplyFrameToBone rootBone t
+			)
+		)
+	),
+	fn LoadFromC2 fileToLoad  createSkeleton: false applyAnimation: false=
+	(
+		
+		if(FileToLoad != undefined) then FileName = FileToLoad
+		
+		createdBones = #()
+		boneChildren = #()
+		
+		if ((dotnetclass "System.IO.File").exists (FileName)) then
+		(
+			f = fopen FileName "r"
+			NumberOfBones = readlong f
+			NumberOfFrames = readlong f
+			for i = 1 to NumberOfBones do
+			(
+				boneName = readstring f
+				format "Bone #% - % (length: % remaining: %)\n" i boneName boneName.count (32 - boneName.count)
+				append BoneNames boneName
+				for x=boneName.count to 31 do readbyte f
+				
+				numChildren = readlong f
+				--format "\t Children: %\n" numChildren
+				--if (querybox "continue?" beep:false) == false then ( return false)
+				childBoneIndices = #()
+				for c = 1 to numChildren do 
+				(
+					childIndex = readlong f
+					append childBoneIndices childIndex
+					--format "\t\t%: %\n" c childIndex
+				)
+				append boneChildren childBoneIndices
+			)
+			for i = 1 to NumberOfFrames do
+			(
+				
+				boneFrame = CRSkeletalAnimationFrame()
+				boneFrame.RootPosition = [0,0,0]
+				
+				for b=1 to NumberOfBones do
+				(
+					xX = (readfloat f)
+					xY = (readfloat f)
+					xZ = (readfloat f)
+					
+					yX = (readfloat f)
+					yY = (readfloat f)
+					yZ = (readfloat f)
+					
+					zX = (readfloat f)
+					zY = (readfloat f)
+					zZ = (readfloat f)
+					
+					pX = (readfloat f) * 6.9
+					pY = (readfloat f) * 6.9
+					pZ = (readfloat f) * 6.9
+					if b ==1 then boneframe.rootposition = [px,py,pz]
+					bonematrix = matrix3 -(normalize [zX, zY, zZ]) (normalize [yX, yY, yZ]) (normalize [xX, xY, xZ]) [pX, pY, pZ]
+					append boneFrame.boneRotations (bonematrix as quat)
+					append boneFrame.boneTransforms bonematrix
+				)
+				append Frames boneFrame  
+			)
+			
+			if(createSkeleton) then
+			(
+				foundBones = for obj in objects where ((finditem boneNames obj.name) > 0) collect obj
+				for i= 1 to NumberOfBones do (
+					foundbone = undefined
+					for j = 1 to foundBones.count do
+					(
+						if foundbones[j].name == boneNames[i] then
+						(
+							foundbone = obj
+							break;
+						)
+					)
+					if foundbone == undefined then
+					(
+						childBone = (Frames[1].boneTransforms[i].row4 - 0.3 * Frames[1].boneTransforms[i].row3)
+						targetPos = (Frames[1].boneTransforms[i].row4 - 1.0 * Frames[1].boneTransforms[i].row3)
+						for childIndex in boneChildren[i] where substring boneNames[childindex] 1 4 == "Bone" do
+						(
+							--childindex = boneChildren[i][1]
+							childbone = Frames[1].boneTransforms[childindex].row4
+							--format "Child Index = %\nChildPos = %\n\n" childindex childbone
+						)
+						foundbone = bonesys.createbone Frames[1].boneTransforms[i].row4 targetpos Frames[1].boneTransforms[i].row2
+						foundbone.length = length (Frames[1].boneTransforms[i].row4 - childBone)
+						foundbone.width = 0.3-- foundbone.length * 0.2
+						foundbone.height = 0.3-- foundbone.length *  0.2
+						foundbone.transform = Frames[1].boneTransforms[i]
+						foundbone.name = bonenames[i]
+					)
+					append CreatedBones foundBone
+				)
+				for i=1 to createdbones.count do
+				(
+					for c =1 to boneChildren[i].count do
+					(
+						CreatedBones[boneChildren[i][c]].parent = CreatedBones[i]
+					)
+				)
+			)
+			if(applyAnimation) then
+			(
+				foundBones = for obj in objects where obj.name == boneNames[1] collect obj
+				rootbone = foundbones[1]
+				format "Animating from %\n" rootbone.name
+				with animate on
+				(
+					for t=1 to NumberOfFrames do
+					(
+						at time t rootBone.pos = Frames[t].RootPosition
+						at time t ApplyFrameToBone rootBone t useMatrix:true
+					)
+				)
 			)
 		)
 	),
@@ -193,16 +320,23 @@ struct CRSkeletalAnimation
 fn TestSkeletalAnimation obj Frame:1=
 (
 	anim = CRSkeletalAnimation()
-	anim.Load FileToLoad:"E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core_Update2\Content\Peds\animations\d_max_ambient.anm"
+	anim.Load FileToLoad:"G:\Steam\SteamApps\common\Carmageddon Max Damage\Data_Core\Content\Peds\animations\m_gen_bike_run.anm"
 	if obj != undefined then anim.ApplyToCharacter obj Frame:Frame
 )
 
 fn TestSaveSkeletonAnimation obj =
 (
 	anim = CRSkeletalAnimation()
-	anim.BuildFromCharacter $ StartFrame:1 EndFrame:7
-	anim.Save "E:\Games\Steam\SteamApps\common\Carmageddon_Reincarnation\Data_Core\Content\Peds\animations\d_cow_windscreen.anm"
+	anim.BuildFromCharacter $ StartFrame:1 EndFrame:70
+	anim.Save "G:\\Steam\\SteamApps\\common\\Carmageddon Max Damage\\Data_Core\\Content\\Peds\\animations\\a_elephant_walk.anm"
 )
+fn TestC2LoadSkeletalAnimation obj createSkeleton:false applyAnimation:true animName:"ele_walk.bon" =
+(
+	anim = CRSkeletalAnimation()
+	anim.LoadFromC2 ("G:\\Carma2\\data\\PEDS\\MOVES\\"+animName) createSkeleton: createSkeleton applyAnimation:applyAnimation
+	--if obj != undefined then anim.ApplyToCharacter obj Frame:Frame
+)
+
 
 fn SetAnimFromMixamoBone boneToTransform boneMap =
 	(

@@ -12,10 +12,12 @@ struct AccessoryFileLump
 	CentreOfMass,
 
 	Shapes =#(),
-	fn CreateShape objects =
+	fn CreateShape objects moveToOrigin:false forcePolyhedron:false =
 	(
 		for obj in objects do
 		(
+			oldPos = obj.pos
+			obj.pos = [0,0,0]
 			objType = classof obj
 
 			isAxisAligned = (
@@ -25,19 +27,19 @@ struct AccessoryFileLump
 			isScaled = obj.scale.x != 1 or obj.scale.y != 1 or obj.scale.z != 1
 			isUniformScaled = obj.scale.x == obj.scale.y and obj.scale.x == obj.scale.z
 			format "%\nisAxisAligned: %\nisScaled: %\nisUniformScaled: %\n" objType isAxisAligned isScaled isUniformScaled
-			if (objType == Sphere or objType == GeoSphere) and isUniformScaled then
+			if forcePolyhedron == false and (objType == Sphere or objType == GeoSphere) and isUniformScaled then
 			(
 				accShape = AccessoryShape Type:"Sphere"
 				append accShape.Points obj.position
 				accShape.Radius = obj.radius * obj.scale.x
 			)
-			else if (objType == Box) and isAxisAligned then
+			else if forcePolyhedron == false and (objType == Box) and isAxisAligned then
 			(
 				accShape = AccessoryShape Type:"AlignedCuboid"
 				append accShape.Points obj.min
 				append accShape.Points obj.max
 			)
-			else if objType == Capsule and isUniformScaled then
+			else if forcePolyhedron == false and objType == Capsule and isUniformScaled then
 			(
 				accShape = AccessoryShape Type:"TicTac"
 				ticTacRadius = obj.scale.x * obj.radius
@@ -61,6 +63,7 @@ struct AccessoryFileLump
 				)
 			)
 			append Shapes accShape
+			obj.pos = oldPos
 		)
 	),
 	fn OutputShapeString =
@@ -118,7 +121,26 @@ struct AccessoryFileLump
 			)
 				append strStream "\n"
 				append strStream "\n"
+			append strStream  "form_collision_groups\n1"
 		)
-		format "%" (strStream as string)
+		--format "%" (strStream as string)
+		return (strStream as string)
+	),
+	
+	fn SaveTXT txtFile obj= (
+		
+		accTxt = "[DYNAMICS]\n\n<lump_name>\n"+obj.name+"\n\n<solid>\n<part_of_world>\n<mass>\n1000.000000\n\n\n<centre_of_mass>\n0.000000,0.000000,0.000000\n<DRIVABLE_ON>\n"
+		accTxt = accTxt + OutputShapeString()
+		
+		fp = openFile txtFile mode:"wt"
+		format "%" accText to:fp
+		close fp
+		
 	)
+)
+fn QuickGetAccessoryShape moveToOrigin:false forcePolyhedron:false =
+(
+	accessory = AccessoryFileLump()
+	accessory.CreateShape $ moveToOrigin:moveToOrigin forcePolyhedron:forcePolyhedron
+	accessory.OutputShapeString()
 )

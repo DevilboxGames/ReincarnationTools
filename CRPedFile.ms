@@ -266,3 +266,25 @@ fn TestPedFile =
 	--pf.SwapPointForRadius pf.SpawnSpecs
 	pf.SavePedFile()
 )	
+fn ExportSelectedToPedFile fname =
+(
+	pf = PedFile()
+	pf.PedFileName = fname
+	for i=1 to $.count do (
+		if (substring $[i].name 1 9) == "PedSpawn_" then
+		(
+			spawnSpec = PedFile_SpawnSpec()
+			spawnSpec.GroupOrType = substring $[i].name 10 -1
+			spawnSpec.Location = $[i].pos
+			if(classOf $[i]) == Sphere then
+			(
+				spawnSpec.type="Radius"
+				spawnSpec.radius = $[i].Radius
+				spawnSpec.pedcount = 2
+			)
+			append pf.SpawnSpecs spawnSpec
+		)
+	)
+	pf.SavePedFile()
+	
+)

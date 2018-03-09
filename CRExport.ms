@@ -718,6 +718,9 @@ fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
 fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true =
 (
 	global MaterialsToExport
+	if(MaterialsToExport==undefined) then (
+		MaterialsToExport = #()
+	)
 	for i=1 to MaterialsToExport.count do
 	(
 		mtlName = MaterialsToExport[i][1]
@@ -745,6 +748,10 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true =
 fn MaterialAlreadySetToExport matName =
 (
 	global MaterialsToExport
+	if(MaterialsToExport == undefined) then
+		(
+			MaterialsToExport = #()
+		)
 	for i=1 to MaterialstoExport.count do
 	(
 		if MaterialsToExport[i][1] == matName do return true
@@ -1561,16 +1568,21 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		
 		--print "Writing Bounding Box"
 		-- TODO Add Space For total ByteSize - Header
-		bboxHalfDistance = (length (model.max - model.min) ) / 2
-		
+		minLength = length model.min
+		maxLength = length model.max
+		format "Min length: % - Max Length: %" minLength maxLength
+		bboxHalfDistance = maxLength --(length (model.max - model.min) ) / 2
+		if minLength > maxLength then bboxHalfDistance = minLength
+		format "BBox Radius: %\n" bboxHalfDistance
+		format "BBox: \tMin: [%, %, %]\n\tMax: [%, %, %]\n\tCenter: [%, %, %]" -model.max.x model.min.z -model.max.y -model.min.x model.max.z -model.min.y -model.center.x model.center.z -model.center.y
 		writefloat f bboxHalfDistance
-		writefloat f model.min.x
+		writefloat f -model.max.x
 		writefloat f model.min.z
-		writefloat f model.min.y
-		writefloat f model.max.x
+		writefloat f -model.max.y
+		writefloat f -model.min.x
 		writefloat f model.max.z
-		writefloat f model.max.y
-		writefloat f model.center.x
+		writefloat f -model.min.y
+		writefloat f -model.center.x
 		writefloat f model.center.z
 		writefloat f -model.center.y
 		

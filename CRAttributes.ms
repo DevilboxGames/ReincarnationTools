@@ -3632,3 +3632,33 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 		)
 	)
 )
+
+fn GetBonesList mdl =
+(
+	if mdl.modifiers["Ped Bones List"] != undefined then
+	(
+		pedBonesList = for b in mdl.modifiers["Ped Bones List"].BoneList where b != undefined and b.node != undefined collect b.node
+		return pedBonesList
+		
+		
+		
+	)
+	else if mdl.modifiers["Skin"] != undefined then
+	(
+		return (GetBonesFromSkin skinMod)
+	)
+)
+fn AddPedBonesListMod mdl =
+(
+	if (IsObjectAPedBonesList mdl) != undefined then
+	(
+		messagebox mdl.name
+		max modify mode
+		boneHierarchyModifier = emptyModifier()
+		boneHierarchyModifier.name = "Ped Bones List"
+		addModifier mdl boneHierarchyModifier
+		custattributes.add boneHierarchyModifier PedSkeletonAttribute baseObject:false
+		--boneHierarchyModifier.PedSkelCustAttribute.AddBonesFromSkin()
+		SetCNTNodeType mdl "SKIN"
+	)
+)

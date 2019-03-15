@@ -223,14 +223,15 @@ if mtlmat_CA == undefined do
 				
 			local doRefresh = true
 			
+			
 					
 			on mtlmat_props open do
 			(
-				eh.backColor = 	eh.backColor.FromARGB 255  70 70 70
+				eh.backColor = 	eh.backColor.FromARGB 255  80 80 80
 				LayersGroup = (dotNetObject "system.windows.forms.GroupBox")
 				LayersGroup.Text = "Layers"
 				LayersGroup.ForeColor = LayersGroup.ForeColor.LightGray
-				SetControlLayout LayersGroup (DN_ControlLayout Width:300 Height: 150 )
+				SetControlLayout LayersGroup (DN_ControlLayout Width:300 Height: 250 )
 	
 				AddLayerButton = (dotNetObject "system.windows.forms.button")
 				AddLayerButton.Text = "Add"
@@ -241,6 +242,12 @@ if mtlmat_CA == undefined do
 				DeleteLayerButton.Text = "Delete"
 				SetControlLayout DeleteLayerButton (DN_ControlLayout Width:((LayersGroup.Width - 15)/2) Height:30 Left: (AddLayerButton.Right + 5) Top: 20)
 				LayersGroup.controls.Add DeleteLayerButton
+				
+				LayersList = (dotnetObject "system.windows.forms.listview")
+				SetControlLayout LayersList (DN_ControlLayout Width:(LayersGroup.Width - 10) Height:(LayersGroup.Height - 60) Top:(AddLayerButton.bottom + 5) Left:5)
+				LayersGroup.controls.Add LayersList
+				
+				
 				eh.controls.add LayersGroup
 			)
 			

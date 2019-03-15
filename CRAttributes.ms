@@ -43,7 +43,231 @@ fn target_cnt_filter obj = (IsObjectACNT obj == true )
 fn pickJointFilter obj = (
 	classof obj == CarmaHelper_JointHelper
 )
+
+MTLSaveFlags = #("USE_LUMP_COLOUR",	--States to use the colour value in the lump as the materials diffuse.
+"FORCE_ALPHA_BLEND",	--This forces the material to be rendered as an alpha mesh. Even if alpha is 1.0f
+"USE_MATERIAL_COLOUR",	--Modulate the colour value in the lump against the materials diffuse.
+"GLOW",	
+"HARDWARE_SPECULAR",	-- If true and the hardware can do vertex specular then its done. No fallback is given.
+"DOES_NOT_RECIEVE_SHADOWS",	-- If true then it can't be shadowed.
+"LIGHT_FLARE",	-- Makes the polys rendered with this material face the camera and freek with there material.
+"DOES_NOT_CAST_SHADOWS",	-- If true then the material will be ignored when we are doing a shadow map pass
+"LIGHT_PER_PIXEL",	-- If true then the material will use per pixel lighting other wise it will be lit per vertex
+"POST_SORT",	
+"LIT",	--TRUE if it's lit, or false if not.
+"USE_VERTEX_COLOUR",	--If true take the diffuse form the vertices and not the material.
+"GRASS_ANIMATION",	
+"TREE_ANIMATION",	
+"FREE14",	
+"NOT_LIT_OBSOLETE",	-- Still here for old file versions.TRUE=Dont light this material, FALSE=light as normal
+"NO_SORT_ALPHA",	-- TRUE=Dont sort if alpha component, FALSE=Sort if contains alpha
+"FREE17",	
+"DOUBLE_SIDED",	-- TRUE=Don't perform backface culling on this face
+"UNPICKABLE",	-- TRUE=Cannot be picked,FALSE=Can be
+"PRELIT_OBSOLETE",	-- Still here for old file versions.TRUE=use the pre-lighting values in the vertices.
+"FREE21",	
+"FREE22",	
+"IGNORE",	
+"FREE24",	
+"MIPMAPPED",	
+"FREE26",	
+"ALPHA_FOGGED",	-- Fades out in a similar fasion as fog is applied to objects
+"FOGGED",	-- TRUE=Accepts any fogging in the viewport
+"FILTERED",	-- TRUE=Smooth filtering, FALSE=Nearest pixel
+"FREE30",	
+"FREE31"	)
+
+MTLUVMapMods =#("INVALID",
+"WRAP",
+"MIRROR",
+"CLAMP",
+"BORDER")
+
+MTLBlendModes = #("NORMAL",
+"ADDITIVE",
+"MODULATE",
+"SUBTRACTIVE",
+"SHADOWMAP",
+"SPECULARMAP",
+"MODULATEX2",
+"VERTEXALPHA",
+"ENVMAPMASK",
+"NONE")
+
+MTLSubstances = #("DEFAULT",
+"SOFT_WOOD",
+"PAINTED_SOFT_WOOD",
+"HARD_WOOD",
+"CARPETED_FLOOR",
+"PLANT",
+"FLESH",
+"RUBBER",
+"TEXTILE_LOOSE",
+"TEXTILE_TAUT",
+"CARBON_FIBRE",
+"PLASTIC",
+"GLASS",
+"BRICKS",
+"SMOOTH_CONCRETE",
+"ROUGH_CONCRETE",
+"STONE",
+"WATER",
+"OIL",
+"GREASE",
+"STAIRS",
+"STICKY",
+"ASTROTURF",
+"LONG_GRASS",
+"SOFT_MUD",
+"SOFT_TARMAC",
+"GOLD",
+"STEEL",
+"FIBRE_GLASS",
+"PERSPEX",
+"ALUMINIUM",
+"GOOP",
+"ROAD_TARMAC",
+"RACE_TARMAC",
+"SAND",
+"ROCK",
+"DIRT_TRACK",
+"MUD",
+"SHORT_GRASS",
+"GRAVEL_TRAP",
+"ICE")
+if mtlmat_CA == undefined do
+(
+	MtlMat_CA = attributes mtlmat_data
+	attribID:#(0x371d0fa1, 0x1de32116)
+	(
+		parameters mtlmat_data rollout:mtlmat_props
+		(
+			mat_substance type:#integer default:0 ui:mat_ui_substance
+			mat_flags type:#booltab tabsize:32 ui:(mat_USE_LUMP_COLOUR, mat_FORCE_ALPHA_BLEND, mat_USE_MATERIAL_COLOUR, mat_GLOW, mat_HARDWARE_SPECULAR, mat_DOES_NOT_RECIEVE_SHADOWS, mat_LIGHT_FLARE, mat_DOES_NOT_CAST_SHADOWS, mat_LIGHT_PER_PIXEL, mat_POST_SORT, mat_LIT, mat_USE_VERTEX_COLOUR, mat_GRASS_ANIMATION, mat_TREE_ANIMATION, mat_FREE14, mat_NOT_LIT_OBSOLETE, mat_NO_SORT_ALPHA, mat_FREE17, mat_DOUBLE_SIDED, mat_UNPICKABLE, mat_PRELIT_OBSOLETE, mat_FREE21, mat_FREE22, mat_IGNORE, mat_FREE24, mat_MIPMAPPED, mat_FREE26, mat_ALPHA_FOGGED, mat_FOGGED, mat_FILTERED, mat_FREE30, mat_FREE3) autodisplay:true
+			mat_red type:#float default:1 ui:mat_ui_red
+			mat_green type:#float default:1 ui:mat_ui_green
+			mat_blue type:#float default:1 ui:mat_ui_blue
+			
+			mat_emissive_red type:#float default:0 ui:mat_ui_emissive_red
+			mat_emissive_green type:#float default:0 ui:mat_ui_emissive_green
+			mat_emissive_blue type:#float default:0 ui:mat_ui_emissive_blue
+			
+			mat_specular_red type:#float default:1 ui:mat_ui_specular_red
+			mat_specular_green type:#float default:1 ui:mat_ui_specular_green
+			mat_specular_blue type:#float default:1 ui:mat_ui_specular_blue
+			mat_specular_power type:#float default:20 ui:mat_ui_specular_power
+		)
+		rollout mtlmat_props "Carmageddon material properties"
+		(
+			
+			group "Substance" 
+			(
+				dropdownlist mat_ui_substance "Substance Type" items:MTLSubstances selection:mat_substance
+			)
+			group "Flags"
+			(
+				checkbox mat_USE_LUMP_COLOUR "USE_LUMP_COLOUR" checked:false across:2 align:#left
+				checkbox mat_FORCE_ALPHA_BLEND "FORCE_ALPHA_BLEND" checked:false
+				checkbox mat_USE_MATERIAL_COLOUR "USE_MATERIAL_COLOUR" checked:false across:2
+				checkbox mat_GLOW "GLOW" checked:false
+				checkbox mat_HARDWARE_SPECULAR "HARDWARE_SPECULAR" checked:false across:2
+				checkbox mat_DOES_NOT_RECIEVE_SHADOWS "DOES_NOT_RECIEVE_SHADOWS" checked:false
+				checkbox mat_LIGHT_FLARE "LIGHT_FLARE" checked:false across:2
+				checkbox mat_DOES_NOT_CAST_SHADOWS "DOES_NOT_CAST_SHADOWS" checked:false
+				checkbox mat_LIGHT_PER_PIXEL "LIGHT_PER_PIXEL" checked:false across:2
+				checkbox mat_POST_SORT "POST_SORT" checked:false
+				checkbox mat_LIT "LIT" checked:false across:2
+				checkbox mat_USE_VERTEX_COLOUR "USE_VERTEX_COLOUR" checked:false
+				checkbox mat_GRASS_ANIMATION "GRASS_ANIMATION" checked:false across:2
+				checkbox mat_TREE_ANIMATION "TREE_ANIMATION" checked:false
+				checkbox mat_FREE14 "FREE14" checked:false across:2
+				checkbox mat_NOT_LIT_OBSOLETE "NOT_LIT_OBSOLETE" checked:false
+				checkbox mat_NO_SORT_ALPHA "NO_SORT_ALPHA" checked:false across:2
+				checkbox mat_FREE17 "FREE17" checked:false
+				checkbox mat_DOUBLE_SIDED "DOUBLE_SIDED" checked:false across:2
+				checkbox mat_UNPICKABLE "UNPICKABLE" checked:false
+				checkbox mat_PRELIT_OBSOLETE "PRELIT_OBSOLETE" checked:false across:2
+				checkbox mat_FREE21 "FREE21" checked:false
+				checkbox mat_FREE22 "FREE22" checked:false across:2
+				checkbox mat_IGNORE "IGNORE" checked:false
+				checkbox mat_FREE24 "FREE24" checked:false across:2
+				checkbox mat_MIPMAPPED "MIPMAPPED" checked:false
+				checkbox mat_FREE26 "FREE26" checked:false across:2
+				checkbox mat_ALPHA_FOGGED "ALPHA_FOGGED" checked:false
+				checkbox mat_FOGGED "FOGGED" checked:false across:2
+				checkbox mat_FILTERED "FILTERED" checked:false
+				checkbox mat_FREE30 "FREE30" checked:false across:2
+				checkbox mat_FREE3 "FREE3" checked:false
+			)
+			group "Ambient"
+			(
+				
+				spinner mat_ui_red "R" range:[0,1,1] type:#float across:3
+				spinner mat_ui_green "G" range:[0,1,1] type:#float
+				spinner mat_ui_blue "B" range:[0,1,1] type:#float
+			)
+			group "Emmissive"
+			(
+				spinner mat_ui_emissive_red "R" range:[0,1,1] type:#float across:3
+				spinner mat_ui_emissive_green "G" range:[0,1,1] type:#float 
+				spinner mat_ui_emissive_blue "B" range:[0,1,1] type:#float 
+			)
+			group "Specular"
+			(
+				spinner mat_ui_specular_red "R" range:[0,1,1] type:#float across:3
+				spinner mat_ui_specular_green "G" range:[0,1,1] type:#float
+				spinner mat_ui_specular_blue "B" range:[0,1,1] type:#float 
+				spinner mat_ui_specular_power "Power" range:[0,1,1] type:#float across:1
+			)
+				dotnetcontrol eh "System.Windows.Forms.ContainerControl" width:300 height:300 align:#left
+				
+			local doRefresh = true
+			
+					
+			on mtlmat_props open do
+			(
+				eh.backColor = 	eh.backColor.FromARGB 255  70 70 70
+				LayersGroup = (dotNetObject "system.windows.forms.GroupBox")
+				LayersGroup.Text = "Layers"
+				LayersGroup.ForeColor = LayersGroup.ForeColor.LightGray
+				SetControlLayout LayersGroup (DN_ControlLayout Width:300 Height: 150 )
 	
+				AddLayerButton = (dotNetObject "system.windows.forms.button")
+				AddLayerButton.Text = "Add"
+				SetControlLayout AddLayerButton (DN_ControlLayout Width:((LayersGroup.Width - 15)/2) Height:30 Left: 5 Top: 20)
+				LayersGroup.controls.Add AddLayerButton
+				
+				DeleteLayerButton = (dotNetObject "system.windows.forms.button")
+				DeleteLayerButton.Text = "Delete"
+				SetControlLayout DeleteLayerButton (DN_ControlLayout Width:((LayersGroup.Width - 15)/2) Height:30 Left: (AddLayerButton.Right + 5) Top: 20)
+				LayersGroup.controls.Add DeleteLayerButton
+				eh.controls.add LayersGroup
+			)
+			
+			on mtlmat_props clode do
+			(
+				
+			)
+			
+			on mtlmat_props resized size do
+			(
+				--format "Rollout size: %\n" size
+				eh.width = size.x - 100
+				eh.height = 300
+			)
+			on eh Paint args do
+			(
+				if doRefresh then
+				(
+					doRefresh = false
+					eh.refresh()
+					doRefresh = true
+				)
+			)
+		)
+	)
+)
+
 /*********************************
 ***** CNT ATTRIBUTES
 *********************************/

@@ -1179,6 +1179,8 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 					else facesForFinalMatID[usedMatPos] = facesForFinalMatID[usedMatPos] + facesForMatID[faceMatID]
 				)
 			)
+			
+			
 			for i=1 to usedMatsCount do
 			(
 				--format "Setting Default Name\n"

@@ -21,7 +21,6 @@ fn CR_SetupExportLevelTab tabPage =
 	tabPage.controls.Add CreateMaterialsCheckbox
 	
 	
-	
 	ExportPaperworkButton = (dotNetObject "system.windows.forms.button")
 	ExportPaperworkButton.Text = "Export All Paperwork"
 	SetControlLayout ExportPaperworkButton (DN_ControlLayout Width:150 Height:30 Left: ((tabPage.Width - 150)/2) Top: (CreateMaterialsCheckbox.bottom+5))
@@ -146,6 +145,13 @@ fn CR_SetupExportTab tabPage =
 	CreateMaterialsCheckbox.Name="CreateMaterialsCheckbox"
 	SetControlLayout CreateMaterialsCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+5) Width: 250 Left: 10)
 	GenericExportGroup.controls.Add CreateMaterialsCheckbox
+		
+	
+	MTLMaterialsCheckbox = (dotnetobject "system.windows.forms.checkbox")
+	MTLMaterialsCheckbox.Text = "MTL Materials"
+	MTLMaterialsCheckbox.name="MTLMaterialsCheckbox"
+	SetControlLayout CreateMaterialsCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+1) Width: 250 Left:(CreateMaterialsCheckbox.Right + 10))
+	tabPage.controls.Add CreateMaterialsCheckbox
 	
 	tabPage.controls.Add GenericExportGroup
 	

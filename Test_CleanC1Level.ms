@@ -74,5 +74,22 @@ fn cleanImportedCarmaterials =
 		)
 	)
 )
+
+fn RemoveOpacityMaps = (
+	for obj in objects do (
+		if (classof  obj.material) == multimaterial then (
+			for mat in obj.material.materiallist do (
+				format "%\n" mat.name
+				mat.opacitymap = undefined
+			)
+		)
+		else  (
+				format "%\n" obj.material.name
+			obj.material.opacitymap = undefined
+		)
+	)
+)
+
 cleanImportedC1Level()
 cleanImportedCarmaterials()
+RemoveOpacityMaps()

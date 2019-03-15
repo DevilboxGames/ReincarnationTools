@@ -527,6 +527,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		for i=1 to materialCount do
 		(
 			materialName = readpaddedstring f version61OrLess:version61orless
+			format "matid: % matname: %\n" i materialName
 			append materialNames materialName
 			--format "Checking if material #% \"%\" already has been loaded\n" i materialName
 			subMat = undefined
@@ -599,7 +600,11 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		for i=1 to PREPfaceCount do
 		(
 			matID = readshort f #unsigned
+			
 			faceflags = readshort f #unsigned
+			if(matID == 26 or matID == 5) then (
+				format "matID % - face flags: %\n" matID faceflags
+			)
 			--printFlagBits faceflags 32 "Face Flags"
 			v1 = readlong f #unsigned
 			v2 = readlong f #unsigned
@@ -1727,6 +1732,14 @@ fn ImportCNTNode f parentNode =
 		newNode.nodeData.objectName = readstring2 f newNode.nodeData.objectNameLength
 		
 	)
+	else if newNode.nodeType == "SPLN" then
+	(
+		for i=1 to 88 do
+		(
+		newNode.nodeData = SPLNnode bytes:#()
+			append newNode.nodeData.bytes (readbyte f)
+		)
+	)
 	else if newNode.nodeType == "MODL" then
 	(
 		newNode.nodeData = MODLnode objectNameLength:0 objectName:""
@@ -1814,7 +1827,7 @@ fn MergeCNTNodes outMesh inMesh =
 	
 	return outMesh
 )
-fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0]=
+fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true =
 (
 	--format "Parsing Node Type: %\n" cntNode.nodeType
 	if cntNode.nodeType == "MODL" or cntNode.nodetype == "SKIN" then
@@ -1829,7 +1842,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		)
 		--format "Loading MDL from %\n" fname
 		
-		if ((dotnetclass "System.IO.File").exists fname) then
+		if ((dotnetclass "System.IO.File").exists fname) and importObjects then
 		(
 			--fname = CarmaSettings.GamePath + "\\Data_core\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
 		

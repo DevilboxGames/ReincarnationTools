@@ -156,6 +156,20 @@ if mtlmat_CA == undefined do
 			mat_specular_green type:#float default:1 ui:mat_ui_specular_green
 			mat_specular_blue type:#float default:1 ui:mat_ui_specular_blue
 			mat_specular_power type:#float default:20 ui:mat_ui_specular_power
+			layer_name type:#stringtab tabSizeVariable:true
+			layer_blend_mode type:#inttab tabSizeVariable:true
+	       	layer_alpha_opacity type:#floatTab tabsizevariable:true
+			layer_specialfx type:#intTab tabsizevariable:true
+			layer_flipbook_fps type:#floatTab tabsizevariable:true
+			layer_scrollspeed_u type:#floatTab tabsizevariable:true
+			layer_scrollspeed_v type:#floatTab tabsizevariable:true
+			layer_mappingmode_u type:#intTab tabsizevariable:true
+			layer_mappingmode_v type:#intTab tabsizevariable:true
+			layer_uv_slot type:#intTab tabsizevariable:true
+			layer_numframes_u type:#intTab tabsizevariable:true
+			layer_numframes_v type:#intTab tabsizevariable:true
+			layer_layerflags type:#intTab tabsizevariable:true
+
 		)
 		rollout mtlmat_props "Carmageddon material properties"
 		(
@@ -248,10 +262,11 @@ if mtlmat_CA == undefined do
 				LayersGroup.controls.Add LayersList
 				
 				
+				
 				eh.controls.add LayersGroup
 			)
 			
-			on mtlmat_props clode do
+			on mtlmat_props close do
 			(
 				
 			)

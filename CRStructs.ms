@@ -69,7 +69,22 @@ struct MTLLayer
 		writebyte f LayerFlags #unsigned
 		
 	),
-	
+	fn ApplyToMaterial mat layer = (
+			
+		mat.mtlmat_data.layer_name[layer] 			= MapName
+		mat.mtlmat_data.layer_blend_mode[layer] 	= BlendMode + 1
+		mat.mtlmat_data.layer_alpha_opacity[layer] = AlphaOpacity
+		mat.mtlmat_data.layer_specialfx[layer] 	= SpecialFX + 1
+		mat.mtlmat_data.layer_flipbook_fps[layer]  = FlipbookFPS
+		mat.mtlmat_data.layer_scrollspeed_u[layer] = ScrollSpeedU
+		mat.mtlmat_data.layer_scrollspeed_v[layer] = ScrollSpeedV
+		mat.mtlmat_data.layer_mappingmode_u[layer] = MappingModeU
+		mat.mtlmat_data.layer_mappingmode_v[layer] = MappingModeV
+		mat.mtlmat_data.layer_uv_slot[layer] 		= UVSlot
+		mat.mtlmat_data.layer_numframes_u[layer] 	= NumFramesU
+		mat.mtlmat_data.layer_numframes_v[layer] 	= NumFramesV
+		mat.mtlmat_data.layer_layerflags[layer] 	= LayerFlags
+	),
 	fn Load f =
 	(
 		MapNameLength = readlong f
@@ -156,6 +171,58 @@ struct MTLFile (
 		writelong f AppType #unsigned
 		writelong f AppFlags #unsigned
 		fclose f
+	),
+	fn ApplyToMaterial mat = (
+		if (custAttributes.get mat mtlmat_ca) != undefined then
+		(
+			custAttributes.add mat mtlmat_ca
+		)
+
+		mat.mtlmat_data.mat_substance =PhysSubstance + 1
+		mat.mtlmat_data.flags = #()
+
+		for i=0 to 31 do (
+			append mat.mtlmat_data ((bit.and saveflags (bit.shift 1 i)) == (bit.shift 1 i))
+		)
+
+		mat.mtlmat_data.mat_PS2MipDistance = PS2MipDistance
+		mat.mtlmat_data.mat_PS2MipValue = PS2MipValue
+
+		mat.mtlmat_data.mat_FlareSpec = FlareSpec
+
+		mat.mtlmat_data.mat_red =ambientred
+		mat.mtlmat_data.mat_green =ambientgreen
+		mat.mtlmat_data.mat_blue =ambientblue
+		
+		mat.mtlmat_data.mat_emissive_red =emissivered
+		mat.mtlmat_data.mat_emissive_green =emissivegreen
+		mat.mtlmat_data.mat_emissive_blue =emissiveblue
+		
+		mat.mtlmat_data.mat_specular_red =specularred
+		mat.mtlmat_data.mat_specular_green =speculargreen
+		mat.mtlmat_data.mat_specular_blue =specularblue
+		mat.mtlmat_data.mat_specular_power =specularpower
+		
+		for i =  mat.mtlmat_data.layer_name.count to 1 by -1 do (
+			deleteItem mat.mtlmat_data.layer_name i
+			deleteItem mat.mtlmat_data.layer_blend_mode i
+			deleteItem mat.mtlmat_data.layer_alpha_opacity i
+			deleteItem mat.mtlmat_data.layer_specialfx i
+			deleteItem mat.mtlmat_data.layer_flipbook_fps i
+			deleteItem mat.mtlmat_data.layer_scrollspeed_u i
+			deleteItem mat.mtlmat_data.layer_scrollspeed_v i
+			deleteItem mat.mtlmat_data.layer_mappingmode_u i
+			deleteItem mat.mtlmat_data.layer_mappingmode_v i
+			deleteItem mat.mtlmat_data.layer_uv_slot i
+			deleteItem mat.mtlmat_data.layer_numframes_u i
+			deleteItem mat.mtlmat_data.layer_numframes_v i
+			deleteItem mat.mtlmat_data.layer_layerflags i
+		)
+		for i = 0 to numlayers do (
+			layer = Layers[i]
+			layer.ApplyToMaterial mat i
+		)
+
 	),
 	fn Load filename = (
 		f = fopen filename "r"

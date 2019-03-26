@@ -1,3 +1,4 @@
+
 if printArrayInFull== undefined then
 (
 	filein "CRHelpsFunctions.ms"
@@ -77,7 +78,7 @@ MTLSaveFlags = #("USE_LUMP_COLOUR",	--States to use the colour value in the lump
 "FREE30",	
 "FREE31"	)
 
-MTLUVMapMods =#("INVALID",
+MTLUVMappingModes =#("INVALID",
 "WRAP",
 "MIRROR",
 "CLAMP",
@@ -93,6 +94,38 @@ MTLBlendModes = #("NORMAL",
 "VERTEXALPHA",
 "ENVMAPMASK",
 "NONE")
+
+MTLLayerFlags = #("NO_MIPMAP",
+	"FLIP_BOOK_ANIM",
+	"UV_SCROLL",
+	"USE_VERTEX_ALPHA",
+	"FREE4",
+	"FREE5",
+	"FREE6",
+	"FREE7")
+
+MTLLayerEffects = #("NORMAL",			--// OBSOLETE.Standard chrome map
+	"SHINY_OBSOLETE",			--// OBSOLETE.Specular reflection map
+	"BUMPMAP",			--// Bump-map and/or per pixel lighting.
+	"ENVMAP_OBSOLETE",			--// OBSOLETE.Copies the model x/z to u v then applies if set the texture transform jobby.
+	"SPHERICAL_OBSOLETE",			--// OBSOLETE.Apply spherical mapping (useful for fake dynamic envmaps)
+	"ALTERNATE_OBSOLETE",			--// OBSOLETE.(This is now obsolet, has to stay for legacy.)Same as NORMAL, but use the secondary u/v set for rendering
+	"DECAL",			--// Render using D3DTOP_MODULATEINVALPHA_ADDCOLOR for decals.
+	"FREE8",			--// OBSOLETE. Causes an untexture lighting poly to be drawn in a subsequant lighting pass/stage.
+	"THRESHOLD",			--// Generates UV's by puting the verts xy screen pos in to the uv's and then apply a texture transform matrix. The matrix is by default a x90 degree rot or the material matrix.
+	"REFLECTION_VECTOR"			--// Generates UV's by grabbing the reflection vectors x and z cords and doing a texture look up with them
+	)
+
+MTLLayerType = #("NOT_USED",			-- Lit untextured polys.
+	"SOLID_COLOUR",			-- Lit untextured polys.
+	"SOLID_TEX",			-- OBSOLETE. Was used of non-lit textured polys, now material passed with TFACTOR, use 'BZ_TEXTURE_LAYER_SOLID_TEX_COLOUR' insted.
+	"SOLID_TEX_COLOUR",			-- Lit textured polys.
+	"TRANSPARENT_TEX",			-- Lit transparent texture polys.
+	"TRANSLUCENT_COLOUR",			-- Textured alpha poly with alpha controled by alpha value in layer.
+	"TRANSLUCENT_TEX",			-- Textured alpha poly with alpha controled by alpha channel in texture.
+	"TRANSLUCENT_TEX_COLOUR",			-- Textured alpha poly with alpha controled by alpha value in layer and by alpha channel in texture.
+	"TRANSLUCENT_COLOUR_SOLID_TEX"			-- Textured alpha poly with alpha controled by alpha value in layer.
+)
 
 MTLSubstances = #("DEFAULT",
 "SOFT_WOOD",
@@ -135,7 +168,11 @@ MTLSubstances = #("DEFAULT",
 "SHORT_GRASS",
 "GRAVEL_TRAP",
 "ICE")
-if mtlmat_CA == undefined do
+--if mtlmat_CA == undefined do
+fn testeventhandler sender ev = (
+	$.name = "pressed the buttons"
+	format "Event handler triggered for %\n" sender.name
+)
 (
 	MtlMat_CA = attributes mtlmat_data
 	attribID:#(0x371d0fa1, 0x1de32116)
@@ -144,6 +181,8 @@ if mtlmat_CA == undefined do
 		(
 			mat_substance type:#integer default:0 ui:mat_ui_substance
 			mat_flags type:#booltab tabsize:32 ui:(mat_USE_LUMP_COLOUR, mat_FORCE_ALPHA_BLEND, mat_USE_MATERIAL_COLOUR, mat_GLOW, mat_HARDWARE_SPECULAR, mat_DOES_NOT_RECIEVE_SHADOWS, mat_LIGHT_FLARE, mat_DOES_NOT_CAST_SHADOWS, mat_LIGHT_PER_PIXEL, mat_POST_SORT, mat_LIT, mat_USE_VERTEX_COLOUR, mat_GRASS_ANIMATION, mat_TREE_ANIMATION, mat_FREE14, mat_NOT_LIT_OBSOLETE, mat_NO_SORT_ALPHA, mat_FREE17, mat_DOUBLE_SIDED, mat_UNPICKABLE, mat_PRELIT_OBSOLETE, mat_FREE21, mat_FREE22, mat_IGNORE, mat_FREE24, mat_MIPMAPPED, mat_FREE26, mat_ALPHA_FOGGED, mat_FOGGED, mat_FILTERED, mat_FREE30, mat_FREE3) autodisplay:true
+			mat_PS2MipDistance type:#float default:1 ui:mat_ui_PS2MipDistance
+			mat_PS2MipValue type:#float default:1 ui:mat_ui_PS2MipValue
 			mat_red type:#float default:1 ui:mat_ui_red
 			mat_green type:#float default:1 ui:mat_ui_green
 			mat_blue type:#float default:1 ui:mat_ui_blue
@@ -174,6 +213,7 @@ if mtlmat_CA == undefined do
 		rollout mtlmat_props "Carmageddon material properties"
 		(
 			
+			local selectedLayer, layerProperties,layerSaveButton
 			group "Substance" 
 			(
 				dropdownlist mat_ui_substance "Substance Type" items:MTLSubstances selection:mat_substance
@@ -233,42 +273,289 @@ if mtlmat_CA == undefined do
 				spinner mat_ui_specular_blue "B" range:[0,1,1] type:#float 
 				spinner mat_ui_specular_power "Power" range:[0,1,1] type:#float across:1
 			)
-				dotnetcontrol eh "System.Windows.Forms.ContainerControl" width:300 height:300 align:#left
+			group "Layers"
+			(
+				dotnetcontrol lv_Layers "listview" height: 100
+				button but_MoveLayerUp "^" across:2 
+				button but_MoveLayerDown "v" across:2 
+				edittext txt_LayerName "Layer Name"
 				
+				dropdownlist dpdn_LayerBlendMode "Blend Mode" items:MTLBlendModes selection:1  across:2
+				dropdownlist dpdn_LayerSpecialFX "FX" items:MTLLayerEffects selection:1 
+
+				spinner spn_AlphaOpacity "Alpha Opacity" range:[0,1,1] type:#float align:#left
+				spinner spn_FlipbookFPS "Flipbook FPS" range:[0,100,30] type:#float align:#left
+				spinner spn_ScrollSpeedU "ScrollSpeed U" range:[0,100,30] type:#float fieldWidth:60 align:#left across:2
+				spinner spn_ScrollSpeedV "ScrollSpeed V" range:[0,100,30] type:#float fieldWidth:60 align:#left
+
+				
+				dropdownlist dpdn_LayerMappingModeU "MappingMode U" items:MTLUVMappingModes selection:2  across:2
+				dropdownlist dpdn_LayerMappingModeV "MappingMode V" items:MTLUVMappingModes selection:2
+
+				spinner spn_UVSlot "UV Slot" range:[0,3,0] type:#integer align:#left
+				spinner spn_NumFramesU "Num Frames U" range:[0,200,8] type:#integer align:#left across:2
+				spinner spn_NumFramesV "Num Frames V" range:[0,200,8] type:#integer align:#left
+				checkbox chk_NO_MIPMAP "NO_MIPMAP" checked:false across:2 align:#left
+				checkbox chk_FLIP_BOOK_ANIM "FLIP_BOOK_ANIM" checked:false across:2 align:#left
+				checkbox chk_UV_SCROLL "UV_SCROLL" checked:false across:2 align:#left
+				checkbox chk_USE_VERTEX_ALPHA "USE_VERTEX_ALPHA" checked:false across:2 align:#left
+				checkbox chk_FREE4 "FREE4" checked:false across:2 align:#left
+				checkbox chk_FREE5 "FREE5" checked:false across:2 align:#left
+				checkbox chk_FREE6 "FREE6" checked:false across:2 align:#left
+				checkbox chk_FREE7 "FREE7" checked:false across:2 align:#left
+
+				button but_SaveLayer "Save" across:3 width:100
+				button but_DeleteLayer "Delete" width:100
+				button but_AddLayer "Add" width: 100
+			)	
 			local doRefresh = true
 			
-			
+			fn refreshLayerList = (
+				lv_Layers.Items.Clear()
+				for i=1 to layer_name.count do
+				(
+					if(layer_name[i] != undefined) then(
+					lvItem = dotnetobject "listviewitem" layer_name[i]
+					blendmodeID = layer_blend_mode[i]
+					layerfxID = layer_specialfx[i]
+					lvitem.subitems.add (MTLBlendModes[blendmodeID])
+					lvitem.subitems.add (MTLLayerEffects[layerfxID])
+					lv_Layers.Items.add lvitem
+					)
+				)
+			)
+
+			fn updateLayer sender ev = (
+				format "Event handler called\n"
+				if(layerProperties != undefined) then (
 					
+					i = lv_Layers.selectedIndices.Item[0] + 1
+					
+					format "Updating layer info %\n" i
+
+					layer_name[i] = layerProperties.controls["LayerName"].Text
+					layer_blend_mode[i] = layerProperties.controls["LayerBlendMode"].selectedIndex
+					RefreshLayersList()
+				)
+			)
+			on lv_Layers selectedindexchanged do (
+				
+				selectedLayer = 0
+				but_SaveLayer.enabled = false
+				but_DeleteLayer.enabled = false
+				if lv_Layers.selectedIndices.count > 0  then (
+					
+					i = lv_Layers.selectedIndices.Item[0] + 1
+					selectedLayer = i
+					but_SaveLayer.enabled = true
+					but_DeleteLayer.enabled = true
+					
+					txt_LayerName.text= layer_name[selectedLayer]
+					dpdn_LayerBlendMode.selection = layer_blend_mode[selectedLayer]
+					dpdn_LayerSpecialFX.selection = layer_specialfx[selectedLayer]
+					spn_AlphaOpacity.value = layer_alpha_opacity[selectedLayer]
+					spn_FlipbookFPS.value = layer_flipbook_fps[selectedLayer]
+					spn_ScrollSpeedU.value = layer_scrollspeed_u[selectedLayer]
+					spn_ScrollSpeedV.value = layer_scrollspeed_v[selectedLayer]
+					dpdn_LayerMappingModeU.selection = layer_mappingmode_u[selectedLayer]
+					dpdn_LayerMappingModeV.selection = layer_mappingmode_v[selectedLayer]
+					spn_UVSlot.value = layer_uv_slot[selectedLayer]
+					spn_NumFramesU.value = layer_numframes_u[selectedLayer]
+					spn_NumFramesV.value = layer_numframes_v[selectedLayer]
+					chk_No_MipMap.checked = (bit.and layer_layerflags[selectedLayer] 1) == 1
+					chk_FLIP_BOOK_ANIM.checked = (bit.and layer_layerflags[selectedLayer] 2) == 2
+					chk_UV_SCROLL.checked = (bit.and layer_layerflags[selectedLayer] 4) == 4
+					chk_USE_VERTEX_ALPHA.checked = (bit.and layer_layerflags[selectedLayer] 8) == 8
+					chk_FREE4.checked = (bit.and layer_layerflags[selectedLayer] 16) == 16
+					chk_FREE5.checked = (bit.and layer_layerflags[selectedLayer] 32) == 32
+					chk_FREE6.checked = (bit.and layer_layerflags[selectedLayer] 64) == 64
+					chk_FREE7.checked = (bit.and layer_layerflags[selectedLayer] 128) == 128
+				)
+			)
 			on mtlmat_props open do
 			(
-				eh.backColor = 	eh.backColor.FromARGB 255  80 80 80
-				LayersGroup = (dotNetObject "system.windows.forms.GroupBox")
-				LayersGroup.Text = "Layers"
-				LayersGroup.ForeColor = LayersGroup.ForeColor.LightGray
-				SetControlLayout LayersGroup (DN_ControlLayout Width:300 Height: 250 )
-	
-				AddLayerButton = (dotNetObject "system.windows.forms.button")
-				AddLayerButton.Text = "Add"
-				SetControlLayout AddLayerButton (DN_ControlLayout Width:((LayersGroup.Width - 15)/2) Height:30 Left: 5 Top: 20)
-				LayersGroup.controls.Add AddLayerButton
 				
-				DeleteLayerButton = (dotNetObject "system.windows.forms.button")
-				DeleteLayerButton.Text = "Delete"
-				SetControlLayout DeleteLayerButton (DN_ControlLayout Width:((LayersGroup.Width - 15)/2) Height:30 Left: (AddLayerButton.Right + 5) Top: 20)
-				LayersGroup.controls.Add DeleteLayerButton
+				 selectedLayer = 0
 				
-				LayersList = (dotnetObject "system.windows.forms.listview")
-				SetControlLayout LayersList (DN_ControlLayout Width:(LayersGroup.Width - 10) Height:(LayersGroup.Height - 60) Top:(AddLayerButton.bottom + 5) Left:5)
-				LayersGroup.controls.Add LayersList
+				lv_Layers.view  = (dotnetclass "view").details
+				lv_Layers.fullrowselect= true
+				lv_Layers.gridlines = true
+				lv_Layers.multiselect =false
+				lv_Layers.columns.add "Name" 140
+				lv_Layers.columns.add "Blend Mode" 70
+				lv_Layers.columns.add "FX" 70
+				refreshLayerList()
+
 				
-				
-				
-				eh.controls.add LayersGroup
+			)
+
+			on txt_LayerName changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_name.count) then (
+					layer_name[selectedLayer] = val
+					refreshLayerList()
+				)
+			)
+			on dpdn_LayerBlendMode selected  val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_blend_mode.count) then (
+					layer_blend_mode[selectedLayer] = val
+					refreshLayerList()
+				)
+			)
+			on dpdn_LayerSpecialFX selected val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_specialfx.count) then (
+					layer_specialfx[selectedLayer] = val
+					refreshLayerList()
+				)
+			)
+			on spn_AlphaOpacity changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_alpha_opacity.count) then (
+					layer_alpha_opacity[selectedLayer] = val
+				)
+			)
+			on spn_FlipbookFPS changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_flipbook_fps.count) then (
+					layer_flipbook_fps[selectedLayer] = val
+				)
+			)
+			on spn_ScrollSpeedU changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_scrollspeed_u.count) then (
+					layer_scrollspeed_u[selectedLayer] = val
+				)
+			)
+			on spn_NumFramesV changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_scrollspeed_v.count) then (
+					layer_scrollspeed_v[selectedLayer] = val
+				)
+			)
+			on dpdn_LayerMappingModeU selected  val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_mappingmode_u.count) then (
+					layer_mappingmode_u[selectedLayer] = val
+				)
+			)
+			on dpdn_LayerMappingModeV selected  val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_mappingmode_v.count) then (
+					layer_mappingmode_v[selectedLayer] = val
+				)
+			)
+
+			fn SetLayerFlags = (
+				flags = 0
+				if(chk_NO_MIPMAP.checked) then (
+					flags = bit.or flags 1
+				)
+
+				if(chk_FLIP_BOOK_ANIM.checked) then (
+					flags = bit.or flags 2
+				)
+
+				if(chk_UV_SCROLL.checked) then (
+					flags = bit.or flags 4
+				)
+
+				if(chk_USE_VERTEX_ALPHA.checked) then (
+					flags = bit.or flags 8
+				)
+
+				if(chk_FREE4.checked) then (
+					flags = bit.or flags 16
+				)
+
+				if(chk_FREE5.checked) then (
+					flags = bit.or flags 32
+				)
+
+				if(chk_FREE6.checked) then (
+					flags = bit.or flags 64
+				)
+
+				if(chk_FREE7.checked) then (
+					flags = bit.or flags 128
+				)
+				layer_layerflags[selectedLayer] = flags
+
+			)
+
+			on chk_NO_MIPMAP changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_FLIP_BOOK_ANIM changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_UV_SCROLL changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_USE_VERTEX_ALPHA changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
 			)
 			
+			on chk_FREE4 changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_FREE5 changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_FREE6 changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			on chk_FREE7 changed val do (
+				if (selectedLayer > 0 )and (selectedLayer <= layer_layerflags.count) then (
+					SetLayerFlags()
+				)
+			)
+			
+			on but_AddLayer pressed do (
+				append layer_name "NewLayer"
+				append layer_blend_mode 1
+				append layer_alpha_opacity 1
+				append layer_specialfx 1
+				append layer_flipbook_fps 1
+				append layer_scrollspeed_u 0
+				append layer_scrollspeed_v 0
+				append layer_mappingmode_u 2
+				append layer_mappingmode_v 2
+				append layer_uv_slot 0
+				append layer_numframes_u 1
+				append layer_numframes_v 1
+				append layer_layerflags 0
+refreshLayerList()
+			)
+
+			on but_DeleteLayer pressed do (
+
+				if  (selectedLayer > 0 )and (selectedLayer <= layer_name.count) then (
+					deleteItem layer_name selectedLayer
+					deleteItem layer_blend_mode selectedLayer
+					deleteItem layer_alpha_opacity selectedLayer
+					deleteItem layer_specialfx selectedLayer
+					deleteItem layer_flipbook_fps selectedLayer
+					deleteItem layer_scrollspeed_u selectedLayer
+					deleteItem layer_scrollspeed_v selectedLayer
+					deleteItem layer_mappingmode_u selectedLayer
+					deleteItem layer_mappingmode_v selectedLayer
+					deleteItem layer_uv_slot selectedLayer
+					deleteItem layer_numframes_u selectedLayer
+					deleteItem layer_numframes_v selectedLayer
+					deleteItem layer_layerflags selectedLayer
+					lv_Layers.items.RemoveAt (selectedLayer - 1)
+				)
+			)
+
 			on mtlmat_props close do
 			(
-				
 			)
 			
 			on mtlmat_props resized size do

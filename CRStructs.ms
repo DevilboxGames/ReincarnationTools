@@ -24,7 +24,7 @@ struct SKINnode (objectNameLength, objectName)
 struct VFXInode (objectNameLength, objectName)
 struct NewCNTNode (nameLength, nodeName, isA12CNT, unknownFloat, parentNode, transformMatrix, position, combinedMatrix, absolutePosition,  nodeType, nodeData, numChildren, children)
 
-
+format "Defining MTL Structs - ca is %" mtlmat_ca
 struct MTLLayer
 (
 	MapNameLength,	--Int32
@@ -68,6 +68,22 @@ struct MTLLayer
 		writebyte f NumFramesV #unsigned
 		writebyte f LayerFlags #unsigned
 		
+	),
+	fn GetFromMaterial mat layer = (
+			
+		MapName = mat.mtlmat_data.layer_name[layer]
+		BlendMode = mat.mtlmat_data.layer_blend_mode[layer] - 1
+		AlphaOpacity = mat.mtlmat_data.layer_alpha_opacity[layer]
+		SpecialFX = mat.mtlmat_data.layer_specialfx[layer] - 1
+		FlipbookFPS = mat.mtlmat_data.layer_flipbook_fps[layer]
+		ScrollSpeedU = mat.mtlmat_data.layer_scrollspeed_u[layer]
+		ScrollSpeedV = mat.mtlmat_data.layer_scrollspeed_v[layer]
+		MappingModeU = mat.mtlmat_data.layer_mappingmode_u[layer]
+		MappingModeV = mat.mtlmat_data.layer_mappingmode_v[layer]
+		UVSlot = mat.mtlmat_data.layer_uv_slot[layer]
+		NumFramesU = mat.mtlmat_data.layer_numframes_u[layer]
+		NumFramesV = mat.mtlmat_data.layer_numframes_v[layer]
+		LayerFlags = mat.mtlmat_data.layer_layerflags[layer]
 	),
 	fn ApplyToMaterial mat layer = (
 			
@@ -142,7 +158,46 @@ struct MTLFile (
 	
 	AppType,			--UInt32
 	AppFlags,			--UInt32
-	
+	on create do (
+
+		version	=	1280
+		numLayers	=	1
+		layer = MTLLayer()
+			Layer.MapNameLength	=	8
+			Layer.MapName	=	"texturename"
+			Layer.BlendMode	=	0
+			Layer.AlphaOpacity	=	1.0
+			Layer.SpecialFX	=	0
+			Layer.FlipBookFPS	=	25.0
+			Layer.ScrollSpeedU	=	0.0
+			Layer.ScrollSpeedV	=	0.0
+			Layer.MappingModeU	=	1
+			Layer.MappingModeV	=	1
+			Layer.UVSlot	=	0
+			Layer.NumFramesU	=	4
+			Layer.NumFramesV	=	4
+			Layer.LayerFlags	=	0
+		Layers	=	#(layer)
+		PhysSubstance	=	0
+		PS2MipDistance	=	1.0
+		PS2MipValue	=	0
+		FlareSpec	=	0
+		SaveFlags	=	839124992
+		EmissiveRed	=	0.0
+		EmissiveGreen	=	0.0
+		EmissiveBlue	=	0.0
+		AmbientRed	=	1.0
+		AmbientGreen	=	1.0
+		AmbientBlue	=	1.0
+		SpecularRed	=	1.0
+		SpecularGreen	=	1.0
+		SpecularBlue	=	1.0
+		SpecularPower	=	0.05
+		AppType	=	0
+		AppFlags	=	0
+
+
+	),
 	fn Save filename = 
 	(
 		f = fopen filename "wb"
@@ -172,17 +227,63 @@ struct MTLFile (
 		writelong f AppFlags #unsigned
 		fclose f
 	),
-	fn ApplyToMaterial mat = (
+	fn GetFromMaterial mat = (
+		
 		if (custAttributes.get mat mtlmat_ca) != undefined then
+		(
+			PhysSubstance = mat.mtlmat_data.mat_substance - 1
+			mat.mtlmat_data.flags = #()
+
+			flags = 0
+			for i=0 to 31 do (
+				if(mtl.mtlmat_data.mat_flags[i] == true) then (
+					flags = bit.or flags (bit.shift 1 i)
+				)
+			)
+			SaveFlags = flags
+
+			PS2MipDistance = mat.mtlmat_data.mat_PS2MipDistance
+			PS2MipValue = mat.mtlmat_data.mat_PS2MipValue
+
+			FlareSpec = mat.mtlmat_data.mat_FlareSpec
+
+			ambientred = mat.mtlmat_data.mat_red
+			ambientgreen = mat.mtlmat_data.mat_green
+			ambientblue = mat.mtlmat_data.mat_blue
+			
+			emissivered = mat.mtlmat_data.mat_emissive_red
+			emissivegreen = mat.mtlmat_data.mat_emissive_green
+			emissiveblue = mat.mtlmat_data.mat_emissive_blue
+			
+			specularred = mat.mtlmat_data.mat_specular_red
+			speculargreen = mat.mtlmat_data.mat_specular_green
+			specularblue = mat.mtlmat_data.mat_specular_blue
+			specularpower = mat.mtlmat_data.mat_specular_power
+			
+			for i = 0 to numlayers do (
+				deleteItem Layers i
+			)
+
+			for i = 0 to mat.mtlmat_data.layer_name.count do (
+				if mat.mtlmat_data.layer_name[i] != undefined then (
+					layer = MTLLayer()
+					layer.GetFromMaterial mat i
+					append Layers layer
+				)
+			)
+			numlayers = Layers.count
+		)
+	),
+	fn ApplyToMaterial mat = (
+		if (custAttributes.get mat mtlmat_ca) == undefined then
 		(
 			custAttributes.add mat mtlmat_ca
 		)
 
 		mat.mtlmat_data.mat_substance =PhysSubstance + 1
-		mat.mtlmat_data.flags = #()
 
-		for i=0 to 31 do (
-			append mat.mtlmat_data ((bit.and saveflags (bit.shift 1 i)) == (bit.shift 1 i))
+		for i=1 to 31 do (
+			mat.mtlmat_data.mat_flags[i] =  ((bit.and saveflags (bit.shift 1 i)) == (bit.shift 1 i))
 		)
 
 		mat.mtlmat_data.mat_PS2MipDistance = PS2MipDistance
@@ -218,7 +319,7 @@ struct MTLFile (
 			deleteItem mat.mtlmat_data.layer_numframes_v i
 			deleteItem mat.mtlmat_data.layer_layerflags i
 		)
-		for i = 0 to numlayers do (
+		for i = 1 to numlayers do (
 			layer = Layers[i]
 			layer.ApplyToMaterial mat i
 		)

@@ -168,6 +168,7 @@ MTLSubstances = #("DEFAULT",
 "SHORT_GRASS",
 "GRAVEL_TRAP",
 "ICE")
+format "Defining MTL CA - struct is %" mtlfile
 --if mtlmat_CA == undefined do
 fn testeventhandler sender ev = (
 	$.name = "pressed the buttons"
@@ -182,7 +183,8 @@ fn testeventhandler sender ev = (
 			mat_substance type:#integer default:0 ui:mat_ui_substance
 			mat_flags type:#booltab tabsize:32 ui:(mat_USE_LUMP_COLOUR, mat_FORCE_ALPHA_BLEND, mat_USE_MATERIAL_COLOUR, mat_GLOW, mat_HARDWARE_SPECULAR, mat_DOES_NOT_RECIEVE_SHADOWS, mat_LIGHT_FLARE, mat_DOES_NOT_CAST_SHADOWS, mat_LIGHT_PER_PIXEL, mat_POST_SORT, mat_LIT, mat_USE_VERTEX_COLOUR, mat_GRASS_ANIMATION, mat_TREE_ANIMATION, mat_FREE14, mat_NOT_LIT_OBSOLETE, mat_NO_SORT_ALPHA, mat_FREE17, mat_DOUBLE_SIDED, mat_UNPICKABLE, mat_PRELIT_OBSOLETE, mat_FREE21, mat_FREE22, mat_IGNORE, mat_FREE24, mat_MIPMAPPED, mat_FREE26, mat_ALPHA_FOGGED, mat_FOGGED, mat_FILTERED, mat_FREE30, mat_FREE3) autodisplay:true
 			mat_PS2MipDistance type:#float default:1 ui:mat_ui_PS2MipDistance
-			mat_PS2MipValue type:#float default:1 ui:mat_ui_PS2MipValue
+			mat_PS2MipValue type:#integer default:1 ui:mat_ui_PS2MipValue
+			mat_FlareSpec type:#integer default:1 ui:mat_ui_FlareSpec
 			mat_red type:#float default:1 ui:mat_ui_red
 			mat_green type:#float default:1 ui:mat_ui_green
 			mat_blue type:#float default:1 ui:mat_ui_blue
@@ -272,6 +274,12 @@ fn testeventhandler sender ev = (
 				spinner mat_ui_specular_green "G" range:[0,1,1] type:#float
 				spinner mat_ui_specular_blue "B" range:[0,1,1] type:#float 
 				spinner mat_ui_specular_power "Power" range:[0,1,1] type:#float across:1
+			)
+			group "Misc" (
+				spinner mat_ui_PS2MipDistance "PS2 Mip Distance" range:[0,100000000,1] type:#float across:2
+				spinner mat_ui_PS2MipValue "PS2 Mip Value" range:[0,1000,0] type:#integer align:#left
+				
+				spinner mat_ui_FlareSpec "Flare Spec" range:[0,1000000000,0] type:#integer align:#left
 			)
 			group "Layers"
 			(

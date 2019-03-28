@@ -1,5 +1,8 @@
 fileIn "CRFormHelpers.ms"
 fileIn "CRRollouts.ms"
+
+fileIn "CRAttributes.ms"
+
 fileIn "CRStructs.ms"
 --if PrintMeshScript== undefined then
 --(
@@ -8,7 +11,6 @@ fileIn "CRStructs.ms"
 --fileIn "CRHelpsFunctions.ms"
 fileIn "CRSkeletalAnimation.ms"
 
-fileIn "CRAttributes.ms"
 
 
 filein "CRLights.ms"

@@ -23,14 +23,8 @@ fn DeleteMatCAOnSelectedMat = (
 		
 	)
 )
-fn AddMatCAToSelectedMat deleteCA:false = (
-	
-		if(deleteCA) then (
-			DeleteMatCAOnSelectedMat()
-		)
-	mats =SMEGetSelMats()
-	for mat in mats do (
-		custattributes.add mat mtlmat_ca
+fn AddMTLtoMat mat = (
+	custattributes.add mat mtlmat_ca
 		
 		for i =  mat.mtlmat_data.layer_name.count to 1 by -1 do (
 			deleteItem mat.mtlmat_data.layer_name i
@@ -47,5 +41,60 @@ fn AddMatCAToSelectedMat deleteCA:false = (
 			deleteItem mat.mtlmat_data.layer_numframes_v i
 			deleteItem mat.mtlmat_data.layer_layerflags i
 		)
+		mtl = MTLFile()
+		if mat != undefined and mat.diffuseMap != undefined and (classof mat.diffuseMap) == bitmaptexture then
+		(
+			bitmapFileName = mat.diffuseMap.filename
+			mtl.Layers[1].mapname = bitmapFileName
+		)
+		
+		mtl.ApplyToMaterial mat
+)
+fn AddMatCAToSelectedMat deleteCA:false = (
+	
+		if(deleteCA) then (
+			DeleteMatCAOnSelectedMat()
+		)
+	mats =SMEGetSelMats()
+	for mat in mats do (
+		AddMTLtoMat mat
 	)
+)
+
+fn LoadAndApplyMTL mtl_file =  (
+
+	mat = (SMEGetSelMats())[1]
+	mtl = MTLFile()
+	mtl.Load mtl_file
+	mtl.ApplyToMaterial mat
+)
+fn GetAndSaveyMTL mtl_file = (
+
+	mat = (SMEGetSelMats())[1]
+	mtl = MTLFile()
+	mtl.GetFromMaterial mat
+	mtl.Save mtl_file
+)
+
+fn TestMTLShit = (
+	LoadAndApplyMTL "C:\Dev\Carma\Funsize\WADs\Data_Android\DATA\CONTENT\VEHICLES\ANNIECAR\ANNIECAR.MTL"
+)
+
+fn ApplyMTLToAllMatsInScene = (
+	numMats = 0
+	for mat in sceneMaterials do (
+		if classof mat == multimaterial then (
+			for submat in mat.materiallist do (
+				numMats = numMats + 1
+				AddMTLtoMat submat
+			)
+		)
+		else (
+			numMats = numMats + 1
+			AddMTLtoMat mat
+		)
+		
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+	)
+	Format "Added MTL attribute to % mats \n" nummats
 )

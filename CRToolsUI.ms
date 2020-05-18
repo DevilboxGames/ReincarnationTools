@@ -148,6 +148,7 @@ fn ToolsStartup =
 				local gibbedAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Duels.FileFormats.dll")
 				local gibbedIOAssembly = dotNet.loadAssembly (dllpath+"Gibbed.IO.dll")
 				local gibbedSquishAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Squish.dll")
+				local imgAssembly = dotNet.loadAssembly (dllpath+"IMGToolLib.dll")
 				--local gibbedAssembly = dotNet.loadAssembly CarmaSettings.GibbedTools
 				local dotNetType = gibbedAssembly.GetType "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
 				local gibbedConvertClass = (dotnetClass "System.Activator").CreateInstance dotNetType
@@ -155,7 +156,11 @@ fn ToolsStartup =
 				loldecdllpath = GetFilenamePath CarmaSettings.LOLDecoder
 				local gibbedAssembly = dotNet.loadAssembly (loldecdllpath+"LOLDecoderLib.dll")
 				local LDdotNetType = gibbedAssembly.GetType "LOLDecoder.LOLDecoderLib"
-				local lolDecoderClass = (dotnetClass "System.Activator").CreateInstance dotNetType
+				local lolDecoderClass = (dotnetClass "System.Activator").CreateInstance LDdotNetType
+
+				
+				local imgtooldotNetType = imgAssembly.GetType "IMGToolLib.IMGTool"
+				local imgConvertClass = (dotnetClass "System.Activator").CreateInstance imgtooldotNetType
 
 				--local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll");
 		format "GamePath: %\nTexturePath: %\n GibbedTools: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools

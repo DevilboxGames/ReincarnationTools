@@ -7,6 +7,10 @@ fn IsObjectACNT obj =
 (
 	return (obj.modifiers["CNT Hierarchy"] != undefined)
 )
+fn IsObjectANullCNT obj =
+(
+	return (obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeTypeID == 2)
+)
 fn IsObjectAStructurePart obj =
 (
 	return (obj.modifiers["Car Structure Part"] != undefined)

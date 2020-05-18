@@ -137,21 +137,27 @@ fn CR_SetupExportTab tabPage =
 	ExportTexturesCheckbox = (dotnetobject "system.windows.forms.checkbox")
 	ExportTexturesCheckbox.Text = "Convert Textures To TDX"
 	ExportTexturesCheckbox.Name = "ExportTexturesCheckbox"
-	SetControlLayout ExportTexturesCheckbox (DN_ControlLayout Top:(ExportFullHierarchyButton.bottom+10) Width: 250 Left: 10)
+	SetControlLayout ExportTexturesCheckbox (DN_ControlLayout Top:(ExportFullHierarchyButton.bottom+10) Width: 150 Left: 10)
 	GenericExportGroup.controls.Add ExportTexturesCheckbox
 	
 	CreateMaterialsCheckbox = (dotnetobject "system.windows.forms.checkbox")
 	CreateMaterialsCheckbox.Text = "Create Materials"
 	CreateMaterialsCheckbox.Name="CreateMaterialsCheckbox"
-	SetControlLayout CreateMaterialsCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+5) Width: 250 Left: 10)
+	SetControlLayout CreateMaterialsCheckbox (DN_ControlLayout Top:(ExportFullHierarchyButton.bottom+5) Width: 150 Left: (ExportTexturesCheckbox.right + 10))
 	GenericExportGroup.controls.Add CreateMaterialsCheckbox
+	
+	CreateOctreeCheckbox = (dotnetobject "system.windows.forms.checkbox")
+	CreateOctreeCheckbox.Text = "Create Octree"
+	CreateOctreeCheckbox.Name="CreateOctreeCheckbox"
+	SetControlLayout CreateOctreeCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+5) Width: 150 Left: 10)
+	GenericExportGroup.controls.Add CreateOctreeCheckbox
 		
 	
 	MTLMaterialsCheckbox = (dotnetobject "system.windows.forms.checkbox")
-	MTLMaterialsCheckbox.Text = "MTL Materials"
+	MTLMaterialsCheckbox.Text = "Funsize Export"
 	MTLMaterialsCheckbox.name="MTLMaterialsCheckbox"
-	SetControlLayout CreateMaterialsCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+1) Width: 250 Left:(CreateMaterialsCheckbox.Right + 10))
-	tabPage.controls.Add CreateMaterialsCheckbox
+	SetControlLayout MTLMaterialsCheckbox (DN_ControlLayout Top:(ExportTexturesCheckbox.bottom+1) Width: 250 Left:(CreateOctreeCheckbox.Right + 10))
+	GenericExportGroup.controls.Add MTLMaterialsCheckbox
 	
 	tabPage.controls.Add GenericExportGroup
 	

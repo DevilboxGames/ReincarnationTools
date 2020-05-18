@@ -43,6 +43,7 @@ fn AdjEdgeSortByFace e1 e2 =
 	)
 )
 
+octree = undefined 
 
 fn AdjEdgeSortAll &arrayToSort =
 (
@@ -671,6 +672,14 @@ fn StripperShakeItBaby faceCount &indices =
 	return strips
 )
 
+fn ExportMTLMaterial mtlfilename mat = (
+	if (custAttributes.get mat mtlmat_ca) != undefined then
+	(
+		mtl = MTLFile()
+		mtl.GetFromMaterial mat
+		mtl.Save mtlfilename
+	)
+)
 fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
 (
 	dotNet.loadAssembly "system.xml"
@@ -715,12 +724,15 @@ fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
 	free xmlTexture
 	--gc()
 )
-fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true =
+fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true funsizeExport:false =
 (
 	global MaterialsToExport
 	if(MaterialsToExport==undefined) then (
 		MaterialsToExport = #()
 	)
+	bitmaps = #()
+	rawBitmaps = #()
+	rawAlphas = #()
 	for i=1 to MaterialsToExport.count do
 	(
 		mtlName = MaterialsToExport[i][1]
@@ -733,13 +745,40 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true =
 		)
 		if bitmapFileName!=undefined and exportTextures do
 		(
-			
-			ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
-			ConvertTDX.Convert bitmapFileName outputFolder 5
+			append bitmaps bitmapFileName
+			append rawbitmaps bitmapFileName
+			if actualMat.opacityMap == undefined then (
+				append rawAlphas true
+			)
+			else (
+				append rawAlphas false
+			)
 		)
 		if exportMats do
 		(
-			ExportMaterial outputFolder mtlName bitmapFileName
+			if funsizeExport then (
+				ExportMTLMaterial (outputFolder+mtlName+".mtl") actualMat
+			)
+			else  (
+				ExportMaterial outputFolder mtlName bitmapFileName
+			)
+		)
+	)
+	if bitmaps.count > 0 then (
+		makeUniqueArray bitmaps
+		if funsizeExport then (
+			alphas = #()
+			for bmp in bitmaps do (
+				append alphas rawAlphas[(findItem rawBitmaps bmp)]
+			)
+			ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
+			ConvertIMG.ConvertToIMG bitmaps outputFolder null
+		)
+		else  (
+			for bitmapFilename in bitmaps do (
+				ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
+				ConvertTDX.Convert bitmapFileName outputFolder 5
+			)
 		)
 	)
 	--gc()
@@ -803,9 +842,9 @@ fn TestStripper mO =
 	
 	return nm
 )
-fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTextures:false =
+fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTextures:false funsizeExport:false  createOctree:false =
 (
-	
+	OctreeVerts = #()
 	PREPVerts = #()
 	PREPFaces = #()
 	USERVerts = #()
@@ -884,6 +923,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
     PREPFaceVerts = #()
 	for i=1 to (getNumVerts m) do
 	(
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		pos = (getVert m i) * mirroredTransformScale
 				
 		append USERVerts (mdlUserVert x:pos.x y:pos.y  z:pos.z TimesUsed: 1)
@@ -900,6 +940,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	tvToUSERVerts = #()
 	for i=1 to numFaces do
 	(
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		--if (mod i 5000) == 0 then gc()
 		faceCVerts = undefined
 		faceTVertInds = undefined
@@ -1100,6 +1141,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	count = 0
 	for i=1 to tv_count do
 	(
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		--pos = [USERVerts[tvToUSERVerts[i]].x,USERVerts[tvToUSERVerts[i]].y,USERVerts[tvToUSERVerts[i]].z]
 		--normalsForThisVert = vertNormals[i]
 		--faceIndicesForThisVert = faceIndicesForNormals[i]
@@ -1269,6 +1311,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		for h=1 to facesForFinalMatID[i].count do
 		(
 
+			if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 			j = facesForFinalMatID[i][h]
 			face = USERFaces[j]
 			
@@ -1280,6 +1323,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			VertInd1 = face.v1
 			VertInd2 = face.v2
 			VertInd3 = face.v3
+
+			octV1 =  mdlVert pos: (getVert m VertInd1)
+			octV2 =  mdlVert pos:(getVert m VertInd2)
+			octV3 =  mdlVert pos:(getVert m VertInd3)
 			
 			v1Pos = USERVerts[VertInd1]
 			v2Pos = USERVerts[VertInd2]
@@ -1314,6 +1361,8 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				meshVertsConv[oldMeshVertInd1] = meshVerts.count
 				
 				append PREPVerts vert1
+				append OctreeVerts octV1
+				
 				--finalVertsConv[oldMeshVertInd1] = PREPVerts.count
 				PREP2USERvertConv[PREPVerts.count] = face.v1
 				USER2PREPvertConv[face.v1] = PREPVerts.count
@@ -1339,6 +1388,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				meshVertsConv[oldMeshVertInd2] = meshVerts.count
 				
 				append PREPVerts vert2
+				append OctreeVerts octV2
 				--finalVertsConv[oldMeshVertInd2] = PREPVerts.count
 				PREP2USERvertConv[PREPVerts.count] = face.v2
 				USER2PREPvertConv[face.v2] = PREPVerts.count
@@ -1363,6 +1413,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				meshVertsConv[oldMeshVertInd3] = meshVerts.count
 				
 				append PREPVerts vert3
+				append OctreeVerts octV3
 				--finalVertsConv[oldMeshVertInd3] = PREPVerts.count
 				PREP2USERvertConv[PREPVerts.count] = face.v3
 				USER2PREPvertConv[face.v3] = PREPVerts.count
@@ -1388,7 +1439,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			finalVertInd2 = newMeshVertInd2 + stripOffset
 			finalVertInd3 = newMeshVertInd3 + stripOffset
 			
-			finalFace = #([ finalVertInd1 ,  finalVertInd2 ,  finalVertInd3 ], face.SmoothingGroup, i)
+			finalFace = (mdlFace matID: i smoothingGroup:face.SmoothingGroup v1:finalVertInd1 v2:finalVertInd2 v3:finalVertInd3 ) -- #([ finalVertInd1 ,  finalVertInd2 ,  finalVertInd3 ], face.SmoothingGroup, i)
 			
 			append PREPFaces finalFace
 			PREP2USERfaceConv[PREPFaces.count] = j
@@ -1609,13 +1660,13 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		for face in PREPFaces do
 		(
 			numFacesWrote = numFacesWrote + 1
-			faceMatID = face[3] - 1
+			faceMatID = face.matID - 1
 			if faceMatID == undefined or faceMatID < 0 do faceMatID = 0
 			writeshort f faceMatID #unsigned
 			writeshort f 0
-			faceInd1 = face[1].x - 1
-			faceInd2 = face[1].y - 1
-			faceInd3 = face[1].z - 1
+			faceInd1 = face.v1 - 1
+			faceInd2 = face.v2 - 1
+			faceInd3 = face.v3 - 1
 			writelong f faceInd1 #unsigned
 			writelong f faceInd2 #unsigned
 			writelong f faceInd3 #unsigned
@@ -2149,8 +2200,6 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	)
 	fclose f
 	free f
-	free PREPVerts
-	free PREPFaces
 	free USERVerts
 	free USERFaces
 	free USER2PREPvertConv
@@ -2175,6 +2224,20 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	if exceptionHappened then format "MDL Export for \"%\" Finished With Errors!" model.name
 	--else print "Finished MDL Export!"
 	model.transform = oldTransform
+
+	if createOctree then (
+		global ActiveOctree = CNTOctree()
+		ActiveOctree.GenerateOctree OctreeVerts PREPFaces (mbbox vmin:model.min vmax:model.max center:model.center)
+		
+		if RespawnOctreeAfterExport == true then (
+			format "!!!!Spawning octree!!!!\n"
+			ActiveOctree.SpawnLeafBoxes faces: PrepFaces verts:OctreeVerts
+		)
+	)
+	free OctreeVerts
+	free PREPVerts
+	free PREPFaces
+
 )
 
 fn GatherMDLs nodes exportHierarchy =
@@ -2237,7 +2300,7 @@ fn ExportLight folder_name nodeToExport exportGobo:false =
 		)
 	)
 )
-fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false =
+fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false =
 (
 	global materials = #()
 	global models = #()
@@ -2285,7 +2348,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 		)
 		else
 		(
-			ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures
+			ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
 		)
 		gc()
 	)
@@ -2480,7 +2543,13 @@ fn ExportCNTModel f model =
 	(
 		writelong f 0
 	)
-	writelong f 0
+	if ActiveOctree != undefined then (
+		writelong f 1
+		ActiveOctree.Save f
+	)
+	else (
+		writelong f 0
+	)
 )
  
 fn ExportCNT cnt_name model =
@@ -2512,6 +2581,8 @@ fn ExportMDLButtonPressed sender arg =
 	(
 		exportTexturesChecked = sender.parent.controls.Item["ExportTexturesCheckbox"].checked
 		exportMatsChecked = sender.parent.controls.Item["CreateMaterialsCheckbox"].checked
+		exportMTLChecked = sender.parent.controls.Item["MTLMaterialsCheckbox"].checked
+		createOctree = sender.parent.controls.Item["CreateOctreeCheckbox"].checked
 
 		if IsCRLight selection[1] then
 		(
@@ -2537,8 +2608,8 @@ fn ExportMDLButtonPressed sender arg =
 			(
 				mdl_path = getFilenamePath mdl_name
 				global MaterialsToExport = #()
-				ExportMDLMesh mdl_path selection[1] forcedFilename:mdl_name exportMats:exportMatsChecked exportTextures:exportTexturesChecked
-				ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked
+				ExportMDLMesh mdl_path selection[1] forcedFilename:mdl_name exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:createOctree
+				ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked
 				messageBox ("Export MDL to "+mdl_name+" completed!") title:"Export Finished!"
 				gc()
 			)
@@ -2584,11 +2655,14 @@ fn ExportFullHierarchyButtonPressed sender arg =
 		(
 			exportTexturesChecked = sender.parent.controls.Item["ExportTexturesCheckbox"].checked
 			exportMatsChecked = sender.parent.controls.Item["CreateMaterialsCheckbox"].checked
+			exportMTLChecked = sender.parent.controls.Item["MTLMaterialsCheckbox"].checked
+			exportOctreeChecked = sender.parent.controls.Item["CreateOctreeCheckbox"].checked
 			global MaterialsToExport=#()
 			mdl_path = getFilenamePath cnt_name
-			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked
-			ExportCNT cnt_name selection[1]
-			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked
+			selectedModel = selection[1]
+			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			ExportCNT cnt_name selectedModel
+			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			PrintArrayInFull MaterialsToExport "MaterialsToExport"
 			messageBox ("Export CNT & MDL Hierarchy to "+mdl_path+" completed!") title:"Export Finished!"
 		)

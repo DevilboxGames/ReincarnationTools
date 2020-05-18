@@ -18,6 +18,7 @@ struct AccessoryFileLump
 		(
 			oldPos = obj.pos
 			obj.pos = [0,0,0]
+			oldRot = obj.rotation
 			objType = classof obj
 
 			isAxisAligned = (
@@ -64,6 +65,7 @@ struct AccessoryFileLump
 			)
 			append Shapes accShape
 			obj.pos = oldPos
+			obj.rotation = oldRot
 		)
 	),
 	fn OutputShapeString =
@@ -142,5 +144,44 @@ fn QuickGetAccessoryShape moveToOrigin:false forcePolyhedron:false =
 (
 	accessory = AccessoryFileLump()
 	accessory.CreateShape $ moveToOrigin:moveToOrigin forcePolyhedron:forcePolyhedron
-	accessory.OutputShapeString()
+	format "%\n\n" (accessory.OutputShapeString())
+
+	accessory
+)
+
+fn SpawnAccessoryPlaceholder accessoryName pos:[0,0,0] rot:(quat 0 0 0 1) = (
+	local newacc = CarmaHelper_AccessoryPlaceholder()
+	
+	newacc.loadAccessoryMesh ("E:\\Backups\\CarmAndroid\\WADs\\Data_Android\DATA\\CONTENT\\TRACKS\\ACCESSORIES\\"+accessoryName+"\\ACCESSORY.CNT")
+	newacc.pos = pos
+	newacc.rotation = rot
+	select newacc
+	viewport.zoomtobounds true newacc.min newacc.max
+)
+fn MakeC1AccessoriesList = (
+	outputstring = ""
+	for obj in selection  do (
+		tm = copy obj.transform
+				if dot (normalize (cross tm.row3 tm.row1)) (normalize tm.row2) < 0.9 then tm.row1 = -tm.row1
+				--tm.row1 = normalize tm.row1
+				--tm.row2 = normalize tm.row2
+				--tm.row3 = normalize tm.row3
+				tm = matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
+					tmstring = (tm.row1.x as string)+","+ (tm.row1.y as string)+","+ (tm.row1.z as string)+"\n"+(tm.row2.x as string)+","+ (tm.row2.y as string)+","+ (tm.row2.z as string)+"\n"+(tm.row3.x as string)+","+ (tm.row3.y as string)+","+ (tm.row3.z as string)+"\n"+(tm.row4.x as string)+","+ (tm.row4.y as string)+","+ (tm.row4.z as string)+"\n"
+				outputstring = outputstring + "[ACCESSORY]\n\n<NAME>\n"+((filterstring obj.name ".")[1])+"\n\n<POSITION>\n"+tmstring+"\n<INSTANCE_NAME>\n"+((filterstring obj.name ".")[1])+"\n\n<INSTANCE_COLOUR>\n255,255,255\n\n"	
+	)
+	outputstring
+)
+
+fn MakeMatrixFrom3Verts vertO vertX vertY upVector:[0,0,1] = (
+	local yAxis = normalize ((getVert $ vertX) - (getVert $ vertO))
+	local xAxis = normalize ((getVert $ vertY) - (getVert $ vertO))
+	
+	(matrix3 xAxis yAxis upVector [0,0,0])
+)
+fn MakeQuatFrom3Verts vertO vertX vertY upVector:[0,0,1] = (
+	local yAxis = normalize ((getVert $ vertX) - (getVert $ vertO))
+	local xAxis = normalize ((getVert $ vertY) - (getVert $ vertO))
+	
+	(matrix3 xAxis yAxis upVector [0,0,0]) as quat
 )

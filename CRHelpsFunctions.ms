@@ -3,6 +3,19 @@ fn KeepMaxAlive =
 	 if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 )
 
+fn ReplaceNullsWithDummy = (
+	
+		for obj in objects where (IsObjectANullCNT obj) do (
+			newdummy = Dummy name:obj.name transform: obj.transform parent:obj.parent
+			newdummy.boxsize = [0.5,0.5,0.5]
+			for child in obj.children do (
+				child.parent = newdummy
+			)
+			delete obj
+		)
+	
+)
+
 fn DisableProcessWindowsGhosting =
 (
     if classof (dotnet.GetType "DisableWindowsGhosting")!=dotNetObject do

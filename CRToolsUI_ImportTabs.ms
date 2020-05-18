@@ -148,17 +148,23 @@ fn CR_SetupImportTab tabPage =
 	
 	ForcePrepCheckbox = (dotnetobject "system.windows.forms.checkbox")
 	ForcePrepCheckbox.Checked = true
-	ForcePrepCheckbox.Text = "Use PREP Data"
+	ForcePrepCheckbox.Text = "Use PREP"
 	ForcePrepCheckbox.Name = "ForcePrepCheckbox"
-	SetControlLayout ForcePrepCheckbox (DN_ControlLayout Top:(ImportTexturesCheckbox.bottom+5) Width: 120 Left: 10)
+	SetControlLayout ForcePrepCheckbox (DN_ControlLayout Top:(ImportTexturesCheckbox.bottom+5) Width: 100 Left: 10)
 	GenericImportGroup.controls.Add ForcePrepCheckbox
 	
 	
 	UseTriStripsCheckbox = (dotnetobject "system.windows.forms.checkbox")
-	UseTriStripsCheckbox.Text = "Use Tri Strips"
+	UseTriStripsCheckbox.Text = "Use Strips"
 	UseTriStripsCheckbox.Name = "UseTriStripsCheckbox"
-	SetControlLayout UseTriStripsCheckbox (DN_ControlLayout Top:(ImportTexturesCheckbox.bottom+5) Width: 120 Left: 160)
+	SetControlLayout UseTriStripsCheckbox (DN_ControlLayout Top:(ImportTexturesCheckbox.bottom+5) Width: 100 Left: (ForcePrepCheckbox.right+5))
 	GenericImportGroup.controls.Add UseTriStripsCheckbox
+
+	SpawnOctreeCheckbox = (dotnetobject "system.windows.forms.checkbox")
+	SpawnOctreeCheckbox.Text = "Spawn Octree"
+	SpawnOctreeCheckbox.Name = "SpawnOctreeCheckbox"
+	SetControlLayout SpawnOctreeCheckbox (DN_ControlLayout Top:(ImportTexturesCheckbox.bottom+5) Width: 100 Left: (UseTriStripsCheckbox.right+5))
+	GenericImportGroup.controls.Add SpawnOctreeCheckbox
 	
 	SetClickHandler ImportMDLButton ImportMDLButtonPressed
 	SetClickHandler ImportCNTButton ImportCNTButtonPressed

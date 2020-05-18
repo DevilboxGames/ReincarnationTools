@@ -1021,7 +1021,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 							)
 						)
 						m.name = prefix+mname
-						format "writing mesh actor: % - % / %" mname prefix aname
+						--format "writing mesh actor: % - % / %" mname prefix aname
 						setUserProp m "datName" mname
 						if addp == true do append prnt m
 						append deletemodels model
@@ -1029,7 +1029,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 				)
 				if aname!=undefined and mname==undefined and aname!="" do --write group actors with names
 				(
-					format "writing named dummy actors: %\n" mname
+					--format "writing named dummy actors: %\n" mname
 					m = dummy boxsize:[0.1,0.1,0.1] select:false
 					if imp_group then
 					(
@@ -1047,7 +1047,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 				)
 				if aname=="" do --write group actors
 				(
-					format "writing blank dummy actors\n"
+					--format "writing blank dummy actors\n"
 					m = dummy boxsize:[0.1,0.1,0.1] select:false
 					if imp_group then
 					(
@@ -1064,11 +1064,11 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 				)
 				if mprnt != undefined and imp_hier == true do
 				(
-					format "======\t\tadding parent \"%\" to \"%\"\n" mprnt m.name
+					--format "======\t\tadding parent \"%\" to \"%\"\n" mprnt m.name
 					m.parent = mprnt
 					if imp_group and isgrouphead mprnt then setgroupmember m true
 				)
-				format "finished node %\n\n" aname
+				--format "finished node %\n\n" aname
 				if imp_other_coord_sys and m!= undefined then
 				(
 					in coordsys world (

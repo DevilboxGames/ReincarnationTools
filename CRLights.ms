@@ -363,11 +363,15 @@ struct CRLight
 		if obj.projector then
 		(
 			FlagUsesGobo = true
-			GoboTexture = getFilenameFile obj.projector.filename
+			GoboTexture = getFilenameFile obj.projectormap.filename
 			GoboScaleX = obj.projectormap.coords.U_Tiling
 			GoboScaleY = obj.projectormap.coords.V_Tiling
 			GoboOffsetX = obj.projectormap.coords.U_Offset
 			GoboOffsetV = obj.projectormap.coords.V_Offset
+			if GoboScaleX == undefined then GoboScaleX = 1
+			if GoboScaleY == undefined then GoboScaleY = 1
+			if GoboOffsetX == undefined then GoboOffsetX =0
+			if GoboOffsetY == undefined then GoboOffsetY = 0
 		)
 		else
 		(

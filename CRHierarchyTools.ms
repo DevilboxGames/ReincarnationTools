@@ -195,7 +195,7 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false node
 		max zoomext sel all
 	)
 	
-	return m
+	m
 )
 
 

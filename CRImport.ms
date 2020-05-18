@@ -1,3 +1,4 @@
+ActiveOctree = undefined
 fn readCNTheader f =
 (
 	readbyte f #unsigned
@@ -156,12 +157,12 @@ fn GetMDLTexture folder materialName importTextures:false =
 		
 		if texmap==undefined do
 		(
-			format "texmap undefined for \"%\" in material %, using checker!\n" (folder+textureName+".tdx") materialName
+			--format "texmap undefined for \"%\" in material %, using checker!\n" (folder+textureName+".tdx") materialName
 		)
 	)
 	if texmap==undefined do
 	(
-		format "texmap undefined for \"%\" in %, using checker!\n" materialName folder
+		--format "texmap undefined for \"%\" in %, using checker!\n" materialName folder
 		texmap = checker()
 		texmap.coords.U_Tiling =10
 		texmap.coords.V_Tiling =10
@@ -419,7 +420,7 @@ fn ImportMDL_TR filenames importTextures:false forcePREP:false useUniqueVerts:tr
 	format "Loaded MDLs using ToxicRagers: %\n" loadedMDLs
 
 )
-fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0]=
+fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0] SpawnOctree:false =
 (
 	f = fopen filename "r"
 	
@@ -493,6 +494,12 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			--format "\nAbout To Call GetMDLTexture for %\n" materialName
 			meshMaterial.diffuseMap = GetMDLTexture (getFilenamePath filename) materialName importTextures:importTextures
 			
+			if  ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
+			(
+				local mtlMat = MTLFile()
+				mtlMat.load ( (getFilenamePath filename)+materialname+".mtl")
+				mtlmat.ApplyToMaterial meshMaterial
+			)
 			--format "Just Called GetMDLTexture for \n\n" materialName
 			meshMaterial.name = materialName
 			showtexturemap meshMaterial meshMaterial.diffuseMap true
@@ -527,7 +534,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		for i=1 to materialCount do
 		(
 			materialName = readpaddedstring f version61OrLess:version61orless
-			format "matid: % matname: %\n" i materialName
+			--format "matid: % matname: %\n" i materialName
 			append materialNames materialName
 			--format "Checking if material #% \"%\" already has been loaded\n" i materialName
 			subMat = undefined
@@ -556,6 +563,14 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				--format "Just Called GetMDLTexture for \n\n" materialName
 				subMat.name = materialName
 				showtexturemap subMat subMat.diffuseMap true
+				
+				
+				if  ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
+				(
+					local mtlMat = MTLFile()
+					mtlMat.load ( (getFilenamePath filename)+materialname+".mtl")
+					mtlmat.ApplyToMaterial subMat
+				)
 				append globalMaterials subMat
 			)
 			
@@ -596,6 +611,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	if forcePREP then
 	(
 		PREPfaceCount = readlong f #unsigned
+		format "FaceCount: %\n" PREPfacecount
 		rawfaces = #()
 		for i=1 to PREPfaceCount do
 		(
@@ -603,17 +619,18 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			
 			faceflags = readshort f #unsigned
 			if(matID == 26 or matID == 5) then (
-				format "matID % - face flags: %\n" matID faceflags
+				--format "matID % - face flags: %\n" matID faceflags
 			)
 			--printFlagBits faceflags 32 "Face Flags"
 			v1 = readlong f #unsigned
 			v2 = readlong f #unsigned
 			v3 = readlong f #unsigned
 			append rawfaces (mdlFace matID:matID flags:faceflags v1:(v1+1) v2:(v2+1) v3:(v3+1))
+			--if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		)
 		
 		PREPvertcount = readlong f #unsigned
-		--format "VertCount: %\n" PREPvertcount
+		format "VertCount: %\n" PREPvertcount
 		verts = #()
 		uniqueVerts = #()
 		uniqueVertsColours = #()
@@ -661,16 +678,26 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				append uniqueVertsColours colA
 				oldVertsToNewVerts[i] = uniqueVerts.count
 			)
+			
+		
+			--if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		)
 		--format "Unique Verts:%\n" uniqueVerts.count
 		matGroups = #()
 		triStripIndices = #()
+
+		format "SpawnOctree %\n" SpawnOctree 
+		if SpawnOctree == true and ActiveOctree != undefined then (
+			format "Spawning Octree!!!\n"
+			ActiveOctree.SpawnLeafBoxes verts:verts faces:rawfaces
+			
+		)
 		
 		matGroupCount = readshort f #unsigned
 		totalMatGroupTriangles=0
 		for i = 1 to matGroupCount do
 		(
-			KeepMaxAlive()
+			--KeepMaxAlive()
 			--format "Importing Mat Group %\n" i
 			if useTriStrips then
 			(
@@ -1628,7 +1655,7 @@ fn CalculateCNTNamePadding stringLength =
 	return model_name_padding
 )
 
-fn ImportCNTNode f parentNode = 
+fn ImportCNTNode f parentNode SpawnOctree:false = 
 (
 	local newNode = NewCNTNode nameLength:0 nodeName:"" isA12CNT:false unknownFloat:0 parentNode:undefined transformMatrix:(matrix3 1) position:[0,0,0] combinedMatrix:(matrix3 1) absolutePosition:[0,0,0] nodeType:"NULL" nodeData:undefined numChildren:0 children:#()
 	newNode.nameLength = readlong f #unsigned
@@ -1782,9 +1809,28 @@ fn ImportCNTNode f parentNode =
 	
 	for i=1 to newNode.numChildren do
 	(
-		append newNode.children (ImportCNTNode f newNode)
+		append newNode.children (ImportCNTNode f newNode SpawnOctreeBoxes:SpawnOctreeBoxes)
 	)
-	readlong f #unsigned
+	hasOctree = readlong f #unsigned
+	format "CNT Has Octree: %\n" (hasOctree as string)
+	if hasOctree > 0 and SpawnOctree then (
+		format "Loading octree"
+		ActiveOctree = CNTOctree()
+		try (
+	
+			ActiveOctree.Load f
+			
+	
+			--fclose f
+		)
+		catch (
+			format "There was an error \n"
+			if f != undefined then (
+				--fclose f
+			)
+			throw()
+		)
+	)
 	--format "\"%\" has % children:\n" newNode.nodeName newNode.numChildren
 	--for i=1 to newNode.children.count do
 	--(
@@ -1827,7 +1873,7 @@ fn MergeCNTNodes outMesh inMesh =
 	
 	return outMesh
 )
-fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true =
+fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true SpawnOctree:false =
 (
 	--format "Parsing Node Type: %\n" cntNode.nodeType
 	if cntNode.nodeType == "MODL" or cntNode.nodetype == "SKIN" then
@@ -1846,7 +1892,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		(
 			--fname = CarmaSettings.GamePath + "\\Data_core\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
 		
-			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin
+			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin SpawnOctree:SpawnOctree
 			newMesh.name = cntNode.nodeName
 			newMesh.transform = cntNode.combinedMatrix
 		)
@@ -1887,7 +1933,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	newMesh.pos = newMesh.pos + origin
 	for i=1 to cntNode.numChildren do
 	(
-		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs origin:origin
+		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs origin:origin spawnOctree:spawnOctree
 		
 			childMesh.parent = newMesh
 		
@@ -1902,10 +1948,10 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	newMesh.CNTCustAttribute.FileName = newMesh.name
 	if cntNode.nodetype == "LITG" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do newMesh.CNTCustAttribute.FileName = cntNode.nodeData.objectName
 	*/
-	KeepMaxAlive()
+	--KeepMaxAlive()
 	return newMesh
 )
-fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false mergeMDLs:false mergeSplits:true origin:[0,0,0] =
+fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false mergeMDLs:false mergeSplits:true origin:[0,0,0] SpawnOctree:false =
 (
 	global merge_MatsIDsToNames = #()
 	global merge_SubMat
@@ -1929,7 +1975,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 	globalMaterials = #()
 	global globalMaterialNames =#()
 	globalMaterialNames =#()
-	rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin
+	rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin spawnOctree:SpawnOctree
 	
 	fclose f
 	
@@ -2017,8 +2063,9 @@ fn ImportCNTButtonPressed sender arg=
 		cnt_name = GetOpenFileName caption:"Open CNT File" types:"CNT(*.CNT)|*.cnt"
 		if cnt_name != undefined do
 		(
+			format "% is checked: %\n" "SpawnOctreeCheckbox" sender.parent.controls.Item["SpawnOctreeCheckbox"].checked
 			--ImportCNT cnt_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
-			ImportCNT cnt_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeMDLs:false mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
+			ImportCNT cnt_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeMDLs:false mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked  SpawnOctree:sender.parent.controls.Item["SpawnOctreeCheckbox"].checked
 		)
 	)
 	--gc() light:true

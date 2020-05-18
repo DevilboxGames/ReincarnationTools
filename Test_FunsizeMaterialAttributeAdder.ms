@@ -45,10 +45,11 @@ fn AddMTLtoMat mat = (
 		if mat != undefined and mat.diffuseMap != undefined and (classof mat.diffuseMap) == bitmaptexture then
 		(
 			bitmapFileName = mat.diffuseMap.filename
-			mtl.Layers[1].mapname = bitmapFileName
+			mtl.Layers[1].mapname = getFilenameFile bitmapFileName
 		)
 		
 		mtl.ApplyToMaterial mat
+	
 )
 fn AddMatCAToSelectedMat deleteCA:false = (
 	
@@ -77,24 +78,65 @@ fn GetAndSaveyMTL mtl_file = (
 )
 
 fn TestMTLShit = (
-	LoadAndApplyMTL "C:\Dev\Carma\Funsize\WADs\Data_Android\DATA\CONTENT\VEHICLES\ANNIECAR\ANNIECAR.MTL"
+	LoadAndApplyMTL "E:\Backups\CarmAndroid\WADs\Data_Android\DATA\CONTENT\TRACKS\LEVELS\CITY_A\0ROAD.MTL"
 )
 
-fn ApplyMTLToAllMatsInScene = (
+fn ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:false	= (
 	numMats = 0
+	format "Addimg CA to % mats \n" sceneMaterials.count
 	for mat in sceneMaterials do (
 		if classof mat == multimaterial then (
 			for submat in mat.materiallist do (
-				numMats = numMats + 1
-				AddMTLtoMat submat
+				if (OnlyWithDiffuse == false or submat.diffusemap != undefined) and (OnlyProperlyNamed == false or (matchPattern submat.name pattern:"material*#*") == false) then (
+					numMats = numMats + 1
+					AddMTLtoMat submat
+				)
+				if (mod numMats 20 )== 0 then (
+					format "Done % mats\n" numMats
+					if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+				)
 			)
 		)
 		else (
-			numMats = numMats + 1
-			AddMTLtoMat mat
+			if (OnlyWithDiffuse == false or mat.diffusemap != undefined)  and (OnlyWithProperName == false or (matchPattern mat.name pattern:"material*#*") == false) then (
+				numMats = numMats + 1
+				AddMTLtoMat mat
+			)
 		)
-		
-		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+		if (mod numMats 20 )== 0 then (
+			format "Done % mats\n" numMats
+			if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+		)
 	)
 	Format "Added MTL attribute to % mats \n" nummats
+)
+
+fn RemoveTrisWithDummyMaterials obj = (
+	matids = #()
+	if ClassOf obj.mat == multimaterial then (
+		for i = 1 to obj.mat.materiallist.count do (
+			if (custAttributes.get obj.mat.materiallist[i] mat_ca) == undefined then
+			(
+				append matids i
+			)
+		)
+	)
+	else (
+		if (custAttributes.get obj.material mtlmat_ca) == undefined then
+		(
+			append matids 1
+		)
+	)
+
+	format "found % mats to remove: %\n" matids.count matids
+	if matids.count > 0 then (
+		numfaces = getNumFaces obj
+		for i = numfaces to 1 by -1 do (
+			matid = getFaceMatID obj i 
+			if (finditem matids matid) != 0 then (
+				deleteface obj i
+			)
+		)
+	)
+	update obj
 )

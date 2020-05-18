@@ -92,4 +92,4 @@ fn RemoveOpacityMaps = (
 
 cleanImportedC1Level()
 cleanImportedCarmaterials()
-RemoveOpacityMaps()
+--RemoveOpacityMaps()

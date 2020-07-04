@@ -1,5 +1,5 @@
 leafindex = 0
-struct CRSettings (GamePath, DataCorePath, AllowSeperateDataCore, TexturePath, GibbedTools, LOLDecoder, MaxResolution,MaxResolutionID)
+struct CRSettings (GamePath, DataCorePath, AllowSeperateDataCore, SetupForUE4, ConvertTexturesInPlace, TexturePath, GibbedTools, LOLDecoder, MaxResolution,MaxResolutionID)
 
 struct AdjacentTriangle (ref, tri)
 struct AdjacentEdge (refa, refb, face)
@@ -24,7 +24,7 @@ struct SKINnode (objectNameLength, objectName)
 struct VFXInode (objectNameLength, objectName)
 struct NewCNTNode (nameLength, nodeName, isA12CNT, unknownFloat, parentNode, transformMatrix, position, combinedMatrix, absolutePosition,  nodeType, nodeData, numChildren, children)
 
-format "Defining MTL Structs - ca is %" mtlmat_ca
+format "Defining MTL Structs - ca is %\n" mtlmat_ca
 struct MTLLayer
 (
 	MapNameLength,	--Int32

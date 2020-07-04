@@ -40,7 +40,7 @@ CRLightAttribute = attributes CRLightCustomAttribute attribID:#(0x5c212ae7, 0x57
 
 fn IsCRLight obj =
 (
-	return (custAttributes.get obj CRLightAttribute) != undefined
+	(custAttributes.get obj CRLightAttribute) != undefined
 
 )
 fn AddAttributesToLight obj =
@@ -114,7 +114,7 @@ struct CRLight
 	fn LoadLight fileName =
 	(
 		f = fopen fileName "r"
-
+		result = false
 		FolderName = getFilenamePath filename
 		Name = getFilenameFile filename
 		header = readlong f
@@ -122,47 +122,52 @@ struct CRLight
 		(
 			fclose f
 			format "% isn't a valid LIGHT file!\n" fileName
-			return false
+			
 		)
+		else 
+		(
 
-		LightType = readlong f #unsigned
-		ColourR = readfloat f
-		ColourG = readfloat f
-		ColourB = readfloat f
-		Intensity = readfloat f
-		Range = readfloat f
-		Inner = readfloat f
-		Outer = readfloat f
-		NearClip = readfloat f
-		Flags = readlong f #unsigned
+			LightType = readlong f #unsigned
+			ColourR = readfloat f
+			ColourG = readfloat f
+			ColourB = readfloat f
+			Intensity = readfloat f
+			Range = readfloat f
+			Inner = readfloat f
+			Outer = readfloat f
+			NearClip = readfloat f
+			Flags = readlong f #unsigned
 
-		ShadowResX = readlong f
-		ShadowResY = readlong f
-		ShadowCoverageX = readfloat f
-		ShadowCoverageY = readfloat f
-		ShadowBias = readfloat f
-		ShadowIntensity = readfloat f
-		SplitCount = readlong f #unsigned
-		SplitDistribution = readfloat f
-		ShadowDistanceMin = readfloat f
-		ShadowDistanceMax = readfloat f
+			ShadowResX = readlong f
+			ShadowResY = readlong f
+			ShadowCoverageX = readfloat f
+			ShadowCoverageY = readfloat f
+			ShadowBias = readfloat f
+			ShadowIntensity = readfloat f
+			SplitCount = readlong f #unsigned
+			SplitDistribution = readfloat f
+			ShadowDistanceMin = readfloat f
+			ShadowDistanceMax = readfloat f
 
-		UseEdgeColour = readlong f #unsigned
-		EdgeColourR = readbyte f
-		EdgeColourG = readbyte f
-		EdgeColourB = readbyte f
-		EdgeColourA = readbyte f
+			UseEdgeColour = readlong f #unsigned
+			EdgeColourR = readbyte f
+			EdgeColourG = readbyte f
+			EdgeColourB = readbyte f
+			EdgeColourA = readbyte f
 
-		GoboScaleX = readfloat f
-		GoboScaleY = readfloat f
-		GoboOffsetX = readfloat f
-		GoboOffsetY = readfloat f
+			GoboScaleX = readfloat f
+			GoboScaleY = readfloat f
+			GoboOffsetX = readfloat f
+			GoboOffsetY = readfloat f
 
-		--nameLength = readlong f #unsigned
-		GoboTexture = readpaddedstring f
+			--nameLength = readlong f #unsigned
+			GoboTexture = readpaddedstring f
 
-		fclose f
-		SplitFlags()
+			fclose f
+			SplitFlags()
+			result = true
+		)
+		result
 	),
 
 	fn SaveLight fileName =

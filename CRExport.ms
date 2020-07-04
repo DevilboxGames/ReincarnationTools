@@ -113,34 +113,36 @@ fn AdjEdgeSortAll &arrayToSort =
 	--format "Third Pass:\n%\n" sorted
 	
 	-- PrintArrayInFull sorted "Final Pass"
-	return sorted
+	sorted
 )
 fn FindAdjacentTriEdge tri v1 v2 =
 (
-	if tri.ref[1] == v1 and tri.ref[2] == v2 do return 1
-	if tri.ref[1] == v2 and tri.ref[2] == v1 do return 1
+	result = 255
+	if tri.ref[1] == v1 and tri.ref[2] == v2 do result= 1
+	if tri.ref[1] == v2 and tri.ref[2] == v1 do result=1
 		
-	if tri.ref[1] == v1 and tri.ref[3] == v2 do return 2
-	if tri.ref[1] == v2 and tri.ref[3] == v1 do return 2
+	if tri.ref[1] == v1 and tri.ref[3] == v2 do result=2
+	if tri.ref[1] == v2 and tri.ref[3] == v1 do result=2
 		
-	if tri.ref[2] == v1 and tri.ref[3] == v2 do return 3
-	if tri.ref[2] == v2 and tri.ref[3] == v1 do return 3
+	if tri.ref[2] == v1 and tri.ref[3] == v2 do result=3
+	if tri.ref[2] == v2 and tri.ref[3] == v1 do result=3
 		
-	return 255
+	result
 )
 
 fn FindOppositeTriVert tri v1 v2 =
 (
-	if tri.ref[1] == v1 and tri.ref[2] == v2 do return 3
-	if tri.ref[1] == v2 and tri.ref[2] == v1 do return 3
+	result=-1
+	if tri.ref[1] == v1 and tri.ref[2] == v2 do result= 3
+	if tri.ref[1] == v2 and tri.ref[2] == v1 do result= 3
 		
-	if tri.ref[1] == v1 and tri.ref[3] == v2 do return 2
-	if tri.ref[1] == v2 and tri.ref[3] == v1 do return 2
+	if tri.ref[1] == v1 and tri.ref[3] == v2 do result= 2
+	if tri.ref[1] == v2 and tri.ref[3] == v1 do result= 2
 		
-	if tri.ref[2] == v1 and tri.ref[3] == v2 do return 1
-	if tri.ref[2] == v2 and tri.ref[3] == v1 do return 1
+	if tri.ref[2] == v1 and tri.ref[3] == v2 do result= 1
+	if tri.ref[2] == v2 and tri.ref[3] == v1 do result= 1
 		
-	return -1
+	result
 )
 
 fn CreateAdjacencyDB faceCount &indexBuffer =
@@ -400,7 +402,7 @@ fn TrackStrip face oldest middle &strip &faces tags offset =
 		oldest = middle
 		middle = newest
 	)
-	return len
+	len
 )
 
 fn ComputeBestStrip face faceCount indices &tags &strips =
@@ -551,7 +553,7 @@ fn ComputeBestStrip face faceCount indices &tags &strips =
 	--gc()
 	
 	--format "nFaces from this strip: %\n" nFaces
-	return nFaces
+	nFaces
 )
 
 fn MergeStrips &strips =
@@ -669,7 +671,7 @@ fn StripperShakeItBaby faceCount &indices =
 	--free connectivity
 	--format "Number Of Strips After Merge: %\n" strips.count
 	--gc()
-	return strips
+	strips
 )
 
 fn ExportMTLMaterial mtlfilename mat = (
@@ -786,6 +788,7 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 
 fn MaterialAlreadySetToExport matName =
 (
+	result = false
 	global MaterialsToExport
 	if(MaterialsToExport == undefined) then
 		(
@@ -793,9 +796,9 @@ fn MaterialAlreadySetToExport matName =
 		)
 	for i=1 to MaterialstoExport.count do
 	(
-		if MaterialsToExport[i][1] == matName do return true
+		if MaterialsToExport[i][1] == matName do result = true
 	)
-	return false
+	result
 )
 
 fn TestStripper mO =
@@ -840,7 +843,7 @@ fn TestStripper mO =
 	nm = mesh name:"stripped mesh"
 	setnumverts nm (getnumverts m)
 	
-	return nm
+	nm
 )
 fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTextures:false funsizeExport:false  createOctree:false =
 (
@@ -1933,7 +1936,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 						if bonesList[j].name == boneName then 
 						(
 							boneNum = j-1
-							break
+							j = bonesList.count + 1
 						)
 					)
 					format "Vertex #% (%)\tboneID: %\tboneNum: %\n\t\"%\"\t%\n" i vertNum boneID boneNum boneName bonesList[boneNum+1]
@@ -2146,7 +2149,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 						if bonesList[j].name == boneName then 
 						(
 							boneNum = j-1
-							break
+							j = bonesList.count + 1
 						)
 					)
 					writeshort f boneNum #unsigned
@@ -2331,26 +2334,29 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 			(
 				submat = getsubmtl mat i
 				if submat == undefined then continue
-				if submat.name == "crTools_NullNodeMaterial_X" or submat.name == "crTools_NullNodeMaterial_Y" or submat.name == "crTools_NullNodeMaterial_Z" then break
+				if submat.name == "crTools_NullNodeMaterial_X" or submat.name == "crTools_NullNodeMaterial_Y" or submat.name == "crTools_NullNodeMaterial_Z" then i = mat.numsubs + 1
 				if finditem materials submat == 0 do append materials submat
 			)
 		)
 	)
 	count = 0
-	for nodeToExport in models do
+	for i=1 to models.count do
 	(
-		if count > 60 then break
-		count += 1
-		if nodeToExport.modifiers["CNT Hierarchy"].NodeType == "LITg" then
-		(
-			ExportLight folder_name nodeToExport
-			
+		nodeToExport = models[i]
+		if count > 60 then i = models.count + 1
+		else (
+			count += 1
+			if nodeToExport.modifiers["CNT Hierarchy"].NodeType == "LITg" then
+			(
+				ExportLight folder_name nodeToExport
+				
+			)
+			else
+			(
+				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
+			)
+			gc()
 		)
-		else
-		(
-			ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
-		)
-		gc()
 	)
 )
 

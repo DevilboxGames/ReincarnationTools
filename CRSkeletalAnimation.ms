@@ -87,24 +87,27 @@ struct CRSkeletalAnimation
 		(
 			if(BoneNames[b] == boneToTransform.name) then boneNum = b
 		)
-		if boneNum == 0 then return 0
-		parent = boneToTransform.parent
-		pos = boneToTransform.pos
-		--boneToTransform.parent=undefined
-		if useMatrix then
+		if boneNum != 0 then 
 		(
-			boneToTransform.transform = Frames[Frame].BoneTransforms[boneNum]
+			parent = boneToTransform.parent
+			pos = boneToTransform.pos
+			--boneToTransform.parent=undefined
+			if useMatrix then
+			(
+				boneToTransform.transform = Frames[Frame].BoneTransforms[boneNum]
+			)
+			else
+			(
+			boneToTransform.rotation = Frames[Frame].BoneRotations[boneNum]
+			)
+			boneToTransform.pos = pos
+			--boneToTransform.parent=parent
+			for child in boneToTransform.children do
+			(
+				ApplyFrameToBone child Frame useMatrix:useMatrix
+			)
 		)
-		else
-		(
-		boneToTransform.rotation = Frames[Frame].BoneRotations[boneNum]
-		)
-		boneToTransform.pos = pos
-		--boneToTransform.parent=parent
-		for child in boneToTransform.children do
-		(
-			ApplyFrameToBone child Frame useMatrix:useMatrix
-		)
+		boneNum
 	),
 	fn ApplyToCharacter obj=
 	(
@@ -200,7 +203,7 @@ struct CRSkeletalAnimation
 						if foundbones[j].name == boneNames[i] then
 						(
 							foundbone = obj
-							break;
+							j = foundBones.count + 1;
 						)
 					)
 					if foundbone == undefined then

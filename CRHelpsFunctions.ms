@@ -2,20 +2,26 @@ fn KeepMaxAlive =
 (
 	 if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 )
-
-fn ReplaceNullsWithDummy = (
-	
-		for obj in objects where (IsObjectANullCNT obj) do (
-			newdummy = Dummy name:obj.name transform: obj.transform parent:obj.parent
-			newdummy.boxsize = [0.5,0.5,0.5]
-			for child in obj.children do (
-				child.parent = newdummy
+fn RenameDuplicateParts = (
+	for obj in objects do (
+		duplicateNames = 1
+		for obj2 in objects do (
+			if obj2.name == obj.name and obj2 != obj then ( 
+				duplicateNames = duplicateNames + 1
+				obj2.name = obj2.name + "_" + (duplicateNames as string)
+				format "duplicate name of % found: %. renaming to %_%\n" obj.name obj2.name obj2.name duplicateNames
 			)
-			delete obj
 		)
-	
+		if duplicateNames > 1 then (
+			obj.name = obj.name + "_1"
+			
+		)
+	)
 )
-
+fn GetFolderName filepath = (
+	pathParts = filterstring (getFilenamePath filepath) "\\/"
+	pathParts[pathParts.count]
+)
 fn DisableProcessWindowsGhosting =
 (
     if classof (dotnet.GetType "DisableWindowsGhosting")!=dotNetObject do
@@ -54,20 +60,25 @@ public class DisableWindowsGhosting
     )
 )
 
+fn SearchUniqueVerts pos vert = (
+	if pos < vert.pos then -1
+	else if pos > vert.pos then 1
+	0
+)
 fn StringIsInt str = 
 (
-	return (str as integer) as string == str
+	(str as integer) as string == str
 )
 fn StringIsFloat str = 
 (
 	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+$"
-	return rx.isMatch str
+	rx.isMatch str
 )
 fn StringIsPoint3 str = 
 (
 	
 	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+$"
-	return rx.isMatch str
+	rx.isMatch str
 )
 fn StringAsPoint3 str = 
 (
@@ -75,7 +86,7 @@ fn StringAsPoint3 str =
 	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+)$"
 	matches = rx.Match str
 	
-	return [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float, matches.Groups.Item[3].Value as float]
+	 [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float, matches.Groups.Item[3].Value as float]
 )
 fn GetBonesFromSkin skinMod =
 (
@@ -85,17 +96,18 @@ fn GetBonesFromSkin skinMod =
 	(
 		if boneArray[i].parent != undefined and (finditem boneArray boneArray[i].parent) == 0 then append boneArray boneArray[i].parent
 	)
-	return boneArray
+	 boneArray
 )
 fn GetRootBoneFromSkin skinMod =
 (
 	boneArray = for o in objects where (refs.dependencylooptest skinMod o) collect o
-	
+rootbone = undefined
 	for i=1 to boneArray.count do
 	(
-		if boneArray[i].parent == undefined then return boneArray[i]
+		if boneArray[i].parent == undefined then rootbone = boneArray[i]
 	)
 	--return boneArray
+	rootbone
 )
 fn showProps obj doClearListener:false=
 	(
@@ -115,38 +127,40 @@ fn FindObjectByPosition pos notTheseObjs:#() onlyPointHelpers:false =
 		if onlyPointHelpers == false or (classof obj) == pointhelper then append foundobjs obj
 	)
 --	format "Ive FoundObjs: %\n" foundobjs
-	if foundobjs.count > 0 then return foundobjs[1]
-	else return undefined
+foundobj = undefined
+	if foundobjs.count > 0 then foundobj = foundobjs[1]
+	
+	foundobj
 )
 
 fn quatdot q1 q2 =
 (
-	return q1.w*q2.w + q1.x* q2.x + q1.y*q2.y + q1.z*q2.z
+	q1.w*q2.w + q1.x* q2.x + q1.y*q2.y + q1.z*q2.z
 )
 fn ConvertFromCRSpace pos =
 (
-	return [-pos.x,-pos.z,pos.y]
+	 [-pos.x,-pos.z,pos.y]
 )
 fn ConvertToCRSpace pos =
 (
-	return [-pos.x,pos.z,-pos.y]
+	 [-pos.x,pos.z,-pos.y]
 )
 fn ConvertQuatFromCRSpace q =
 (
-	return (quat q.y -q.x q.w q.z)
+	 (quat q.y -q.x q.w q.z)
 )
 fn ConvertQuatToCRSpace q =
 (
-	return (quat -q.y q.x q.w q.z)
+	 (quat -q.y q.x q.w q.z)
 )
 
 fn ConvertQuatFromCRSpace2 q =
 (
-	return (quat -q.x q.z -q.y q.w)
+	 (quat -q.x q.z -q.y q.w)
 )
 fn ConvertQuatToCRSpace2 q =
 (
-	return (quat -q.x -q.z q.y q.w)
+	 (quat -q.x -q.z q.y q.w)
 )
 fn GetAllChildren obj &arr:#() =
 (
@@ -155,57 +169,63 @@ fn GetAllChildren obj &arr:#() =
 		append arr c
 		GetAllChildren c arr:arr
 	)
-	return arr
+	 arr
 )
 fn GetDescendantByName obj nodeName =
 (
-	if tolower(nodeName) == tolower(obj.name) then return obj
-		
-	allchildren = GetAllChildren obj arr:#()
-	for c in allchildren do
+
+	foundobj = undefined
+	if tolower(nodeName) == tolower(obj.name) then foundobj = obj
+	else
 	(
-		if tolower(nodeName) == tolower(c.name) then return c
+				allchildren = GetAllChildren obj arr:#()
+				for c in allchildren do
+				(
+					if tolower(nodeName) == tolower(c.name) then foundobj = c
+				)
 	)
-	return undefined
+	foundobj
 )
 fn getNodeByName2 nodeName =
 (
+	foundobj = undefined
 	for obj in objects do
 	(
 		if (stricmp obj.name nodeName) == 0 then 
 		(
 			--format "Found %\n" obj.name
-			return obj
+			foundobj = obj
 		)
 	)
 	--format "Didn't find object named %\n" nodeName
-	return undefined
+	foundobj
 )
 fn getBoneByName nodeName =
 (
+	foundobj = undefined
 	for obj in objects do
 	(
 		if (stricmp obj.name nodeName) == 0 and (classof obj)== BoneGeometry then 
 		(
 			--format "Found %\n" obj.name
-			return obj
+			foundobj = obj
 		)
 	)
 	--format "Didn't find object named %\n" nodeName
-	return undefined
+	foundobj
 )
 
 fn DecodeLOLFile filename =
 (
+	decodedLOL = undefined
 	if ((dotnetclass "System.IO.File").exists filename) then
 	(
 		LOLDecoder = dotnetclass "LOLDecoder.LOLDecoderLib"
 		
 		decodedLOL = LOLDecoder.DecodeLOLFile filename
 		
-		return decodedLOL
 	)
-	else return undefined
+	decodedLOL
 )
 
 fn ReloadButton_Pressed sender arg =
@@ -434,18 +454,19 @@ fn BatchCarStructureParseCData cdata carName &funcTypes &funcArgs &funcArgCars =
 )
 fn BatchCarStructuresGetCData xmlnode =
 (
+	foundobj = ""
 	for i=1 to xmlnode.childnodes.count do
 	(
 		child = xmlnode.childnodes.item ( i-1)
 		
 		if child.nodetype == child.nodetype.cdata then
 		(
-			return child.value
-			break
+			foundobj = child.value
+			i = xmlnode.childnodes.count + 1
 		)
 		--format "childnod type: %\nchildnode data:%\n\n" child.nodetype child.value
 	)
-	return ""
+	foundobj
 )
 
 fn BatchCarStructuresParseNodes xmlnode carName &partTypes &partArgs &partArgCars &weldTypes &weldArgs &weldArgCars &jointTypes &jointArgs &jointArgCars =
@@ -644,19 +665,19 @@ fn readpaddedstring f version61OrLess:false=
 	(
 		readbyte f
 	)
-	return newString
+	 newString
 )
 
 
 fn CheckBitIsSet flags bitNum =
 (
+	result = false
 	if bitNum==0 then
 	(
-		if (bit.and flags 1)==1 then return true
-		else return false
+		if (bit.and flags 1)==1 then result = true
 	)
-	else if (bit.and flags (bit.shift 1 bitNum))==(bit.shift 1 bitNum) then return true
-	else return false
+	else if (bit.and flags (bit.shift 1 bitNum))==(bit.shift 1 bitNum) then result = true
+	result
 )
 fn printFlagBits flags numBits fieldName =
 (
@@ -723,17 +744,22 @@ fn calcMeshBoundingBox verts =
 	)
 	vhalfDist = (length (vmax - vmin)) / 2
 	vcenter = vmin + ((vmax - vmin) / 2)
-	return (mbbox vmin: vmin vmax: vmax center: vcenter halfdist: vhalfDist)
+	 (mbbox vmin: vmin vmax: vmax center: vcenter halfdist: vhalfDist)
 )
 
 
 fn bboxHasVert bboxVerts vert =
 (
+	result = false
 	for i=1 to bboxVerts.count do
 	(
-		if bboxVerts[i].x == vert.x and bboxVerts[i].y == vert.y and bboxVerts[i].z == vert.z do return true
+		if bboxVerts[i].x == vert.x and bboxVerts[i].y == vert.y and bboxVerts[i].z == vert.z do 
+		(
+			result = true
+			i = bboxVerts.count + 1
+		)
 	)
-	return false
+	result
 )
 
 
@@ -906,5 +932,5 @@ fn SplitVertexNormals =
 
 fn IsObjectAPedBonesList obj =
 (
-	return (obj.modifiers["Ped Bones List"] != undefined)
+	 (obj.modifiers["Ped Bones List"] != undefined)
 )

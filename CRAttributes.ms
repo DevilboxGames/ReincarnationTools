@@ -5,31 +5,55 @@ if printArrayInFull== undefined then
 )
 fn IsObjectACNT obj =
 (
-	return (obj.modifiers["CNT Hierarchy"] != undefined)
+	 (obj.modifiers["CNT Hierarchy"] != undefined)
 )
 fn IsObjectANullCNT obj =
 (
-	return (obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeTypeID == 2)
+	 (obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeTypeID == 2)
 )
+
+
+fn ReplaceNullsWithDummy = (
+	
+		for i = objects.count to 1 by -1  do (
+			obj = objects[i]
+			if (IsObjectANullCNT obj) then (
+				newdummy = Dummy name:obj.name transform: obj.transform
+				if obj.parent != undefined then newdummy.parent = obj.parent
+				if CarmaSettings.SetupForUE4 then
+					newdummy.boxsize = [50,50,50]
+				else
+					newdummy.boxsize = [0.5,0.5,0.5]
+				for child in obj.children do (
+					child.parent = newdummy
+				)
+				delete obj
+			)
+		)
+	
+)
+
+
 fn IsObjectAStructurePart obj =
 (
-	return (obj.modifiers["Car Structure Part"] != undefined)
+	 (obj.modifiers["Car Structure Part"] != undefined)
 )
 fn IsObjectAStructureCharacteristic obj =
 (
-	return (obj.modifiers["Car Characteristics"] != undefined)
+	 (obj.modifiers["Car Characteristics"] != undefined)
 )
 fn IsObjectAWheel obj =
 (
+	result = false
 	if (obj.modifiers["Car Structure Part"] != undefined) then
 	(
 		if (finditem obj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_WHEEL") > 0 or  (finditem obj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_WHEEL") > 0 or  (finditem obj.modifiers["Car Structure Part"].PhysicsProperties "REAR_LEFT_WHEEL") > 0 or  (finditem obj.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_WHEEL") > 0 then
 		(
-			return true
+			result = true
 		)
-		else return false
+		
 	)
-	else return false
+	result
 )
 
 fn CustAttsTests =
@@ -172,7 +196,7 @@ MTLSubstances = #("DEFAULT",
 "SHORT_GRASS",
 "GRAVEL_TRAP",
 "ICE")
-format "Defining MTL CA - struct is %" mtlfile
+format "Defining MTL CA - struct is %\n" mtlfile
 --if mtlmat_CA == undefined do
 fn testeventhandler sender ev = (
 	$.name = "pressed the buttons"
@@ -636,28 +660,509 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 (
 	parameters main rollout:VehicleCFGMainRollout
 	(
+		AIScript type:#string ui:txt_AIScript default:""
 		SkidMarksImage type:#string default:""
 		TyreParticlesVFX type:#string default:""
-		MaxSteeringLock type:#integer detault:20
+		MaxCompression type:#float ui:spn_MaxCompression
+		MaxExtension type:#float ui:spn_MaxExtension
+		RideHeight type:#float ui:spn_RideHeight
+		MaxSteeringLock type:#integer detault:20 ui:spn_MaxSteeringLock
+		MaxCompression_Active type:#boolean ui:chk_MaxCompression_Active
+		MaxExtension_Active type:#boolean ui:chk_MaxExtension_Active
+		RideHeight_Active type:#boolean ui:chk_RideHeight_Active
+		MaxSteeringLock_Active type:#boolean ui:chk_MaxSteeringLock_Active
 		ExhaustParticlesVFX type:#string default:""
 		ExhaustAnchor type:#maxObject
 		SkidNoise type:#stringTab tabSizeVariable:true
-		WheelsAllSetToSame type:#boolean default: true ui:chk_AllWheelsTheSame
-		WheelFolderName type:#string default:"default_eagle_R" ui:txt_wheelFolderName
-		FRWheelFolderName type:#string default:"default_eagle_R" ui:txt_frwheelFolderName
-		FLWheelFolderName type:#string default:"default_eagle_R" ui:txt_flwheelFolderName
-		RRWheelFolderName type:#string default:"default_eagle_R" ui:txt_rrwheelFolderName
-		RLWheelFolderName type:#string default:"default_eagle_R" ui:txt_rkwheelFolderName
+		TopSpeed type:#integer 	default:155	ui:spn_TopSpeed
+		To60Time type:#float 	default:3.1 ui:spn_To60Time
+		Weight type:#float 		default:1.3 ui:spn_Weight
+		Toughness type:#float 	default:1.1 ui:spn_Toughness
+		UnlockLevel type:#integer default:0	ui:spn_UnlockLevel
 	)
 	rollout VehicleCFGMainRollout "Vehicle CFG"
 	(
+
+		edittext txt_AIScript "AI Script" labelOnTop:true
+		spinner spn_TopSpeed "Top Speed" range:[0,500,1] type:#integer
+		spinner spn_To60Time "0-60 Time (secs)" range:[0,50,0.1] type:#float
+		spinner spn_Weight "Weight (tons)" range:[0,50,0.1] type:#float
+		spinner spn_Toughness "Toughness" range:[0,50,0.1] type:#float
+		spinner spn_UnlockLevel "Unlock Level" range:[0,50,1] type:#integer
+		label lbl_Suspension "Suspension"
+		label lbl_MaxCompression "Max Compression" across:1 align:#right
+		checkbox chk_MaxCompression_Active "" default:false  across:2 width:15
+		spinner spn_MaxCompression "" range:[0,100,1] type:#float fieldwidth:40 align:#right
+		label lbl_MaxExtension "Max Extension" across:1 align:#right
+		checkbox chk_MaxExtension_Active "" default:false  across:2 width:15
+		spinner spn_MaxExtension "" range:[0,100,1] type:#float fieldwidth:40 align:#right
+		label lbl_MaxSteeringLock "Max SteeringLock" across:1 align:#right
+		checkbox chk_MaxSteeringLock_Active "" default:false  across:2 width:15
+		spinner spn_MaxSteeringLock "" range:[0,100,1] type:#float fieldwidth:40 align:#right
+		label lbl_RideHeight "Ride Height" across:1 align:#right
+		checkbox chk_RideHeight_Active "" default:false  across:2 width:15
+		spinner spn_RideHeight "" range:[0,100,1] type:#float fieldwidth:40 align:#right
+	)
+
+	parameters wheels rollout:VehicleCFGWheelsRollout
+	(
+		WheelNames type:#stringTab tabSizeVariable:true
+		WheelLocalisedNames type:#stringTab tabSizeVariable:true
+		FRWheelFolderNames type:#stringTab tabSizeVariable:true
+		FLWheelFolderNames type:#stringTab tabSizeVariable:true
+		RRWheelFolderNames type:#stringTab tabSizeVariable:true
+		RLWheelFolderNames type:#stringTab tabSizeVariable:true
+		D4WheelFolderNames type:#stringTab tabSizeVariable:true
+		D5WheelFolderNames type:#stringTab tabSizeVariable:true
+		D6WheelFolderNames type:#stringTab tabSizeVariable:true
+		D7WheelFolderNames type:#stringTab tabSizeVariable:true
+		D8WheelFolderNames type:#stringTab tabSizeVariable:true
+		D9WheelFolderNames type:#stringTab tabSizeVariable:true
+		D10WheelFolderNames type:#stringTab tabSizeVariable:true
+		D11WheelFolderNames type:#stringTab tabSizeVariable:true
+		GarageSetFolderNames type:#stringTab tabSizeVariable:true
+	)
+	rollout VehicleCFGWheelsRollout "Wheels"
+	(
+		button but_AddToWheels "Add" across:2
+		button but_DeleteFromWheels "Delete" across:2
+		dotnetcontrol lv_Wheels "listview" height: 100
 		checkbox chk_AllWheelsTheSame "All Wheels Use Same Model" default: true
-		edittext txt_wheelFolderName "Wheel Folder Name" labelOntop:true
+
+
+		edittext txt_wheelName "Wheel Name" labelOntop:true
+		edittext txt_wheelLocalisedName "Localised Name" labelOntop:true
 		
 		edittext txt_frwheelFolderName "Wheel FR Folder Name" labelOntop:true
 		edittext txt_flwheelFolderName "Wheel FL Folder Name" labelOntop:true
 		edittext txt_rrwheelFolderName "Wheel RR Folder Name" labelOntop:true
-		edittext txt_rkwheelFolderName "Wheel RL Folder Name" labelOntop:true
+		edittext txt_rlwheelFolderName "Wheel RL Folder Name" labelOntop:true
+		checkbox chk_showExtraWheels "Show extra wheels?"
+		edittext txt_d4wheelFolderName "Wheel 5 Folder Name" labelOntop:true
+		edittext txt_d5wheelFolderName "Wheel 6 Folder Name" labelOntop:true
+		edittext txt_d6wheelFolderName "Wheel 7 Folder Name" labelOntop:true
+		edittext txt_d7wheelFolderName "Wheel 8 Folder Name" labelOntop:true
+		edittext txt_d8wheelFolderName "Wheel 9 Folder Name" labelOntop:true
+		edittext txt_d9wheelFolderName "Wheel 10 Folder Name" labelOntop:true
+		edittext txt_d10wheelFolderName "Wheel 11 Folder Name" labelOntop:true
+		edittext txt_d11wheelFolderName "Wheel 12 Folder Name" labelOntop:true
+		edittext txt_garageSetFolderNames "Garage Set Folder Name" labelOntop:true
+
+		fn AddWheel wheelName:undefined localisedName:undefined folderName:"default_eagle_R" = (
+			if wheelName == undefined then (
+				wheelName = "set"+((WheelNames.count + 1) as string )
+			)
+			if localisedName == undefined then (
+				localisedName = "Wheel Set "+((WheelNames.count + 1) as string )
+			)
+			append WheelNames wheelName
+			append WheelLocalisedNames localisedName
+			append FRWheelFolderNames folderName
+			append FLWheelFolderNames folderName
+			append RRWheelFolderNames folderName
+			append RLWheelFolderNames folderName
+			append D4WheelFolderNames ""
+			append D5WheelFolderNames ""
+			append D6WheelFolderNames ""
+			append D7WheelFolderNames ""
+			append D8WheelFolderNames ""
+			append D9WheelFolderNames ""
+			append D10WheelFolderNames ""
+			append D11WheelFolderNames ""
+			append GarageSetFolderNames ""
+				lv_Wheels.Items.add wheelName
+		)
+		fn UpdateWheel do (
+			if lv_Wheels.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
+				wheelIndex = finditem WheelNames selectedItem
+
+				WheelNames[wheelIndex] = txt_wheelName.text
+				WheelLocalisedNames[wheelIndex] = txt_wheelLocalisedName.text
+				FRWheelFolderNames[wheelIndex] = txt_frwheelFolderName.text
+				FLWheelFolderNames[wheelIndex] = txt_flwheelFolderName.text
+				RRWheelFolderNames[wheelIndex] = txt_rrwheelFolderName.text
+				RLWheelFolderNames[wheelIndex] = txt_rlwheelFolderName.text
+				D4WheelFolderNames[wheelIndex] = txt_d4wheelFolderName.text
+				D5WheelFolderNames[wheelIndex] = txt_d5wheelFolderName.text
+				D6WheelFolderNames[wheelIndex] = txt_d6wheelFolderName.text
+				D7WheelFolderNames[wheelIndex] = txt_d7wheelFolderName.text
+				D8WheelFolderNames[wheelIndex] = txt_d8wheelFolderName.text
+				D9WheelFolderNames[wheelIndex] = txt_d9wheelFolderName.text
+				D10WheelFolderNames[wheelIndex] = txt_d10wheelFolderName.text
+				D11WheelFolderNames[wheelIndex] = txt_d11wheelFolderName.text
+				GarageSetFolderNames[wheelIndex] = txt_garageSetFolderNames.text
+				lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text = txt_wheelName.text
+			)	
+		)
+		on VehicleCFGWheelsRollout open do (
+
+			lv_Wheels.view  = (dotnetclass "view").details
+			lv_Wheels.fullrowselect= true
+			lv_Wheels.gridlines = true
+			lv_Wheels.multiselect =false
+			lv_Wheels.columns.add "Wheel" 110
+			for i=1 to WheelNames.count do
+			(
+				lv_Wheels.Items.add WheelNames[i]
+			)
+			if WheelNames.count < 1 then (
+				AddDefaultWheel wheelName:"default" localisedName:"Default"
+			)
+		)
+
+		on txt_wheelLocalisedName changed do ( UpdateWheel() )
+		on txt_frwheelFolderName changed do ( UpdateWheel() )
+		on txt_flwheelFolderName changed do ( UpdateWheel() )
+		on txt_rrwheelFolderName changed do ( UpdateWheel() )
+		on txt_rlwheelFolderName changed do ( UpdateWheel() )
+		on txt_d4wheelFolderName changed do ( UpdateWheel() )
+		on txt_d5wheelFolderName changed do ( UpdateWheel() )
+		on txt_d6wheelFolderName changed do ( UpdateWheel() )
+		on txt_d7wheelFolderName changed do ( UpdateWheel() )
+		on txt_d8wheelFolderName changed do ( UpdateWheel() )
+		on txt_d9wheelFolderName changed do ( UpdateWheel() )
+		on txt_d10wheelFolderName changed do ( UpdateWheel() )
+		on txt_d11wheelFolderName changed do ( UpdateWheel() )
+		on txt_garageSetFolderNames changed do ( UpdateWheel() )
+
+		on lv_Wheels selectedindexchanged do
+		(
+			if lv_Wheels.SelectedIndices.count > 0 then 
+			(
+				but_DeleteFromWheels.enabled = true
+				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
+				wheelIndex = finditem WheelNames selectedItem
+				txt_wheelName.text = WheelNames[wheelIndex]
+				txt_wheelLocalisedName.text = WheelLocalisedNames[wheelIndex]
+				txt_frwheelFolderName.text = FRWheelFolderNames[wheelIndex]
+				txt_flwheelFolderName.text = FLWheelFolderNames[wheelIndex]
+				txt_rrwheelFolderName.text = RRWheelFolderNames[wheelIndex]
+				txt_rlwheelFolderName.text = RLWheelFolderNames[wheelIndex]
+				chk_showExtraWheels.checked = D4WheelFolderNames[wheelIndex] != ""
+				if chk_showExtraWheels.checked then (
+					txt_d4wheelFolderName.visible = true
+					txt_d5wheelFolderName.visible = true
+					txt_d6wheelFolderName.visible = true
+					txt_d7wheelFolderName.visible = true
+					txt_d8wheelFolderName.visible = true
+					txt_d9wheelFolderName.visible = true
+					txt_d10wheelFolderName.visible = true
+					txt_d11wheelFolderName.visible = true
+					txt_garageSetFolderNames.visible = true
+
+				)
+				else (
+					txt_d4wheelFolderName.visible = false
+					txt_d5wheelFolderName.visible = false
+					txt_d6wheelFolderName.visible = false
+					txt_d7wheelFolderName.visible = false
+					txt_d8wheelFolderName.visible = false
+					txt_d9wheelFolderName.visible = false
+					txt_d10wheelFolderName.visible = false
+					txt_d11wheelFolderName.visible = false
+					txt_garageSetFolderNames.visible = false
+
+				)
+				txt_d4wheelFolderName.text = D4WheelFolderNames[wheelIndex]
+				txt_d5wheelFolderName.text = D5WheelFolderNames[wheelIndex]
+				txt_d6wheelFolderName.text = D6WheelFolderNames[wheelIndex]
+				txt_d7wheelFolderName.text = D7WheelFolderNames[wheelIndex]
+				txt_d8wheelFolderName.text = D8WheelFolderNames[wheelIndex]
+				txt_d9wheelFolderName.text = D9WheelFolderNames[wheelIndex]
+				txt_d10wheelFolderName.text = D10WheelFolderNames[wheelIndex]
+				txt_d11wheelFolderName.text = D11WheelFolderNames[wheelIndex]
+				txt_garageSetFolderNames.text = GarageSetFolderNames[wheelIndex]
+			)
+			else (
+				but_DeleteFromWheels.enabled = false
+			)
+		)
+		on chk_showExtraWheels changed state do (
+			if state  then (
+				txt_d4wheelFolderName.visible = true
+				txt_d5wheelFolderName.visible = true
+				txt_d6wheelFolderName.visible = true
+				txt_d7wheelFolderName.visible = true
+				txt_d8wheelFolderName.visible = true
+				txt_d9wheelFolderName.visible = true
+				txt_d10wheelFolderName.visible = true
+				txt_d11wheelFolderName.visible = true
+				txt_garageSetFolderNames.visible = true
+
+			)
+			else (
+				txt_d4wheelFolderName.visible = false
+				txt_d5wheelFolderName.visible = false
+				txt_d6wheelFolderName.visible = false
+				txt_d7wheelFolderName.visible = false
+				txt_d8wheelFolderName.visible = false
+				txt_d9wheelFolderName.visible = false
+				txt_d10wheelFolderName.visible = false
+				txt_d11wheelFolderName.visible = false
+				txt_garageSetFolderNames.visible = false
+
+			)
+		)
+		on but_AddToWheels pressed do (
+			AddWheel()
+		)
+		on but_DeleteFromWheels pressed do (
+			if lv_Wheels.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
+				selectedIndex  = finditem WheelNames selectedItem
+				deleteitem WheelNames selectedIndex
+				deleteitem WheelLocalisedNames selectedIndex
+				deleteitem FRWheelFolderNames selectedIndex
+				deleteitem FLWheelFolderNames selectedIndex
+				deleteitem RRWheelFolderNames selectedIndex
+				deleteitem RLWheelFolderNames selectedIndex
+				deleteitem D4WheelFolderNames selectedIndex
+				deleteitem D5WheelFolderNames selectedIndex
+				deleteitem D6WheelFolderNames selectedIndex
+				deleteitem D7WheelFolderNames selectedIndex
+				deleteitem D8WheelFolderNames selectedIndex
+				deleteitem D9WheelFolderNames selectedIndex
+				deleteitem D10WheelFolderNames selectedIndex
+				deleteitem D11WheelFolderNames selectedIndex
+				deleteitem GarageSetFolderNames selectedIndex 
+				lv_Wheels.Item.removeAt lv_Wheels.selectedIndices.Item[0]
+			)
+		)
+	)
+
+	parameters cams rollout:VehicleCFGCameraRollout 
+	(
+
+		UseGarageCameraOffset type:#boolean default: false ui:chk_GarageCamera
+		GarageCameraOffset_x type:#float ui:spn_GarageCamera_x
+		GarageCameraOffset_y type:#float ui:spn_GarageCamera_y
+		GarageCameraOffset_z type:#float ui:spn_GarageCamera_z
+		InCarCameraPos_x type:#float ui:spn_InCarCamera_x
+		InCarCameraPos_y type:#float ui:spn_InCarCamera_y
+		InCarCameraPos_z type:#float ui:spn_InCarCamera_z
+	)
+	rollout VehicleCFGCameraRollout "Camera" (
+
+		checkbox chk_GarageCamera "Garage Camera Offset" acrosss:1 default:false
+		spinner spn_GarageCamera_x "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_GarageCamera_y "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_GarageCamera_z "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		label lbl_InCarCamera "In Car Camera Position" acrosss:1
+		spinner spn_InCarCamera_x "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_InCarCamera_y "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_InCarCamera_z "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+	)
+
+	parameters driver rollout:VehicleCFGDriverRollout (
+		EjectDriver type:#boolean default: true ui:chk_EjectDriver
+		SmallDriver type:#boolean default: false ui:chk_SmallDriver
+		Drivers type:#stringTab tabSizeVariable:true
+		DriverSuffix type:#string default:"" ui:txt_DriverSuffix
+	)
+
+	rollout VehicleCFGDriverRollout "Drivers" (
+
+		checkbox chk_EjectDriver "Eject Driver" acrosss:1 default:true
+		checkbox chk_SmallDriver "Small Driver" acrosss:1 default:true
+		edittext txt_DriverName "Drivers" labelOnTop:true fieldwidth: 100 across:2
+		button but_AddToDrivers "Add"
+		dotnetcontrol lv_Drivers "listview" height: 100
+		button but_DeleteFromDrivers "Delete Selected"
+		edittext txt_DriverSuffix "Driver Suffix" labelOntop:true
+
+		on VehicleCFGDriverRollout open  do (
+
+			but_AddToDrivers.pos = [120, but_AddToDrivers.pos.y+15]
+			lv_Drivers.view  = (dotnetclass "view").details
+			lv_Drivers.fullrowselect= true
+			lv_Drivers.gridlines = true
+			lv_Drivers.multiselect =false
+			lv_Drivers.columns.add "Driver" 110
+			for i=1 to Drivers.count do
+			(
+				lv_Drivers.Items.add Drivers[i]
+			)
+		)
+		on but_DeleteFromDrivers pressed do
+		(
+			if lv_Drivers.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_Drivers.SelectedIndices.Item[0]
+				lv_Drivers.Items.removeat selectedIndex
+				deleteItem Drivers (selectedIndex+1)
+			)
+		)
+		on but_AddToDrivers pressed do
+		(
+			lv_Drivers.Items.add (txt_DriverName.text)
+			append Drivers txt_DriverName.text
+		)
+	)
+
+	parameters materialMap rollout:VehicleCFGMaterialMapRollout (
+		PaintJobNames type:#stringTab tabSizeVariable:true
+		PaintJobLocalisedNames type:#stringTab tabSizeVariable:true
+		ShrapneColours type:#poiny3Tab tabSizeVariable:true
+		MatReplacements type:#stringTab tabSizeVariable:true
+	)
+	rollout VehicleCFGMaterialMapRollout "Paint Jobs" (
+
+		button but_AddToMatMap "Add" across:2
+		button but_DeleteFromMatMap "Delete" across:2
+		dotnetcontrol lv_MatMaps "listview" height: 100
+		
+
+		edittext txt_paintJobName "Paint Job Name" labelOntop:true
+		edittext txt_paintJobLocalisedName "Localised Name" labelOntop:true
+		label lbl_ShrapnelColor "Shrapnel Colour"
+		spinner spn_Shrapnel_R "" range:[0, 255, 1] across:3 type:#integer	
+		spinner spn_Shrapnel_G "" range:[0, 255, 1] across:3 type:#integer	
+		spinner spn_Shrapnel_B "" range:[0, 255, 1] across:3 type:#integer	
+		
+		label lbl_Replacements "Material Replacements"
+		button but_AddToMatToReplace "Add" across:2
+		button but_DeleteFromMatToReplace "Delete" across:2
+		dotnetcontrol lv_Replacement "listview" height: 100
+		edittext txt_matToReplace "Source Material"		
+		edittext txt_matToUse "Target Material"		
+
+
+		fn AddPaintJob paintJobName:undefined localisedName:undefined sourceMat:undefined targetMat:undefined = (
+			if paintJobName == undefined then (
+				paintJobName = "paint"+((paintJobNames.count + 1) as string )
+			)
+			if localisedName == undefined then (
+				localisedName = "Paint Job Set "+((paintJobNames.count + 1) as string )
+			)
+			append paintJobNames paintJobName
+			append paintJobLocalisedNames localisedName
+			append MatReplacements	sourceMat
+			append ShrapneColours [255,0,255]
+			lv_MatMaps.Items.add paintJobName
+
+		)
+
+		fn UpdatePaintJob = (
+
+		)
+
+		fn SetReplacement source target = (
+
+			if lv_MatMaps.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_MatMaps.Items.item[lv_MatMaps.SelectedIndices.Item[0]].text
+				paintJobIndex = finditem PaintJobNames selectedItem
+				replacements = filterstring MatReplacements[paintJobIndex] ";"
+				MatReplacements[paintJobIndex] = ""
+
+				for replacement in replacements do (
+					splitReplacement = FilterString replacement ":"
+					if (toupper splitReplacement[1]) == (touppper source) then (
+						splitReplacement[2] = target
+					)
+					MatReplacements[paintJobIndex] = MatReplacements[paintJobIndex] + splitReplacement[1]+":"+splitReplacement[2]+";"
+				)
+			)
+		)
+		fn DeleteReplacement source = (
+			
+			if lv_MatMaps.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_MatMaps.Items.item[lv_MatMaps.SelectedIndices.Item[0]].text
+				paintJobIndex = finditem WheelNames selectedItem
+				replacements = filterstring MatReplacements[paintJobIndex] ";"
+				MatReplacements[paintJobIndex] = ""
+
+				for replacement in replacements do (
+					splitReplacement = FilterString replacement ":"
+					if (toupper splitReplacement[1]) == (touppper source) then (
+						splitReplacement[2] = target
+					)
+					MatReplacements[paintJobIndex] = MatReplacements[paintJobIndex] + splitReplacement[1]+":"+splitReplacement[2]+";"
+				)
+			)
+		)
+		fn SetupReplacementsList replacementString = (
+			lv_Replacement.Items.clear()
+			replacements = filterstring replacementString ";"
+			for repalacement in replacements do (
+				splitReplacement = filterstring replacement ":"
+				lvItem = dotnetobject "listviewitem" splitReplacement[1]
+				lvItem.subitems.add splitReplacement[2]
+				lv_Replacement.Items.add lvItem
+			)
+
+		)
+		
+		on VehicleCFGMaterialMapRollout open do (
+
+			lv_MatMaps.view  = (dotnetclass "view").details
+			lv_MatMaps.fullrowselect= true
+			lv_MatMaps.gridlines = true
+			lv_MatMaps.multiselect =false
+			lv_MatMaps.columns.add "Paint Job" 110
+			for i=1 to PaintJobNames.count do
+			(
+				lv_MatMaps.Items.add PaintJobNames[i]
+			)
+			if PaintJobNames.count < 1 then (
+				AddPaintJob paintJobName:"default" localisedName:"Default Paint Job"
+			)
+			lv_Replacement.view  = (dotnetclass "view").details
+			lv_Replacement.fullrowselect= true
+			lv_Replacement.gridlines = true
+			lv_Replacement.multiselect =false
+			lv_Replacement.columns.add "Source" 55
+			lv_Replacement.columns.add "Target" 55
+			
+		)
+		on lv_MatMaps selectedindexchanged do
+		(
+			if lv_MatMaps.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_MatMaps.Items.item[lv_MatMaps.SelectedIndices.Item[0]].text
+				paintJobIndex = finditem PaintJobNames selectedItem
+				txt_paintJobName.text = PaintJobNames[paintJobIndex]
+				txt_paintJobLocalisedName.text = PaintJobLocalisedNames[paintJobIndex]
+				spn_Shrapnel_R = ShrapneColours[paintJobIndex].x
+				spn_Shrapnel_G = ShrapneColours[paintJobIndex].y
+				spn_Shrapnel_B = ShrapneColours[paintJobIndex].z
+
+				SetupReplacementsList MatReplacements[paintJobIndex]
+				
+			)
+			else(
+				lv_Replacement.Items.clear()
+			)
+		) 
+		on lv_Replacement selectedindexchanged do (
+			if lv_Replacement.SelectedIndices.count >0 the (
+					replacements = filterstring replacementString ";"
+					splitReplacement = filterstring replacement[replacements[lv_Replacement.SelectedIndices[0]]] ":"
+					txt_matToReplace.text = splitReplacement[1]
+					txt_matToUse.text = splitReplacement[2]
+			)
+		)
+
+		on but_AddToMatMap pressed do (
+			AddPaintJob()
+		)
+		on but_DeleteFromMatMap pressed do (
+			if lv_MatMaps.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_MatMaps.Items.item[lv_MatMaps.SelectedIndices.Item[0]].text
+				selectedIndex  = finditem PaintJobNames selectedItem
+				deleteitem PaintJobNames selectedIndex
+				deleteitem PaintJobLocalisedNames selectedIndex
+				deleteitem ShrapneColours selectedIndex
+				deleteitem MatReplacements selectedIndex
+				deleteitem PaintJobNames selectedIndex
+				lv_MatMaps.Item.removeAt lv_MatMaps.selectedIndices.Item[0]
+			)
+		)
 	)
 )
 
@@ -3562,6 +4067,7 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		)
 		fn GetCrushDamageMaterials mat =
 		(
+			mats = undefined
 			if classof mat == multimaterial then
 			(
 				mats = #()
@@ -3569,12 +4075,13 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 				(
 					mats += GetCrushDamageMaterials submat
 				)
-				return mats
+
 			)
 			else if classof mat == standardmaterial then
 			(
-				return #(mat)
+				mats = #(mat)
 			)
+			mats
 		)
 		on CrushDamageParams open do
 		(
@@ -4180,18 +4687,17 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 
 fn GetBonesList mdl =
 (
+	pedBonesList = undefined
 	if mdl.modifiers["Ped Bones List"] != undefined then
 	(
 		pedBonesList = for b in mdl.modifiers["Ped Bones List"].BoneList where b != undefined and b.node != undefined collect b.node
-		return pedBonesList
-		
-		
 		
 	)
 	else if mdl.modifiers["Skin"] != undefined then
 	(
-		return (GetBonesFromSkin skinMod)
+		pedBonesList (GetBonesFromSkin skinMod)
 	)
+	pedBonesList
 )
 fn AddPedBonesListMod mdl =
 (

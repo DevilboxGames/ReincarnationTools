@@ -25,8 +25,8 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 		breakOnNext = false
 		for i=1 to splitLevelPath.count-2 do
 		(
-			if tolower splitLevelPath[i] == "levels" then break
-			environmentFolder = environmentFolder + splitLevelPath[i]+ "\\"
+			if tolower splitLevelPath[i] == "levels" then i = splitLevelPath.count + 1
+			else environmentFolder = environmentFolder + splitLevelPath[i]+ "\\"
 			--if tolower splitLevelPath[i] == "environments" then breakOnNext = true
 		)
 		
@@ -53,7 +53,7 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 	--else
 		--format "No accessory found matching %\n" accessoryType
 	KeepMaxAlive()
-	return accessory
+	accessory
 )
 fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 (
@@ -539,30 +539,36 @@ struct C2TextParser (
 		curline = ""
 		tokens = #()
 		currentToken = ""
-		return f
+		f
 	),
 	fn GetLine = (
-			while not (eof f) do (
+			curline = ""
+			quitLoop = false
+			while not (eof f) and quitLoop == false do (
 				curline = trimLeft (trimRight (readline f))
 					if curline != "" and (substring curline 1 2) != "//" then (
 						nextTokenNum = 1
 						tokens = filterstring curline " ,"
-						return curline;
+						quitLoop = true
 					)
 			)
-			curline = undefined
-			return ""
+			if quitLoop == false then curLine = ""
+			curLine
 		),
 		fn GetToken = (
+			hitEof = false
 			while (nextTokenNum > tokens.count or substring tokens[nextTokenNum] 1 2) == "//" and not (eof f) do
 			(
 				GetLine()
-				if eof f then return undefined
+				if eof f then hitEof = true
 			)
-			
+			currentToken = undefined
+			if hitEof then
+			(
 			currentToken = tokens[nextTokenNum]
 			nextTokenNum = nextTokenNum + 1
-			return currentToken
+			)
+			currentToken
 		)
 )
 fn ImportC2LevelTXT txtFileName checkExisitingNodes:false =

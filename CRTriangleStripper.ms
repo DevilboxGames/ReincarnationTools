@@ -19,10 +19,16 @@ struct TriangleStripper_Triangle
 
 	fn GetOppositeVert(v1, v2)
 	{
-		for v in Vertices do
+		result = undefined
+		for i=1 to Vertices.count do
 		(
-			if v != v1 && v != v2 then return v
+			v = Vertices[i]
+			if v != v1 && v != v2 then (
+				result = v
+				i= Vertices.count + 1
+				)
 		)
+		result
 	}
 )
 
@@ -87,7 +93,7 @@ struct TriangleStripper
 		FirstUnusedBit = 0
 		CurrentBitUsed = 0
 		for n in bits while (CurrentBitUsed=n;on) and (FirstUnusedBit=FirstUnusedBit+1;CurrentBitUsed == FirstUnusedBit) do ( )
-		return FirstUnusedBit
+		FirstUnusedBit
 	),
 
 	fn TrackStrip faceIndex oldest middle stripNum offset =

@@ -126,7 +126,7 @@ struct AccessoryFileLump
 			append strStream  "form_collision_groups\n1"
 		)
 		--format "%" (strStream as string)
-		return (strStream as string)
+		strStream as string
 	),
 	
 	fn SaveTXT txtFile obj= (

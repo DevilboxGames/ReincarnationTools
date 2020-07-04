@@ -2229,7 +2229,10 @@ fn ParseStructurePartNode xmlNode obj =
 						break
 					)
 				)
-				ParseStructurePartNode child childObj
+				if childObj != undefined then
+				(
+					ParseStructurePartNode child childObj
+				)
 			)
 			else if child.name == "WELD" then
 			(
@@ -2635,7 +2638,7 @@ fn RecurseCarHierarchyToFindWheels obj =
 	(
 		outputArray += RecurseCarHierarchyToFindWheels obj.children[i]
 	)
-	return outputArray
+	outputArray
 )
 fn ReplaceWheels rootMesh =
 (

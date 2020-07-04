@@ -1,6 +1,6 @@
 fn GetJointAxisByVertexColour obj vertColor =
 (
-	return [1,0,0]
+	[1,0,0]
 )
 fn SetAllCNTsToBakeScale obj =
 (
@@ -19,7 +19,7 @@ fn AddVehilceCFGModifier obj =
 	structPartModifier.name = "vehicle_setup.cfg"
 	addModifier obj structPartModifier
 	custattributes.add structPartModifier VehicleSetupCFGAttribute baseObject:false
-	return structPartModifier
+	structPartModifier
 )
 
 fn AddStructureAxleModifer obj =
@@ -29,7 +29,7 @@ fn AddStructureAxleModifer obj =
 	structAnimModifier.name = "Wishbone Axle"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureWishboneAxleAttributes baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 fn AddStructureWishboneMountModifer obj =
 (
@@ -38,7 +38,7 @@ fn AddStructureWishboneMountModifer obj =
 	structAnimModifier.name = "Wishbone Mount"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureWishboneMount baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 fn AddStructureWishboneHubModifer obj =
 (
@@ -47,7 +47,7 @@ fn AddStructureWishboneHubModifer obj =
 	structAnimModifier.name = "Wishbone Hub"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureWishboneHub baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 fn AddStructureWishboneTrailingArmModifer obj =
 (
@@ -56,7 +56,7 @@ fn AddStructureWishboneTrailingArmModifer obj =
 	structAnimModifier.name = "Wishbone Trailing Arm"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureTrailingArm baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 
 fn AddStructureAnimationModifer obj =
@@ -66,7 +66,7 @@ fn AddStructureAnimationModifer obj =
 	structAnimModifier.name = "Part Animation"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureAnimationAttributes baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 
 fn AddStructurePointToPointModifer obj =
@@ -76,7 +76,7 @@ fn AddStructurePointToPointModifer obj =
 	structAnimModifier.name = "Point To Point Animation"
 	addModifier obj structAnimModifier
 	custattributes.add structAnimModifier StructureRotatePointToPointAttribute baseObject:false
-	return structAnimModifier
+	structAnimModifier
 )
 fn AddStructureWeldModifier obj =
 (
@@ -86,7 +86,7 @@ fn AddStructureWeldModifier obj =
 	structPartModifier.name = "Car Weld"
 	addModifier obj structPartModifier
 	custattributes.add structPartModifier StructureWeldAttribute baseObject:false
-	return structPartModifier
+	structPartModifier
 )
 
 fn AddStructureCharacteristicsModifier obj =
@@ -211,7 +211,7 @@ fn CreateJointHelper obj =
 	else jointName = "Joint_Helper_"
 	m = CarmaHelper_JointHelper prefix:(jointName)
 	
-	return m
+	m
 )
 
 fn CreateJointButton_Pressed sender arg =
@@ -290,10 +290,10 @@ fn CreateNewWheelNode trans wheelType selectAndFocus:false addAttributes:true wh
 		select m
 		max zoomext sel all
 	)
-	return m
+	m
 )
 
-fn ConvertToWheelNode obj wheelType selectAndFocus:false addAttributes:true wheelName:"default_eagle_R" =
+fn ConvertToWheelNode obj wheelType selectAndFocus:false addAttributes:true wheelName:"default_eagle_R" deleteOldMesh:true =
 (
 	
 			trans = obj.transform
@@ -305,7 +305,11 @@ fn ConvertToWheelNode obj wheelType selectAndFocus:false addAttributes:true whee
 				
 				append newWheelNode.children child
 			)
-			delete obj
+			if deleteOldMesh then (
+				delete obj
+			)
+			
+			newWheelNode
 )
 
 fn CreateWheelButton_Pressed sender arg =

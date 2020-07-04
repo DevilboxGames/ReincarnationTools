@@ -343,7 +343,7 @@ fn CreateRBAObjects obj =
 	(
 		join RBAObjects (CreateRBAObjects child)
 	)
-	return RBAObjects
+	RBAObjects
 )
 fn ApplyRBA rbaobj suffix:""=
 (
@@ -489,15 +489,17 @@ fn ImportRBA file =
 		
 	)
 	fclose f
-	return rba
+	rba
 )
 fn LoadRBA debugPrint:false =
 (
+	rba = undefined
 	rba_name = GetOpenFileName caption:"Open RBA File" types:"RBA(*.RBA)|*.rba"
 		if rba_name != undefined do
 		(
 			rba = ImportRBA rba_name
 			if debugPrint then PrintRBA rba
-			return rba
+			
 		)
+		rba
 )

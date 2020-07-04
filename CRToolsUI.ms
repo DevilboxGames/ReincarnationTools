@@ -97,7 +97,7 @@ fn SetupTabs form labels:#() Layout:undefined =
 	)
 	
 	form.Controls.Add tabs
-	return tabs
+	tabs
 )
 
 fileIn "CRToolsUI_ImportTabs.ms"
@@ -124,6 +124,14 @@ fn ToolsStartup =
 			CarmaSettings.DataCorePath = CarmaSettings.GamePath+"\\Data_Core"
 		)
 		CarmaSettings.DataCorePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath"
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "ConvertTexturesInPlace") == "true" then
+			CarmaSettings.ConvertTexturesInPlace = true
+		else
+			CarmaSettings.ConvertTexturesInPlace = false
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Transforms" "SetupForUE4") == "true" then
+			CarmaSettings.SetupForUE4 = true
+		else
+			CarmaSettings.SetupForUE4 = false	
 		CarmaSettings.TexturePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "TextureConversionPath"
 		CarmaSettings.GibbedTools = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GibbedTools"
 		CarmaSettings.LOLDecoder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder"
@@ -136,7 +144,7 @@ fn ToolsStartup =
 			if (MaxTextureResolutionOptions[i] as Integer) == CarmaSettings.MaxResolution do
 			(
 				CarmaSettings.MaxResolutionID = i
-				break
+				i=MaxTextureResolutionOptions.count+1
 			)
 		)
 		if CarmaSettings.MaxResolutionID==undefined do CarmaSettings.MaxResolutionID=6
@@ -162,7 +170,7 @@ fn ToolsStartup =
 				local imgtooldotNetType = imgAssembly.GetType "IMGToolLib.IMGTool"
 				local imgConvertClass = (dotnetClass "System.Activator").CreateInstance imgtooldotNetType
 
-				--local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll");
+				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll");
 		format "GamePath: %\nTexturePath: %\n GibbedTools: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools
 		if CarmaSettings.GamePath == undefined or CarmaSettings.GamePath == "" then
 		(
@@ -228,5 +236,5 @@ fn CreateUI =
 	ToolsStartup()
 			
 		
-	return CRToolsUI
+	CRToolsUI
 )

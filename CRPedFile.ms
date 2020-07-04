@@ -154,7 +154,7 @@ struct PedFile_SpawnSpec
 			append luaText ("\tCPedSpawnSpec:Set_Direction("+(direction as string)+")\r\n")
 		)
 
-		return (luaText as string)
+		(luaText as string)
 	)
 )
 

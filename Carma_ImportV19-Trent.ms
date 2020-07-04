@@ -143,7 +143,7 @@ fn readvlst bf imp_scale69:true =
 			y = y * 6.9
 			z = z * 6.9
 		)
-		append val [x,-z,y]
+		append val [-x,z,y]
 	)
 	return val
 )
@@ -217,7 +217,8 @@ fn readmid bf =
 	for i=1 to count do
 	(
 		id = (freadint bf)
-		if id!= 0 then append val id else append val 1
+		--if id!= 0 then append val id else append val 1
+		append val id
 	)
 	return val
 )
@@ -260,7 +261,7 @@ fn readtm bf tmtab =
 	t1 = freadfloat bf
 	t2 = freadfloat bf
 	t3 = freadfloat bf
-	amatrix = (matrix3 [x1,x2,x3] [y1,y2,y3] [z1,z2,z3] [t1,t2,t3])
+	amatrix = (matrix3 [x1,x2,x3] [y1,y2,y3] [z1,z2,z3] [t1,t2,-t3])
 	amatrix = matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0] * amatrix * inverse(matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])
 	--amatrix = amatrix * (matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])
 	if tmtab.count > 0 do
@@ -305,16 +306,31 @@ fn FindBitmap filename =
 fn setmbtm m mbtm mtm filetype:".tif"=
 (
 	mbtm = filterstring mbtm "."
-	format "\ttrying to load %" (mbtm[1] + filetype)
+	--format "\ttrying to load %" (mbtm[1] + filetype)
 	m.diffusemap = bitmaptexture filename:(mbtm[1] + filetype)
 	
-	format "loaded diffusemap %\n" m.diffusemap
+	--format "loaded diffusemap %\n" m.diffusemap
 	bmp =  (openbitmap (mbtm[1] + filetype))
 		
-	format "loaded bitmap %\n" bmp
+	--format "loaded bitmap %\n" bmp
 		if(bmp != undefined) then 
 		( 
 			m.diffusemap.filename = bmp.filename
+			
+			if bmp.hasAlpha then (
+				m.opacitymap = bitmaptexture filename:(mbtm[1] + filetype)
+				m.opacitymap.coords.u_tiling = mtm.scalepart[1]
+				m.opacitymap.coords.v_tiling = mtm.scalepart[2]
+				m.opacitymap.coords.U_Angle = (mtm as EulerAngles).x
+				m.opacitymap.coords.V_Angle = (mtm as EulerAngles).y
+				m.opacitymap.coords.W_Angle = (mtm as EulerAngles).z
+				m.opacitymap.coords.u_offset = mtm.translationpart[1]
+				m.opacitymap.coords.u_offset = mtm.translationpart[2]
+				m.opacitymap.monooutput = 1
+			)
+		)
+		else (
+			format "ERROR: loaded diffusemap %\n" (mbtm[1] + filetype)
 		)
 	m.diffusemap.coords.u_tiling = mtm.scalepart[1]
 	m.diffusemap.coords.v_tiling = mtm.scalepart[2]
@@ -323,16 +339,6 @@ fn setmbtm m mbtm mtm filetype:".tif"=
 	m.diffusemap.coords.W_Angle = (mtm as EulerAngles).z
 	m.diffusemap.coords.u_offset = mtm.translationpart[1]
 	m.diffusemap.coords.u_offset = mtm.translationpart[2]
-	
-	m.opacitymap = bitmaptexture filename:(mbtm[1] + filetype)
-	m.opacitymap.coords.u_tiling = mtm.scalepart[1]
-	m.opacitymap.coords.v_tiling = mtm.scalepart[2]
-	m.opacitymap.coords.U_Angle = (mtm as EulerAngles).x
-	m.opacitymap.coords.V_Angle = (mtm as EulerAngles).y
-	m.opacitymap.coords.W_Angle = (mtm as EulerAngles).z
-	m.opacitymap.coords.u_offset = mtm.translationpart[1]
-	m.opacitymap.coords.u_offset = mtm.translationpart[2]
-	m.opacitymap.monooutput = 1
 	showTextureMap m on
 )
 	
@@ -537,7 +543,7 @@ fn GetLevelMatPixFiles txtpath =
 		)
 	)
 	while (eof f) == false
-	format "lineNum: %\n" lineNum
+	--format "lineNum: %\n" lineNum
 	
 	return #(pixFiles, matFiles, datFiles, actFiles)
 )
@@ -722,7 +728,7 @@ fn GetCarDataFiles txtpath =
 		)
 	)
 	while (eof f) == false
-	format "lineNum: %\n" lineNum
+	--format "lineNum: %\n" lineNum
 	
 	return #(pixFiles, matFiles, datFiles, actFiles)
 )
@@ -850,6 +856,8 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 		global abbox
 		global amat 
 		global mname 
+
+		global loadedObjects
 	bf=openbinfile fnm "rb"
 			head=freadhead bf
 			if (head == 484) do
@@ -895,35 +903,46 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 						)
 						if chunk==26 do 
 						(
+							format "% mid pos is %\n" oname (ftell bf)
 							mid=readmid bf
+							format "% mid's = %\n\n" oname mid
 						)
 					)while chunk != 0
-
+					--Format "% has % verts and % faces\n" oname vlst.count flst.count
 					if vlst==undefined do vlst=#()
 					if flst==undefined do flst=#()
 					if tvlst==undefined do tvlst=#()
 					if mlst==undefined then mlst=#()
-					if mid==undefined or mid.count>flst.count do
+					if mid==undefined or mid.count!=flst.count do
 					(
-						mid=#()
-						for i=1 to flst.count do
-						(
-							append mid 1
-						)
+						mid=for i=1 to flst.count collect 1
 					)
 					o=mesh vertices:vlst faces:flst materialids:mid name:(prefix+oname) tverts:tvlst
 					o.transform = matrix3 1
 					mmesh = o.mesh
+
+					for i = 1 to mid.count do (
+						setFaceMatID mmesh i mid[i]
+					)
+					setNumCPVVerts mmesh vlst.count
+					buildVCFaces mmesh
 					try 
 					(
 						buildTVFaces mmesh 
-						for i = 1 to mmesh.numfaces do (setTVFace mmesh i (getFace mmesh i))
+						for i = 1 to mmesh.numfaces do (
+							setTVFace mmesh i (getFace mmesh i)
+							setVCFace mmesh i (getFace mmesh i)
+							setEdgeVis mmesh i 1 true
+							setEdgeVis mmesh i 2 true
+							setEdgeVis mmesh i 3 true
+						)
 					)
 					catch()
 					if imp_mat == true do setomaterial o mlst materials materialnames
 					if imp_smth == true do fsetsmoothgroups o smth
 					if imp_quad == true do fsetedgevis o edv
 					update o
+					append loadedObjects o
 					--if imp_act.checked == false do rotate o (angleaxis 90 [1,0,0])
 					vlst=undefined
 					flst=undefined
@@ -940,6 +959,7 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 )
 fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp_other_coord_sys:false prefix:"" imp_scale69:true =
 (
+
 		global smth
 		global edv
 		global materials
@@ -952,9 +972,11 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 		global abbox
 		global amat 
 		global mname 
+		global loadedObjects
 	progressText = "status: importing ACT..."
 	bf=openbinfile acn "rb"
 	head = freadhead bf
+	rootmesh = undefined
 	if head==29 do
 	(
 		global prnt = #(undefined)
@@ -1002,7 +1024,13 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 				if mname != undefined and aname!= undefined do --write mesh actors
 				(
 					m = undefined
-					model = getnodebyname (prefix+mname)
+					model = undefined --getnodebyname (prefix+mname)
+					for obj in loadedObjects do (
+						if obj.name == (prefix+mname) then
+						(
+							model = obj
+						)
+					)
 					if model != undefined do
 					(
 						m = instance model
@@ -1012,16 +1040,49 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 						(
 							m.pos = m.pos * [6.9, 6.9, 6.9]
 						)
+
 						
-						if amat != "" or amat != undefined do
+						if amat != "" and amat != undefined do
 						(
-							if m.material == undefined do
-							(
-								try m.material = materials[finditem materialnames amat] catch()
+							stdmats = getClassInstances standard
+							foundMat = undefined
+							for mat in materials do (
+								if (toupper mat.name) == (toupper amat) then foundMat = mat
+							)
+								format "adding actor mat % to %\n" amat model.name
+							if foundMat != undefined then (
+								if m.material == undefined then
+								(
+									format "\tmodel has no material\n"
+									m.material = foundMat
+								)
+								else (
+									if classof m.material == standard then (
+										format "\tmodel has single mat\n"
+										material = multimaterial()
+										material.numsubs = 2
+										material.materiallist[1] = m.material
+										material.materiallist[2] = foundMat
+										m.material = material
+									)
+									else (
+										if classof m.material == multimaterial then (
+										format "\tmodel has multimat\n"
+											material = m.material
+											material.numsubs = (material.numsubs + 1)
+											material[material.numsubs] = foundMat
+											m.material = material
+										)
+									)
+								)
+							)
+							else (
+
+								format "===============\n=====Fuck, mat % not found!\n" amat
 							)
 						)
-						m.name = prefix+mname
-						--format "writing mesh actor: % - % / %" mname prefix aname
+						m.name = prefix+aname
+						format "writing mesh actor: % - % / % - %\n" mname prefix aname m.pos
 						setUserProp m "datName" mname
 						if addp == true do append prnt m
 						append deletemodels model
@@ -1043,6 +1104,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 							m.pos = m.pos * [6.9, 6.9, 6.9]
 						)
 					m.name = prefix+aname
+						--format "writing mesh actor: % - % / % - %\n" mname prefix aname m.pos
 					if addp == true do append prnt m
 				)
 				if aname=="" do --write group actors
@@ -1060,13 +1122,17 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 							m.pos = m.pos * [6.9, 6.9, 6.9]
 						)
 					m.name = "NO_IDENTIFIER"
+						--format "writing mesh actor: % - % / % - %\n" mname prefix m.name m.pos
 					if addp==true do append prnt m
 				)
-				if mprnt != undefined and imp_hier == true do
+				if mprnt != undefined and imp_hier == true then
 				(
 					--format "======\t\tadding parent \"%\" to \"%\"\n" mprnt m.name
 					m.parent = mprnt
 					if imp_group and isgrouphead mprnt then setgroupmember m true
+				)
+				else if mprnt == undefined then (
+					rootmesh = m
 				)
 				--format "finished node %\n\n" aname
 				if imp_other_coord_sys and m!= undefined then
@@ -1107,6 +1173,8 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 	(
 		try delete deletemodels[i] catch()
 	)
+
+	rootmesh
 )
 
 fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true imp_mat:true imp_quad:true imp_act:true imp_other_coord_sys: false prefix:"" imageExtension:".tif"=
@@ -1124,7 +1192,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 		global amat = undefined
 		global mname = undefined
 		
-		
+		rootmesh = undefined
 		if fnm != undefined then
 		(
 			
@@ -1151,7 +1219,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 				if typeOfTextFile == "races" then dataFiles = GetLevelMatPixFiles fnm
 				else if typeOfTextFile == "cars" then dataFiles = GetCarDataFiles fnm
 				
-				for d in dataFiles do format "%\n" d
+				--for d in dataFiles do format "%\n" d
 					--return 0
 				for pixies in dataFiles[1] do
 				(
@@ -1179,7 +1247,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 				if imp_act then for act in dataFiles[4] do
 				(
 					actFilename = actorsPath + act
-					LoadACTFile actFilename &progvalue &progtext imp_hier:imp_hier imo_group:imp_group prefix: prefix
+					rootmesh = LoadACTFile actFilename &progvalue &progtext imp_hier:imp_hier imo_group:imp_group prefix: prefix
 				)
 		)
 		
@@ -1196,6 +1264,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 		globalvars.remove "abbox"
 		globalvars.remove "amat"
 		globalvars.remove "mname"
+		rootmesh
 )
 
 fn LoadAllC1TXTFiles dir textfiles:undefined=
@@ -1228,7 +1297,113 @@ fn LoadAllC1TXTFiles dir textfiles:undefined=
 		)
 	)
 )
+fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true imp_hier:true imp_group:true imp_act:true prefix:"" imp_scale69:true= (
 
+		global smth=#()
+		global edv=#()
+		global materials=#()
+		global materialnames=#()
+		global deletemodels=#()
+		global tmtab = #()
+		global loadedObjects = #()
+		
+		global aname = undefined
+		global atm = undefined
+		global abbox = undefined
+		global amat = undefined
+		global mname = undefined
+		rootmesh = undefined
+		if fnm==undefined then (
+			fnm=getopenfilename types:"Data files(*.dat)|*.dat"
+		)
+		if (fnm!=undefined)do
+		(
+			if imp_mat == true do
+			(
+				global fp=getfilenamepath fnm
+				global fm=getfilenamefile fnm
+				fe=getfilenametype fnm
+				
+				tp=fp+"tiffrgb\\"
+				
+				sessionPaths.add #map tp
+				tp2=fp+"tiffrgb\\pixies\\"
+				
+				sessionPaths.add #map tp2
+				splitPath 		= filterstring fp "\\"
+				pixPath = ""
+				for i=1 to splitPath.count do
+				(
+					pixPath = pixPath + splitPath[i] + "\\"
+					if (toupper splitPath[i]) == "RACES" and splitPath[splitPath.count].count > 4 and doesFileExist (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\pixies\\") then
+					(
+						sessionPaths.add #map (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\pixies\\")
+					)
+					if (toupper splitPath[i]) == "RACES" and splitPath[splitPath.count].count > 4 and doesFileExist (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\") then
+					(
+						sessionPaths.add #map (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\")
+					)
+					else if (toupper splitPath[i]) == "DATA" and  doesFileExist (pixPath+"Reg\\PIXELMAP\\tiffrgb\\pixies\\") then
+					(
+						sessionPaths.add #map (pixpath+"Reg\\PIXELMAP\\tiffrgb\\pixies\\")
+					)
+					else if (toupper splitPath[i]) == "DATA" and  doesFileExist (pixPath+"Reg\\PIXELMAP\\tiffrgb\\") then
+					(
+						sessionPaths.add #map (pixpath+"Reg\\PIXELMAP\\tiffrgb\\")
+					)
+					
+				)
+				
+				mln_all = getFiles(fp+"*.mat") --#(fp+fm+".MAT")
+				
+				
+				for mln in mln_all do
+				(
+					--format "Parsing material: %\n" mln
+					if (doesFileExist  mln) == false then
+					(
+						format "ERROR: can't find material: %\n" mln
+						continue
+					)
+					
+					progressText = "status: importing MAT..."
+					LoadMATFile mln &progressValue
+				)
+			)
+			
+			LoadDATFile fnm &progressValue &progressText imp_smth: imp_smth imp_mat:imp_mat imp_quad:imp_quad imp_scale69:imp_scale69
+			
+			if imp_act == true do
+			(
+				fp=getfilenamepath fnm
+				fm=getfilenamefile fnm
+				
+				acn=fp+fm+".ACT"
+				act_tree = #()
+				if acn!=undefined do
+				(
+					rootmesh = LoadACTFile acn &progressValue &progressText imp_hier:imp_hier imp_group:imp_group imp_scale69:imp_scale69
+				)
+			)
+			progressText = "import succesfull!"
+		)
+			globalvars.remove "deletemodels"
+			globalvars.remove "smth"
+			globalvars.remove "edv"
+			globalvars.remove "materials"
+			globalvars.remove "materialnames"
+			globalvars.remove "deletemodels"
+			globalvars.remove "tmtab"
+		
+			globalvars.remove "aname"
+			globalvars.remove "atm"
+			globalvars.remove "abbox"
+			globalvars.remove "amat"
+			globalvars.remove "mname"
+			globalvars.remove "loadedObjects"
+		gc()
+		rootmesh
+)
 max create mode
 
 rollout datimporter "Import Dat file"
@@ -1268,96 +1443,8 @@ rollout datimporter "Import Dat file"
 	
 	on dat_file pressed do
 	(
+		LoadC2Dat undefined  &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_smth:imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_act:imp_act.checked
 		
-		
-		global smth=#()
-		global edv=#()
-		global materials=#()
-		global materialnames=#()
-		global deletemodels=#()
-		global tmtab = #()
-		
-		global aname = undefined
-		global atm = undefined
-		global abbox = undefined
-		global amat = undefined
-		global mname = undefined
-		
-		fnm=getopenfilename types:"Data files(*.dat)|*.dat"
-		if (fnm!=undefined)do
-		(
-			if imp_mat.checked == true do
-			(
-				global fp=getfilenamepath fnm
-				global fm=getfilenamefile fnm
-				fe=getfilenametype fnm
-				
-				tp=fp+"tiffrgb\\pixies\\"
-				
-				sessionPaths.add #map tp
-				splitPath 		= filterstring fp "\\"
-				pixPath = ""
-				for i=1 to splitPath.count do
-				(
-					pixPath = pixPath + splitPath[i] + "\\"
-					if (toupper splitPath[i]) == "RACES" and splitPath[splitPath.count].count > 4 and doesFileExist (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\pixies\\") then
-					(
-						sessionPaths.add #map (pixPath+ (substring splitPath[splitPath.count] 1 4)+"\\tiffrgb\\pixies\\")
-					)
-					else if (toupper splitPath[i]) == "DATA" and  doesFileExist (pixPath+"Reg\\PIXELMAP\\tiffrgb\\pixies\\") then
-					(
-						sessionPaths.add #map (pixpath+"Reg\\PIXELMAP\\tiffrgb\\pixies\\")
-					)
-					
-				)
-				
-				mln_all = getFiles(fp+"*.mat") --#(fp+fm+".MAT")
-				
-				
-				for mln in mln_all do
-				(
-					format "Parsing material: %\n" mln
-					if (doesFileExist  mln) == false then
-					(
-						format "ERROR: can't find material: %\n" mln
-						continue
-					)
-					
-					imp_prog_lab.text = "status: importing MAT..."
-					LoadMATFile mln &imp_prog.value
-				)
-			)
-			
-			LoadDATFile fnm &imp_prog.value &imp_prog_lab.text imp_smth: imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_scale69:imp_scale69.checked
-			
-			if imp_act.checked == true do
-			(
-				fp=getfilenamepath fnm
-				fm=getfilenamefile fnm
-				
-				acn=fp+fm+".ACT"
-				act_tree = #()
-				if acn!=undefined do
-				(
-					LoadACTFile acn &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_scale69:imp_scale69.checked
-				)
-			)
-			imp_prog_lab.text = "import succesfull!"
-		)
-			globalvars.remove "deletemodels"
-			globalvars.remove "smth"
-			globalvars.remove "edv"
-			globalvars.remove "materials"
-			globalvars.remove "materialnames"
-			globalvars.remove "deletemodels"
-			globalvars.remove "tmtab"
-		
-			globalvars.remove "aname"
-			globalvars.remove "atm"
-			globalvars.remove "abbox"
-			globalvars.remove "amat"
-			globalvars.remove "mname"
-		gc()
 	)
 	on c1level_file pressed do
 	(

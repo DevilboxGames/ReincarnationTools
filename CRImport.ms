@@ -59,13 +59,13 @@ fn LoadCRTexture folder texturename =
 			texmap = bitmaptexture()
 			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga"
 		)
-		else if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".png")) then
+		else if CarmaSettings.ConvertTexturesInPlace==false and (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".png")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.TexturePath+"\\"+textureName+".png")
 			texmap = bitmaptexture()
 			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
 		)
-		else if (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".tga")) then
+		else if  CarmaSettings.ConvertTexturesInPlace==false and (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".tga")) then
 		(
 			--format "Texture is already converted: %\n"  (CarmaSettings.TexturePath+"\\"+textureName+".tga")
 			texmap = bitmaptexture()
@@ -90,16 +90,19 @@ fn LoadCRTexture folder texturename =
 				
 				--HiddenDOSCommand (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") prompt:("Loading Texture: "+TDXFilename)
 				--format "Command For Converting Texture: %\n from start path: %" (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") startPath
-				
+				convesionPath =  CarmaSettings.TexturePath
+				if CarmaSettings.ConvertTexturesInPlace then (
+					convesionPath = getFilenamePath TDXFilename
+				)
 				--if CarmaSettings.TexturePath != "" then (dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX").Convert TDXFilename CarmaSettings.TexturePath
 				ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
-				ConvertTDX.Convert TDXFilename CarmaSettings.TexturePath false 5 CarmaSettings.MaxResolution
+				ConvertTDX.Convert TDXFilename convesionPath false 5 CarmaSettings.MaxResolution
 				--format "TDX result is %\n" tdxresult
 				texmap = bitmaptexture()
-				texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
+				texmap.filename = convesionPath+"\\"+textureName+".png"
 			)
 		)
-	return texmap
+	 texmap
 )
 fn GetMDLTexture folder materialName importTextures:false =
 (
@@ -107,6 +110,10 @@ fn GetMDLTexture folder materialName importTextures:false =
 	--format "Checking if material \"%\" exists: result = % importTextures =\n" (folder+materialName+".MT2") (((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))  as string) (importTextures as string)
 	
 	global CarmaSettings
+	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))
+	if materialExists ==	false then (
+		folder = CarmaSettings.DataCorePath+"\\Content\\Textures\\"
+	)
 	if importTextures and ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) then
 	(
 		--format "Material \"%\" exists!\n" (folder+materialName+".MT2")
@@ -122,7 +129,10 @@ fn GetMDLTexture folder materialName importTextures:false =
 		if (xmlDoc.HasChildNodes)==false then xmlDoc.load (folder+materialName+".mt2")
 
 		basedOffTag = (xmlDoc.GetElementsByTagName "BasedOffOf").item 0
-		basedOffOf = (basedOffTag.Attributes.GetNamedItem "Name").Value
+		if basedOffTag != undefined then
+		(
+			basedOffOf = (basedOffTag.Attributes.GetNamedItem "Name").Value
+		)
 		textureTags = xmlDoc.GetElementsByTagName "Texture"
 		
 		--clearListener()
@@ -144,15 +154,10 @@ fn GetMDLTexture folder materialName importTextures:false =
 				--format "Found diffuse texture %!\n" textureName
 			)
 		)
-		if textureName == undefined then
+		if textureName != undefined then
 		(
-			
-		texmap = checker()
-		texmap.coords.U_Tiling =10
-		texmap.coords.V_Tiling =10
-			return texmap
-		)
 		texmap = LoadCRTexture folder textureName
+		)
 		--matFile = openfile folder+materialName+".MT2" "r"
 		
 		if texmap==undefined do
@@ -167,7 +172,7 @@ fn GetMDLTexture folder materialName importTextures:false =
 		texmap.coords.U_Tiling =10
 		texmap.coords.V_Tiling =10
 	)
-	return texmap
+	 texmap
 )
 fn BlankUnknownSkinData fileName =
 (
@@ -329,7 +334,7 @@ fn BlankUnknownSkinData fileName =
 	fclose f
 	fclose fw
 )
-fn ImportMDL_TR filenames importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0]=
+fn ImportMDL_TR filenames importTextures:false forcePREP:true useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0]=
 (
 	MaxMDLProcessor = dotNetObject "ToxicRagers.MaxTools.MaxMDLProcessor"
 	loadedMDLs = MaxMDLProcessor.LoadMDLs filenames
@@ -420,10 +425,11 @@ fn ImportMDL_TR filenames importTextures:false forcePREP:false useUniqueVerts:tr
 	format "Loaded MDLs using ToxicRagers: %\n" loadedMDLs
 
 )
-fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0] SpawnOctree:false =
+fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true useTriStrips:false mergeMDLs:false mergeSplits: true origin:[0,0,0] SpawnOctree:false =
 (
 	f = fopen filename "r"
-	
+
+
 	magic1 = readbyte f #unsigned
 	magic2 = readbyte f #unsigned
 	mdlMinorVersion = readbyte f #unsigned
@@ -435,7 +441,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	
 	checksum = readlong f #unsigned
 	flags = readlong f #unsigned
-	printFlagBits flags 32 "MDL Flags"
+	--printFlagBits flags 32 "MDL Flags"
 	
 	prepSize = readlong f #unsigned
 	
@@ -458,8 +464,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		bboxCenterZ = readfloat f
 	)
 	
-	materialCount = readshort f #unsigned
-	meshMaterial = undefined
+	local materialCount = readshort f #unsigned
+	local meshMaterial = undefined
 	global globalMaterialNames
 	global globalMaterials
 	global merge_MatsIDsToNames
@@ -467,8 +473,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	if merge_SubMat == undefined then merge_SubMat = multisubmaterial()
 	if globalMaterialNames==undefined do globalMaterialNames = #()
 	if globalMaterials==undefined do globalMaterials = #()
-	materialNames = #()
-	merge_OldMatIDsToNew = #()
+	local materialNames = #()
+	local merge_OldMatIDsToNew = #()
 	
 	--format "=======================\nHandling Materials for mesh %\n=======================\n" filename
 	if(materialCount == 1) then
@@ -493,6 +499,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			meshMaterial.shaderType = 1
 			--format "\nAbout To Call GetMDLTexture for %\n" materialName
 			meshMaterial.diffuseMap = GetMDLTexture (getFilenamePath filename) materialName importTextures:importTextures
+			
 			
 			if  ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
 			(
@@ -604,6 +611,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			meshMaterial = merge_SubMat
 		)
 	)
+
 	--format "======== merge_SubMat.material after======\n"
 	--PrintArrayInFull merge_SubMat.material "merge_SubMat.material"
 	--PrintArrayInFull merge_OldMatIDsToNew "merge_OldMatIDsToNew"
@@ -611,8 +619,8 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	if forcePREP then
 	(
 		PREPfaceCount = readlong f #unsigned
-		format "FaceCount: %\n" PREPfacecount
-		rawfaces = #()
+		--format "FaceCount: %\n" PREPfacecount
+		local rawfaces = #()
 		for i=1 to PREPfaceCount do
 		(
 			matID = readshort f #unsigned
@@ -628,13 +636,14 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			append rawfaces (mdlFace matID:matID flags:faceflags v1:(v1+1) v2:(v2+1) v3:(v3+1))
 			--if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		)
+
 		
 		PREPvertcount = readlong f #unsigned
-		format "VertCount: %\n" PREPvertcount
-		verts = #()
-		uniqueVerts = #()
-		uniqueVertsColours = #()
-		oldVertsToNewVerts = #()
+		--format "VertCount: %\n" PREPvertcount
+		local verts = #()
+		local uniqueVerts = #()
+		local uniqueVertsColours = #()
+		local oldVertsToNewVerts = #()
 		for i=1 to PREPvertCount do
 		(
 			pX = readfloat f
@@ -658,23 +667,31 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			
 			--format "vert #% colour: % % % %\n" i colR colG colB colA
 			--format "R:% G:% B:% A:%\n" colR colG colB colA
-			append verts (mdlVert pos:[-pX,-pZ,pY] norm:[nX,-nZ,nY] tex:[uv1X,1-uv1Y] tex2:[uv2X,1-uv2Y] colour:(color colR colG colB colA))
+			vertpos = [-pX,-pZ,pY]
+			if CarmaSettings.SetupForUE4 then (
+				vertpos = vertpos * 100 --[pZ, pX, pY] * 100
+
+			)
+			append verts (mdlVert pos:vertpos norm:[nX,-nZ,nY] tex:[uv1X,1-uv1Y] tex2:[uv2X,1-uv2Y] colour:(color colR colG colB colA))
 				
 			isUnique = true
 			if mergeSplits == true then
 			(
-				for j=1 to uniqueVerts.count do
+				--for j=1 to uniqueVerts.count do
+				uniqueIndex = finditem uniqueverts vertpos
+				if uniqueIndex > 0 then
 				(
-					if verts[i].pos == uniqueVerts[j].pos then -- and verts[i].norm == uniqueVerts[j].norm then
+					--if verts[i].pos == uniqueVerts[j].pos then -- and verts[i].norm == uniqueVerts[j].norm then
 					(
 						isUnique = false
-						oldVertsToNewVerts[i] = j
+						oldVertsToNewVerts[i] = uniqueIndex
+						--j = uniqueverts.count + 1
 					)
 				)
 			)
 			if isUnique then
 			(
-				append uniqueVerts verts[i]
+				append uniqueVerts vertpos
 				append uniqueVertsColours colA
 				oldVertsToNewVerts[i] = uniqueVerts.count
 			)
@@ -683,12 +700,12 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			--if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		)
 		--format "Unique Verts:%\n" uniqueVerts.count
-		matGroups = #()
-		triStripIndices = #()
+		local matGroups = #()
+		local triStripIndices = #()
 
-		format "SpawnOctree %\n" SpawnOctree 
+		--format "SpawnOctree %\n" SpawnOctree 
 		if SpawnOctree == true and ActiveOctree != undefined then (
-			format "Spawning Octree!!!\n"
+			--format "Spawning Octree!!!\n"
 			ActiveOctree.SpawnLeafBoxes verts:verts faces:rawfaces
 			
 		)
@@ -793,42 +810,63 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		)
 		prepSkinDataSet = CheckBitIsSet flags 5
 	
-		
 		local m = trimesh()
 		
 		if useUniqueVerts then setNumVerts m uniqueVerts.count
 		else setNumVerts m verts.count
 		
 		setNumTVerts m verts.count
-		--meshop.setNumMaps m 3
-		--meshop.setMapSupport m 2 true
-		--meshop.setNumMapVerts m 2 verts.count
 		setNumCPVVerts m verts.count
+		meshop.setNumMaps m 3
+		meshop.setNumTVerts m verts.count
+		meshop.setNumCPVVerts m verts.count
+		
+		if useTriStrips then setNumFaces m totalMatGroupTriangles
+		else setNumFaces m rawfaces.count
+		
+		buildTVFaces m
+		buildVCFaces m
+		meshop.setMapSupport m 2 true
+		meshop.defaultMapFaces m 2
+		meshop.defaultMapFaces m -2
+		meshop.setNumMapVerts m 2 verts.count
+		meshop.setNumMapVerts m -2 verts.count
+		--meshop.setNumMapVerts m 0 verts.count
+		--meshop.setNumMapVerts m 1 verts.count
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+		/*for i=1 to verts.count do
+		(
+				
+			meshop.setMapVert m 1 i [verts[i].tex.x, verts[i].tex.y, 0]
+			meshop.setMapVert m 2 i [verts[i].tex2.x, verts[i].tex2.y, 0]
+			--meshop.setMapVert m 0 i (color (verts[i].colour.r/255) (verts[i].colour.g/255)  verts[i].colour.b)
+			if useUniqueVerts == false then
+			(
+				setVert m i verts[i].pos
+				--Format "%: %\n" i (verts[i].colour.a/255)
+				meshop.setVertAlpha m -2 i (verts[i].colour.a/255)
+			)
+			update m
+		)
 		if useUniqueVerts then
 		(
 			for i=1 to uniqueVerts.count do
 			(
 				setVert m i uniqueVerts[i].pos
-				meshop.setVertAlpha m -2 #(i) (uniquevertscolours[i]/255)
+				meshop.setVertAlpha m -2 i 0--(uniqueverts[i].colour.a/255)
+				--Format "%: % - %\n" i (uniqueverts[i].colour.a/255) (uniquevertscolours[i]/255)
 				--setNormal m i uniqueVerts[i].norm
+				update m
 			)
-		)
-		for i=1 to verts.count do
-		(
-			if useUniqueVerts == false then
-			(
-				setVert m i verts[i].pos
-				meshop.setVertAlpha m -2 #(i) (verts[i].colour.a/255)
-			)
-			setTVert m i verts[i].tex.x verts[i].tex.y 0
-			--meshop.setMapVert m 2 i [verts[i].tex2.x, verts[i].tex2.y, 0]
-			setVertColor m i (color verts[i].colour.b verts[i].colour.g verts[i].colour.r verts[i].colour.a)
-		)
-		if useTriStrips then setNumFaces m totalMatGroupTriangles
-		else setNumFaces m rawfaces.count
-		buildTVFaces m
-		buildVCFaces m
-		--meshop.setNumMapFaces m 2 faces.count
+		)*/
+		--meshop.setNumMapFaces m 0 rawfaces.count keep:true
+		--meshop.setNumMapFaces m 1 rawfaces.count keep:true
+		--meshop.setMapSupport m 2 true
+		--meshop.setNumMapFaces m 2 rawfaces.count keep:true
+		--meshop.buildMapFaces m 0
+		--meshop.buildMapFaces m 1
+		--meshop.setNumMapFaces m 2 rawfaces.count
+		--meshop.buildMapFaces m 2 true
 		
 		numFacesToAdd = rawfaces.count
 		if useTriStrips then
@@ -840,32 +878,36 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			(
 				for j = 3 to matGroups[i].triStrip.count do
 				(
-					if matGroups[i].triStrip[j][2] do continue
-					if (bit.and j 1)==1 then
-					(
-						facev1 = matGroups[i].triStrip[j-2][1] + 1 + matGroups[i].triStripVertOffset
-						facev2 = matGroups[i].triStrip[j-1][1] + 1+ matGroups[i].triStripVertOffset
-						facev3 = matGroups[i].triStrip[j][1] + 1+ matGroups[i].triStripVertOffset
+					if matGroups[i].triStrip[j][2] == false then (
+						if (bit.and j 1)==1 then
+						(
+							facev1 = matGroups[i].triStrip[j-2][1] + 1 + matGroups[i].triStripVertOffset
+							facev2 = matGroups[i].triStrip[j-1][1] + 1+ matGroups[i].triStripVertOffset
+							facev3 = matGroups[i].triStrip[j][1] + 1+ matGroups[i].triStripVertOffset
+						)
+						else
+						(
+							facev1 = matGroups[i].triStrip[j-2][1] + 1+ matGroups[i].triStripVertOffset
+							facev2 = matGroups[i].triStrip[j][1] + 1+ matGroups[i].triStripVertOffset
+							facev3 = matGroups[i].triStrip[j-1][1] + 1+ matGroups[i].triStripVertOffset
+						)
+						if facev1 != facev2 and facev1 != facev3 and facev2 != facev3 do (
+							faceNumber += 1
+							if useUniqueVerts then setFace m faceNumber oldVertsToNewVerts[facev1] oldVertsToNewVerts[facev3] oldVertsToNewVerts[facev2]
+							else setFace m faceNumber facev1 facev3 facev2
+							
+							setEdgeVis m faceNumber 1 true
+							setEdgeVis m faceNumber 2 true
+							setEdgeVis m faceNumber 3 true
+							setFaceNormal m faceNumber (normalize ((verts[facev1].norm+verts[facev2].norm+verts[facev3].norm)/3))
+							setFaceMatID m faceNumber (i)
+							setTVFace m faceNumber facev1 facev3 facev2
+							--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
+							setVCFace m faceNumber facev1 facev3 facev2
+							meshop.setMapFace m 2 faceNumber [facev1, facev3, facev2]
+							meshop.setMapFace m -2 faceNumber [facev1, facev3, facev2]
+						)
 					)
-					else
-					(
-						facev1 = matGroups[i].triStrip[j-2][1] + 1+ matGroups[i].triStripVertOffset
-						facev2 = matGroups[i].triStrip[j][1] + 1+ matGroups[i].triStripVertOffset
-						facev3 = matGroups[i].triStrip[j-1][1] + 1+ matGroups[i].triStripVertOffset
-					)
-					if facev1 == facev2 or facev1 == facev3 or facev2 == facev3 do continue
-						faceNumber += 1
-					if useUniqueVerts then setFace m faceNumber oldVertsToNewVerts[facev1] oldVertsToNewVerts[facev3] oldVertsToNewVerts[facev2]
-					else setFace m faceNumber facev1 facev3 facev2
-					
-					setEdgeVis m faceNumber 1 true
-					setEdgeVis m faceNumber 2 true
-					setEdgeVis m faceNumber 3 true
-					setFaceNormal m faceNumber (normalize ((verts[facev1].norm+verts[facev2].norm+verts[facev3].norm)/3))
-					setFaceMatID m faceNumber (i)
-					setTVFace m faceNumber facev1 facev3 facev2
-					--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
-					setVCFace m faceNumber facev1 facev3 facev2
 				)
 			
 				for j = 1 to (matGroups[i].patchList.count/3) do
@@ -880,28 +922,32 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 						facev2 += 1 + matGroups[i].patchListVertOffset
 						facev3 = matGroups[i].patchList[patchind3]
 						facev3 += 1 + matGroups[i].patchListVertOffset
-					if facev1 == facev2 or facev1 == facev3 or facev2 == facev3 do continue
+					if facev1 != facev2 and facev1 != facev3 and facev2 != facev3 do (
 					
-					faceNumber+=1
-					if useUniqueVerts then setFace m faceNumber oldVertsToNewVerts[facev1] oldVertsToNewVerts[facev3] oldVertsToNewVerts[facev2]
-					else setFace m faceNumber facev1 facev3 facev2
-					setEdgeVis m faceNumber 1 true
-					setEdgeVis m faceNumber 2 true
-					setEdgeVis m faceNumber 3 true
-					setFaceNormal m faceNumber (normalize ((verts[facev1].norm+verts[facev2].norm+verts[facev3].norm)/3))
-					if mergeMDLs == true then
-					(
-						setFaceMatID m faceNumber (merge_OldMatIDsToNew[i])
+						faceNumber+=1
+						if useUniqueVerts then setFace m faceNumber oldVertsToNewVerts[facev1] oldVertsToNewVerts[facev3] oldVertsToNewVerts[facev2]
+						else setFace m faceNumber facev1 facev3 facev2
+						setEdgeVis m faceNumber 1 true
+						setEdgeVis m faceNumber 2 true
+						setEdgeVis m faceNumber 3 true
+						setFaceNormal m faceNumber (normalize ((verts[facev1].norm+verts[facev2].norm+verts[facev3].norm)/3))
+						if mergeMDLs == true then
+						(
+							setFaceMatID m faceNumber (merge_OldMatIDsToNew[i])
+						)
+						else
+						(
+							setFaceMatID m faceNumber (i)
+						)
+						setTVFace m faceNumber facev1 facev3 facev2
+						--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
+						setVCFace m faceNumber facev1 facev3 facev2
+						meshop.setMapFace m 2 i [facev1, facev3, facev2]
+						meshop.setMapFace m -2 i [facev1, facev3, facev2]
 					)
-					else
-					(
-						setFaceMatID m faceNumber (i)
-					)
-					setTVFace m faceNumber facev1 facev3 facev2
-					--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
-					setVCFace m faceNumber facev1 facev3 facev2
 				)
 			)
+
 		)
 		else
 		(
@@ -915,9 +961,17 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				)
 				else
 				(
+					if CarmaSettings.SetupForUE4 then (
 					facev1=rawfaces[i].v1
 					facev2=rawfaces[i].v2
 					facev3=rawfaces[i].v3
+					)
+					else (
+
+					facev1=rawfaces[i].v1
+					facev2=rawfaces[i].v2
+					facev3=rawfaces[i].v3
+					)
 				)
 					if useUniqueVerts then setFace m i oldVertsToNewVerts[facev1] oldVertsToNewVerts[facev3] oldVertsToNewVerts[facev2]
 					else setFace m i facev1 facev3 facev2
@@ -938,12 +992,39 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				setTVFace m i facev1 facev3 facev2
 				--meshop.setMapFace m 2 i [faces[i].v1, faces[i].v3, faces[i].v2]
 				setVCFace m i facev1 facev3 facev2
+				meshop.setMapFace m 2 i [facev1, facev3, facev2]
+				meshop.setMapFace m -2 i [facev1, facev3, facev2]
 			)
 		)
 		
+		for i=1 to verts.count do
+		(
+				
+			meshop.setMapVert m 1 i [verts[i].tex.x, verts[i].tex.y, 0]
+			meshop.setMapVert m 2 i [verts[i].tex2.x, verts[i].tex2.y, 0]
+			--meshop.setMapVert m 0 i [(verts[i].colour.b/255), (verts[i].colour.g/255), (verts[i].colour.r/255), (verts[i].colour.a/255)]
+			setVertColor m i verts[i].colour.r verts[i].colour.g verts[i].colour.b
+			meshop.setMapVert m -2 i [verts[i].colour.a,verts[i].colour.a,verts[i].colour.a]
+			--update m
+			if useUniqueVerts == false then
+			(
+				setVert m i verts[i].pos
+				--Format "%: %\n" i (verts[i].colour.a/255)
+			--update m
+			)
+			else if i <= uniqueverts.count then (
+
+				setVert m i uniqueVerts[i]
+				--meshop.setMapVert m -2 i [uniqueVertsColours[i],uniqueVertsColours[i],uniqueVertsColours[i]]
+			)
+		)
+
+		update m
 		m = mesh mesh:m
+		update m
 		m.material = meshMaterial
-		
+		if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
+			with redraw on (
 		if prepSkinDataSet then
 		(
 			--format "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nOMG PANIC! THIS MDL HAS PREP SKIN DATA AND I DON'T KNOW WHAT TO DO WITH IT!!! At Position: %\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n" (ftell f)
@@ -1013,15 +1094,33 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				unknown_su2 = readshort f #unsigned
 				
 				boneTransform = (quat qz -qx qw qy) as matrix3
-				bonePos =  [-posX, -posZ, posY]
-				newBone = bonesys.createbone bonePos (bonePos + 0.1 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
-				listOfBones[i] = newBone
-				listOfBones[i].rotation = quat qz -qx qw qy
+
+				if CarmaSettings.SetupForUE4 then (
+					bonePos =  [-posX, -posZ, posY] * 100
+					newBone = bonesys.createbone bonePos (bonePos + 5 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
+				
+					newbone.width = 2
+					newbone.height = 2
+					listOfBones[i] = newBone
+					listOfBones[i].rotation = quat qz -qx qw qy
+				)
+				else (
+					bonePos =  [-posX, -posZ, posY]
+					newBone = bonesys.createbone bonePos (bonePos + 0.1 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
+				
+					newbone.width = 0.1
+					newbone.height = 0.1
+					listOfBones[i] = newBone
+					listOfBones[i].rotation = quat qz -qx qw qy
+				)
+
 				parentBone = boneInfo[i][4]+1
-				newpos = [-posX, -posZ, posY]
+				newpos = bonePos
 				listOfBones[i].position = newpos
 				listOfBones[i].name = boneNames[i]
-				
+				if boneNames[i] =="hips" then (
+					--WorldAlignObject listOfBones[i]
+				)
 				/*b = box()
 				bMin = boneInfo[i][1]
 				bMax = boneInfo[i][2]
@@ -1087,7 +1186,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					(
 						oldbonestonewbones[i] = j
 						newbonestooldbones[j] = i
-						break;
+						j =sortedBones.count + 1
 					)
 				)
 			)
@@ -1166,7 +1265,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 						if boneNames[j] == boneName then 
 						(
 							boneNum = j
-							break
+							j = boneNames.count
 						)
 					)
 					weight = skinOps.GetVertexWeight  skinMod i x
@@ -1202,7 +1301,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 						if boneNames[j] == boneName then 
 						(
 							boneNum = j
-							exit
+							j = boneNames.count + 1
 						)
 					)
 					weight = skinOps.GetVertexWeight  skinMod i x
@@ -1210,9 +1309,18 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 				)
 				--format "\n\n"
 			)
+			free boneNames
+			free weightsPerVert
+			free boneInfo
+
+			free sortedBones
+			free oldbonestonewbones
+			free newbonestooldbones
+			free currentBones
 			--format "\nnum skin verts: %\n\n" (skinOps.GetNumberVertices skinMod)
 			
 		)
+	)
 		if listOfBones != undefined  then 
 		(
 			for x = 1 to listOfBones.count do
@@ -1221,10 +1329,22 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					listOfBones[x].pos = listOfBones[x].pos + origin
 			)
 		)
+
+		free matGroups
+		free materialNames
+
+		free verts
+		free uniqueVerts
+		free uniqueVertsColours
+		free oldVertsToNewVerts 
+		free rawfaces
+		free faces
 		
+			--completeRedraw ()
 		gc()
-		--update m
-		return m
+		update m
+		
+		 m
 	)
 	else if filesize != 0 then
 	(
@@ -1364,12 +1484,13 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 	
 	if forcePREP == false then
 	(
+		Format "=================================\n==========================\n==================\n\nTRYING TO LOAD USER DATA! THIS IS FUCKING WRONG!!!!\n==================\n======================\n================="
 		--format "User Data pos: %\n" (ftell f)
 		USERflags = readlong f #unsigned
 		USERskinSet = CheckBitIsSet USERflags 2
 		if PREPfaceCount == undefined then PREPfaceCount = firstFaceCount
 		--printFlagBits flags 32 "flags: "
-		printFlagBits USERflags 32 "USER flags: "
+		--printFlagBits USERflags 32 "USER flags: "
 		local m = trimesh()
 		setNumVerts m uniqueVertexCount
 		setNumTVerts m (PREPfaceCount*3)
@@ -1461,7 +1582,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 			)
 			if faceAppFlags != 0 then
 			(
-				printFlagBits faceAppFlags 32 "Face App Flags"
+				--printFlagBits faceAppFlags 32 "Face App Flags"
 			)
 			
 			setFace m i (v1index+1) (v3index+1) (v2index+1)
@@ -1584,7 +1705,7 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 					(
 						oldbonestonewbones[i] = j
 						newbonestooldbones[j] = i
-						break;
+						j = sortedBones.count
 					)
 				)
 			)
@@ -1636,9 +1757,9 @@ fn ImportMDL filename importTextures:false forcePREP:false useUniqueVerts:true u
 		
 		gc()
 		--update m
-		return m
+		 m
 	)
-	
+	m
 	
 )
 fn CalculateCNTNamePadding stringLength =
@@ -1652,7 +1773,7 @@ fn CalculateCNTNamePadding stringLength =
 	)
 	mdlnl_added = mdlnl_div4 + mdlnl_plus1
 	model_name_padding = (mdlnl_added * 4) - stringLength
-	return model_name_padding
+	 model_name_padding
 )
 
 fn ImportCNTNode f parentNode SpawnOctree:false = 
@@ -1704,9 +1825,22 @@ fn ImportCNTNode f parentNode SpawnOctree:false =
 	m_Px = readfloat f
 	m_Py = readfloat f
 	m_Pz = readfloat f
-	newNode.transformMatrix = matrix3 [m_Xx,m_Xy,m_Xz] [m_Yx,m_Yy,m_Yz] [m_Zx,m_Zy,m_Zz] [m_Px,m_Py,m_Pz]
-	newNode.transformMatrix =  matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0] * newNode.transformMatrix * inverse(matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0])
+	if CarmaSettings.SetupForUE4 then (
+		newNode.transformMatrix = matrix3 [m_Xx,m_Xy,m_Xz] [m_Yx,m_Yy,m_Yz] [m_Zx,m_Zy,m_Zz] ([-m_Pz,m_Py,-m_Px] * 100)
+		newNode.transformMatrix = matrix3 [0,0,1] [1,0,0] [0,1,0] [0,0,0] *  newNode.transformMatrix * inverse(matrix3 [0,0,1] [1,0,0] [0,1,0] [0,0,0])
+		if parentNode == undefined then (
+			newNode.transformMatrix = (matrix3 [0,1,0] [-1,0,0] [0,0,1] [0,0,0])  * newNode.transformMatrix 
+
+		)
+	)
+	else (
+		newNode.transformMatrix = matrix3 [m_Xx,m_Xy,m_Xz] [m_Yx,m_Yy,m_Yz] [m_Zx,m_Zy,m_Zz] [m_Px,m_Py,m_Pz] 
+		newNode.transformMatrix =  matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0] * newNode.transformMatrix * inverse(matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0])
+	)
+	
+		
 	newNode.position = newNode.transformMatrix.row4
+
 	if parentNode != undefined then 
 	(
 		newNode.combinedMatrix = newNode.transformMatrix * parentNode.combinedMatrix
@@ -1812,7 +1946,7 @@ fn ImportCNTNode f parentNode SpawnOctree:false =
 		append newNode.children (ImportCNTNode f newNode SpawnOctreeBoxes:SpawnOctreeBoxes)
 	)
 	hasOctree = readlong f #unsigned
-	format "CNT Has Octree: %\n" (hasOctree as string)
+	--format "CNT Has Octree: %\n" (hasOctree as string)
 	if hasOctree > 0 and SpawnOctree then (
 		format "Loading octree"
 		ActiveOctree = CNTOctree()
@@ -1836,7 +1970,7 @@ fn ImportCNTNode f parentNode SpawnOctree:false =
 	--(
 		--format "\t%: \"%\"\n" i newNode.children[i].nodeName
 	--)
-	return newNode
+	 newNode
 )
 fn MergeCNTNodes outMesh inMesh =
 (
@@ -1871,10 +2005,11 @@ fn MergeCNTNodes outMesh inMesh =
 		MergeCNTNodes outMesh inMesh.children[i]
 	)
 	
-	return outMesh
+	 outMesh
 )
-fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true SpawnOctree:false =
+fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:true useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true SpawnOctree:false =
 (
+	global parsedCNTNodes
 	--format "Parsing Node Type: %\n" cntNode.nodeType
 	if cntNode.nodeType == "MODL" or cntNode.nodetype == "SKIN" then
 	(
@@ -1892,7 +2027,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 		(
 			--fname = CarmaSettings.GamePath + "\\Data_core\\Content\\Models\\" + cntNode.nodeData.objectName + ".mdl"
 		
-			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin SpawnOctree:SpawnOctree
+			newMesh = ImportMDL fname importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin SpawnOctree:SpawnOctree useUniqueVerts:mergeSplits
 			newMesh.name = cntNode.nodeName
 			newMesh.transform = cntNode.combinedMatrix
 		)
@@ -1915,8 +2050,10 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 			newMesh.transform = cntNode.combinedMatrix
 			newmesh.transform = matrix3 cntNode.combinedMatrix.row1 -cntNode.combinedMatrix.row3 cntNode.combinedMatrix.row2 cntNode.combinedMatrix.row4
 		lightObj = CRLight()
+		if cntNode.nodeData.lighttype !=2 then (
 		lightObj.LoadLight fname
 		lightObj.SetToLight newMesh
+		)
 	)
 	else
 	(
@@ -1933,7 +2070,7 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	newMesh.pos = newMesh.pos + origin
 	for i=1 to cntNode.numChildren do
 	(
-		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs origin:origin spawnOctree:spawnOctree
+		childMesh = ParseCNTNodes cntNode.children[i] folderName importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs mergeSplits: mergeSplits origin:origin spawnOctree:spawnOctree
 		
 			childMesh.parent = newMesh
 		
@@ -1942,19 +2079,22 @@ fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:false useTriS
 	cntNodeFileName = newMesh.name
 	if cntNode.nodetype == "LITg" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do cntNodeFileName = cntNode.nodeData.objectName
 	SetToCNTNodes newMesh nodeType:cntNode.nodetype fileName: cntNodeFileName
+	
 	/*
 	custAttributes.add newMesh CNTAttribute #unique BaseObject:true
 	SetCNTNodeType newMesh cntNode.nodetype
 	newMesh.CNTCustAttribute.FileName = newMesh.name
 	if cntNode.nodetype == "LITG" or cntNode.nodetype == "MODL" or cntNode.nodetype == "SKIN" or cntNode.nodetype == "VFXI" do newMesh.CNTCustAttribute.FileName = cntNode.nodeData.objectName
 	*/
-	--KeepMaxAlive()
-	return newMesh
+	parsedCNTNodes = parsedCNTNodes + 1
+	KeepMaxAlive()
+	 newMesh
 )
-fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false mergeMDLs:false mergeSplits:true origin:[0,0,0] SpawnOctree:false =
+fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mergeMDLs:false mergeSplits:true origin:[0,0,0] SpawnOctree:false =
 (
 	global merge_MatsIDsToNames = #()
 	global merge_SubMat
+	global parsedCNTNodes = 0
 	
 	if mergeMDLs==true then
 	(
@@ -1975,8 +2115,25 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 	globalMaterials = #()
 	global globalMaterialNames =#()
 	globalMaterialNames =#()
-	rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin spawnOctree:SpawnOctree
+
+	stopwatch = dotNetObject "system.diagnostics.stopwatch"
+	frequency = stopwatch.frequency
+	nanosecspertick = (1000 * 1000 * 1000) / frequency
+	stopwatch.start()
+	with redraw off (
+		rootMesh = ParseCNTNodes cntNode (getFilenamePath cnt_name) importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs: mergeMDLs mergeSplits: mergeSplits origin:origin spawnOctree:SpawnOctree
+	)
 	
+	if CarmaSettings.SetupForUE4 then
+	(
+		WorldAlignPivot rootMesh
+		--rootMesh.transform =  matrix3 [0,1,0] [-1,0,0] [0,0,1] [0,0,0] * rootMesh.transform
+	)
+
+	totalMiliseconds = stopwatch.ElapsedMilliseconds
+	totalNanoseconds = stopwatch.ElapsedTicks * nanosecspertick
+	format "% cnt nodes parsed in % milliseconds (% nanoseconds)\n" parsedCNTNodes totalMiliseconds totalNanoseconds
+
 	fclose f
 	
 	if mergeMDLs == true then
@@ -1995,7 +2152,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:false useTriStrips:false me
 			delete mergedNodesToDelete[i]
 		)
 	)
-	return rootMesh
+	 rootMesh
 )
 
 fn ImportMDLButtonPressed sender arg =
@@ -2016,7 +2173,7 @@ fn ImportMDLButtonPressed sender arg =
 	undo "Import C:R MDL/Light" on
 	(
 		oldheapfree = heapfree
-		format "heapfree before: %\n" heapfree
+		--format "heapfree before: %\n" heapfree
 		mdl_name = GetOpenFileName caption:"Open MDL File" types:"C:R Object (*.MDL, *.LIGHT)|*.mdl;*.light|C:R Model (*.MDL)|*.mdl|C:R Light (*.LIGHT)|*.light"
 		if mdl_name != undefined do
 		(
@@ -2043,7 +2200,7 @@ fn ImportMDLButtonPressed sender arg =
 				--stopwatch.reset()
 				--stopwatch.start()
 				else
-					ImportMDL mdl_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
+					ImportMDL mdl_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked useUniqueVerts:sender.parent.controls.Item["ImportMergeCheckbox"].checked mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked
 				--ImportMDL mdl_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
 			)
 		)
@@ -2057,13 +2214,13 @@ fn ImportMDLButtonPressed sender arg =
 fn ImportCNTButtonPressed sender arg=
 (
 	
-	undo "Import C:R CNT" on
+	--undo "Import C:R CNT" on
 	(
 		--CreateNewNULLNode [1,1,0] 1
 		cnt_name = GetOpenFileName caption:"Open CNT File" types:"CNT(*.CNT)|*.cnt"
 		if cnt_name != undefined do
 		(
-			format "% is checked: %\n" "SpawnOctreeCheckbox" sender.parent.controls.Item["SpawnOctreeCheckbox"].checked
+			--format "% is checked: %\n" "SpawnOctreeCheckbox" sender.parent.controls.Item["SpawnOctreeCheckbox"].checked
 			--ImportCNT cnt_name importTextures:imp_textures.checked forcePREP:(imp_forcePREP.checked or imp_forceTriStrips.checked) useTriStrips:imp_forceTriStrips.checked
 			ImportCNT cnt_name importTextures:sender.parent.controls.Item["ImportTexturesCheckbox"].checked forcePREP:sender.parent.controls.Item["ForcePrepCheckbox"].checked useTriStrips:sender.parent.controls.Item["UseTriStripsCheckbox"].checked mergeMDLs:false mergeSplits:sender.parent.controls.Item["ImportMergeCheckbox"].checked  SpawnOctree:sender.parent.controls.Item["SpawnOctreeCheckbox"].checked
 		)

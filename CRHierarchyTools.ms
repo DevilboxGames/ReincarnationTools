@@ -35,7 +35,7 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 (
 	if (IsObjectACNT mdl)==false then
 	(
-		max modify mode
+		--max modify mode
 		cntHierarchyModifier = emptyModifier()
 		cntHierarchyModifier.name = "CNT Hierarchy"
 		addModifier mdl cntHierarchyModifier
@@ -46,7 +46,7 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 		if (classof mdl) == dummy then 
 		(
 			SetCNTNodeType mdl "NULL"
-			mdl.CNTCustAttribute.FileName = ""
+			cntHierarchyModifier.FileName = ""
 			
 		)
 		else if classof mdl == freeSpot or classof mdl == omnilight or classof mdl == Directionallight then
@@ -195,6 +195,8 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false node
 		max zoomext sel all
 	)
 	
+	m.castShadows=false
+	m.primaryVisibility=false
 	m
 )
 

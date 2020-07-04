@@ -5,8 +5,7 @@ if ImportCNT==undefined then
 
 fn IsObjectAJoint obj =
 (
-	if classof obj == CarmaHelper_JointHelper then return true
-	else return false
+	(classof obj) == CarmaHelper_JointHelper
 )
 
 polymesh = mesh
@@ -518,13 +517,13 @@ plugin simpleObject CarmaHelper_JointHelper
 	)
 )
 
-
+format "CREATING CarmaHelper_WheelPlaceholder!!!!\n\n"
 CarmaHelper_WheelType = #("Wheel_FR","Wheel_FL","Wheel_RR","Wheel_RL")
 plugin simpleObject CarmaHelper_WheelPlaceholder
 	Name:"Wheel"
-	classID:#(0x4892a692, 0x7b9572ba)
+	classID:#(0x4892a691, 0x7b9572bb)
 	category:"Carmageddon: Reincarnation"
-	version:1
+	version:2
 (
 	local usingMesh, actualMeshObj, actualMeshMat, placeholderMeshObj, lastWheelName, lastWheelFilename, thisNode, oldWheelFileName
 	
@@ -568,12 +567,13 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 				)
 			)
 			delete obj
-			return outMesh
+			outMesh
 		)
 	fn loadWheelMesh cnt_name =
 	(
-		rimMesh = ImportCNT cnt_name importTextures:true forcePREP:false useTriStrips:false
-		tyreMesh = ImportCNT ((getFilenamePath cnt_name)+"Tyre.cnt") importTextures:true forcePREP:false useTriStrips:false
+		format "======================\nLoading wheelmesh %\n==================\n" cnt_name
+		rimMesh = ImportCNT cnt_name importTextures:true forcePREP:true useTriStrips:false
+		tyreMesh = ImportCNT ((getFilenamePath cnt_name)+"Tyre.cnt") importTextures:true forcePREP:true useTriStrips:false
 		append rimMesh.children tyreMesh
 		combinedMesh = combineWheelMeshes rimMesh
 		actualMeshObj = copy combinedMesh.mesh
@@ -703,18 +703,18 @@ struct AccessoryManager (
 		entry = AccessoryItemEntry()
 		entry.AccessoryMesh = actualMeshObj 
 		entry.AccessoryMaterial = actualMeshMat
-		return entry
+		entry
 		
 	),
 	fn GetAccessory cnt_name =
 	(
 		splitPath = filterstring (getFileNamePath cnt_name) "/\\"
 		accessoryType = splitPath[splitPath.count]
-		
+		result = undefined
 		accessoryExists = finditem ExistingAccessoryTypes accessoryType
 		if accessoryExists > 0 then
 		(
-			return ExistingAccessoryMeshes[accessoryExists]
+			result = ExistingAccessoryMeshes[accessoryExists]
 		)
 		else
 		(
@@ -722,8 +722,9 @@ struct AccessoryManager (
 			append ExistingAccessoryTypes accessoryType
 			append ExistingAccessoryMeshes loadedMesh
 			
-			return loadedMesh
+			result = loadedMesh
 		)
+		result
 	),
 	fn ClearAccessories =
 	(

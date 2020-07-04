@@ -30,7 +30,7 @@ rollout carma_reincarnation_dockfloater "Carmageddon Reincarnation Tools" width:
 		)
 	)
 )
-MaxTextureResolutionOptions = #("4096","2048","1024","512","256","128","64")
+MaxTextureResolutionOptions = #("8192", "4096","2048","1024","512","256","128","64")
 rollout carma_reincarnation_settings "Settings"
 (
 	global CarmaSettings
@@ -42,10 +42,12 @@ rollout carma_reincarnation_settings "Settings"
 		checkbox chk_AllowSeperateDataCore "Custom Data_Core folder"
 		editText dataCoreFolderTextBox "Data_Core Folder:" fieldWidth: 210 across: 2 labelOnTop:true text:CarmaSettings.DataCorePath
 		button setDataCoreFolder "Browse" align:#right offset:[0,16]
+		checkbox chk_SetupForUE4 "Import for UE4"
 		editText GibbedToolsLocationTextBox "Gibbed Tools Location:" fieldWidth: 210 across:2 labelOnTop:true text:CarmaSettings.GibbedTools
 		button setGibbedToolsLocation "Browse" align:#right offset:[0,16]
 		editText LOLDecoderLocationTextBox "LOL Decoder Location:" fieldWidth: 210 across:2 labelOnTop:true text:CarmaSettings.LOLDecoder
 		button setLOLDecoderLocation "Browse" align:#right offset:[0,16]
+		checkbox chk_ConvertTexturesInPlace "Convert textures in same folder as TDX file"
 		editText textureConversionFolderTextBox "Texture Conversion Folder:" fieldWidth: 210 across:2 labelOnTop:true text:CarmaSettings.TexturePath
 		button setTextureFolder "Browse" align:#right offset:[0,16]
 		dropdownlist maxTextureRes "Maximum Texture Resolution" items:MaxTextureResolutionOptions selection:(CarmaSettings.MaxResolutionID as Integer)
@@ -77,6 +79,15 @@ rollout carma_reincarnation_settings "Settings"
 		setDataCoreFolder.enabled = state
 		if state == false then dataCoreFolderTextBox.text = gameFolderTextBox.text + "\\Data_Core"
 	)
+	on chk_SetupForUE4 changed state do (
+
+	)
+	on chk_ConvertTexturesInPlace changed state do
+	(
+		textureConversionFolderTextBox.enabled = (state == false)
+		setTextureFolder.enabled = (state == false)
+		
+	)
 	on setTextureFolder pressed do
 	(
 		f = getSavePath initialDir:CarmaSettings.TexturePath caption:"Browse To Texture Conversion Folder..."
@@ -107,6 +118,8 @@ rollout carma_reincarnation_settings "Settings"
 		CarmaSettings.GamePath = gameFolderTextBox.text
 		CarmaSettings.DataCorePath = dataCoreFolderTextBox.text
 		CarmaSettings.AllowSeperateDataCore = chk_AllowSeperateDataCore.checked
+		CarmaSettings.SetupForUE4 = chk_SetupForUE4.checked
+		CarmaSettings.ConvertTexturesInPlace = chk_ConvertTexturesInPlace.checked
 		CarmaSettings.TexturePath = textureConversionFolderTextBox.text
 		CarmaSettings.GibbedTools = GibbedToolsLocationTextBox.text 
 		CarmaSettings.LOLDecoder = LOLDecoderLocationTextBox.text 
@@ -120,10 +133,20 @@ rollout carma_reincarnation_settings "Settings"
 			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "AllowSeperateDataCore" "false"
 
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath" CarmaSettings.DataCorePath
+		if CarmaSettings.ConvertTexturesInPlace then
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "ConvertTexturesInPlace" "true"
+		else
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "ConvertTexturesInPlace" "false"
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "TextureConversionPath" CarmaSettings.TexturePath
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GibbedTools" CarmaSettings.GibbedTools
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder" CarmaSettings.LOLDecoder
 		setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Textures" "MaxResolution" (CarmaSettings.MaxResolution as String)
+
+		if CarmaSettings.SetupForUE4 == true then
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Transforms" "SetupForUE4" "true"
+		else
+			setINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Transforms" "SetupForUE4" "false"
+
 		DestroyDialog carma_reincarnation_settings
 	)
 )

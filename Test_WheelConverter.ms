@@ -4,21 +4,63 @@ fn RotatePivotOnly obj rotation = (
 	obj.objectoffsetpos*=RotValInv
 	obj.objectoffsetrot*=RotValInv
 )
+
+fn flipWheel obj = (
+	oldMods = BeginEditMesh obj
+	numVerts = getNumVerts obj
+	in coordsys obj (
+	for i =1 to numverts do (
+		v = getvert obj i
+		v.x = -v.x
+		setvert obj i v
+	)
+	
+	numfaces = getnumfaces obj
+	for i = 1 to numfaces do (
+		f = getface obj i
+		v1 = f.x
+		f.x = f.y
+		f.y = v1
+		setface obj i f
+		tvf = gettvface obj i
+		v1 = tvf.x
+		tvf.x = tvf.y
+		tvf.y = v1
+		settvface obj i tvf
+	)
+	
+	)	
+	update obj
+	EndEditMesh obj oldMods
+	
+)
+
 fn ConvertToNullNodeAndMakeTyreMesh obj wheelType tyreWidth: 0.335 tyreRadius: 0.709 = (
 	obj.pivot = obj.center
+	wheelRot = quat 1
+	flipWheelNode = false
 	if obj.pos.x > 0 then (
-		RotatePivotOnly obj (EulerAngles 0 0 180)
+		--RotatePivotOnly obj (EulerAngles 0 0 180)
+		--obj.scale.x = obj.scale.x * -1
+		flipWheelNode = true
+		wheelRot = (eulerangles 0 0 180) as quat
+		flipWheel obj
+		obj.pivot = obj.center
 	)
 	extents = obj.max - obj.min
 	newWheelNode = ConvertToWheelNode obj wheelType deleteOldMesh:false
+	newWheelNode.rotation = wheelRot
+	newWheelNode.pos = obj.pos
 	newWheelNode.scale = [extents.x / tyreWidth, extents.y / tyreRadius, extents.y / tyreRadius]
 	obj.rotation = quat 1
 	obj.pos = [0,0,0]
 	obj.scale = [tyreWidth / extents.x, tyreRadius / extents.y, tyreRadius / extents.y]
-	obj.modifiers["CNT Hierarchy"]
+	obj.modifiers["CNT Hierarchy"].BakeScaleIntoMesh = true
 	obj.parent = undefined
+	if flipWheelNode then (
+		
+	)
 )
-
 fn ConvertAllWheels = (
 	wheels = for obj in objects where (findstring obj.name "wheel") != undefined collect obj
 	for wheel in wheels do (
@@ -33,6 +75,7 @@ fn ConvertAllWheels = (
 		
 		ConvertToNullNodeAndMakeTyreMesh wheel wheelType
 	)
+	wheels
 )
 
 fn CheckIdentical msh1 msh2 = (
@@ -75,11 +118,19 @@ fn CheckIdentical msh1 msh2 = (
 		)
 		numFaces = getnumfaces msh1
 		for f = 1 to numFaces do (
-			if (getFace msh1 f) != (getFace msh2 f) then(
-				isIdentical = false
-				format "face % does not match % != %\n" f (getFace msh1 f) (getFace msh2 f)  to:reason
-				
-				numFaces = -1
+			f1 = getFace msh1 f
+			f2 = getFace msh2 f
+			facesToTest = #(f2, [f2.x, f2.z, f2.y], [f2.y, f2.x, f2.z], [f2.y, f2.z, f2.x], [f2.z, f2.x, f2.y], [f2.z, f2.y, f2.x])
+			for facetotest in facestotest do (
+				if f1 != facetotest then(
+					if isIdentical then (
+						format "face % does not match % != %\n" f (getFace msh1 f) (getFace msh2 f)  to:reason
+					
+						numFaces = -1
+					)
+					isIdentical = false
+					
+				)
 			)
 		)
 			
@@ -108,7 +159,7 @@ fn CheckIdentical msh1 msh2 = (
 	)	
 
 		if isIdentical == false then format "Mesh % is not identical to % because:\n%\n" msh1.name msh2.name reason
-			
+			else format  "Mesh % is identical to % \n" msh1.name msh2.name
 	isIdentical
 )
 
@@ -118,6 +169,16 @@ fn CheckIdenticalMeshes meshes = (
 		msh1 = meshes[i]
 		for j = i + 1 to meshes.count do (
 			msh2 = meshes[j]
+			format "testing % against %\n" msh1 msh2
+			CheckIdentical msh1 msh2
+			
 		)
 	)
+)
+
+fn LoadAndConvert = (
+	convertcar()
+	 wheels= convertallwheels()
+	
+	select wheels
 )

@@ -20,33 +20,16 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 	)
 	else
 	(
-		splitLevelPath = filterstring levelpath "\\/"
-		environmentFolder = ""
-		breakOnNext = false
-		for i=1 to splitLevelPath.count-2 do
+		
+		if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")) then
 		(
-			if tolower splitLevelPath[i] == "levels" then i = splitLevelPath.count + 1
-			else environmentFolder = environmentFolder + splitLevelPath[i]+ "\\"
-			--if tolower splitLevelPath[i] == "environments" then breakOnNext = true
+			accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt"
+		)
+		else if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt")) then
+		(
+			accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt"
 		)
 		
-		--format "Checking environment accessory folder: %\n" (environmentFolder+"Accessories\\"+accessoryType+"\\accessory.cnt")
-		--if ((dotnetclass "System.IO.File").exists (environmentFolder+"Accessories\\"+accessoryType+"\\accessory.cnt")) then
-		--(
-		--	accessory.accessoryFileName = environmentFolder+"Accessories\\"+accessoryType+"\\accessory.cnt"
-		--)
-		--else 
-		--(
-			--format "Checking root accessory folder: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")
-			if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")) then
-			(
-				accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt"
-			)
-			else if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt")) then
-			(
-				accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt"
-			)
-		--)
 	)
 	--if accessory.accessoryFileName != undefied  and accessory.accessoryFileName != "" then 
 		--format "Found accessory in: %\n" accessory.AccessoryFileName
@@ -82,12 +65,15 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	while (eof lolscript) == false do
 	(
 		curLine = trimright (trimleft (readline lolscript))
-		if curLine == "" then 
+		if curLine == "" or (substring curLine 1 2) == "--" then 
 		(
 			continue
 		)
-		if startedAccessories==false and curLine == "accessories = {" then
+		if startedAccessories==false and (curLine == "accessories = {" or curLine == "accessories =") then
 		(
+			if  curLine == "accessories =" then (
+				curLine = trimright (trimleft (readline lolscript))
+			)
 			startedAccessories = true
 		)
 		else if startedAccessories == true then
@@ -95,8 +81,11 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 			if readingAccessory == false then
 			(
 				filteredString = filterstring curLine " "
-				if filteredString[2] == "=" and filteredString[3] == "{" then
+				if filteredString[2] == "="  then
 				(
+					if filteredString.count == 2 then (
+						curLine = trimright (trimleft (readline lolscript))
+					)
 					currentAccessoryName = filteredString[1]
 					readingAccessory = true
 				)
@@ -416,7 +405,7 @@ fn ParseLevelRoutesTXT txtFileName =
 				(
 					if toupper curline == "<ONEWAY>" then currentAILink.OneWay = true
 					--else if toupper curline == "WATER" then currentAILink.Water = true
-					else if toupper curline == "\"\"LOOP\"\"" then currentAILink.Loop = true
+					else if toupper curline == "\"\"LOOP\"\"" then currentAILink.IsLoop = true
 					else if toupper curline == "\"\"INTERIOR\"\"" then currentAILink.Interior = true
 					if curline[1] == "<" then currentMode = toupper curLine
 					else
@@ -490,12 +479,22 @@ fn ImportLevelButtonPressed sender arg=
 				if sender.parent.controls.Item["LoadAccessoriesCheckbox"].checked then
 				(
 					setupLOLFile = (getFilenamePath cnt_name)+"level.lol"
-					ParseLevelAccessoryLOL setupLOLfile
+					if (getfiles setupLOLFile).count == 0 then (
+						setupLOLFile = (getFilenamePath cnt_name)+"level.lua"
+					)
+					if (getfiles setupLOLFile).count != 0 then (
+						ParseLevelAccessoryLOL setupLOLfile
+					)
 				)
 				if sender.parent.controls.Item["LoadPowerupsCheckbox"].checked then
 				(
 					powerupLOLFile = (getFilenamePath cnt_name)+"powerups.lol"
-					ParseLevelAccessoryLOL powerupLOLFile isPowerup:true
+					if (getfiles setupLOLFile).count == 0 then (
+						setupLOLFile = (getFilenamePath cnt_name)+"powerups.lua"
+					)
+					if (getfiles setupLOLFile).count != 0 then (
+						ParseLevelAccessoryLOL powerupLOLFile isPowerup:true
+					)
 				)
 				if sender.parent.controls.Item["LoadPathsCheckbox"].checked then
 				(

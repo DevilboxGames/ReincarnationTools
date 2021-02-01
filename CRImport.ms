@@ -6,174 +6,11 @@ fn readCNTheader f =
 	readbyte f #unsigned
 	readbyte f #unsigned
 )
-fn LoadCRTexture folder texturename =
-(
-	global CarmaSettings
-	texmap = undefined
-		--format "\n------------\n"
-		if (doesFileExist (folder+textureName+".png")) then
-		(
-			--format "Texture is already converted: %\n" (folder+textureName+".png")
-			texmap = bitmaptexture()
-			texmap.filename = folder+textureName+".png"
-		)
-		else if (doesFileExist (folder+textureName+".tga")) then
-		(
-			--format "Texture is already converted: %\n"  (folder+textureName+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = folder+textureName+".tga"
-		)
-		else if (doesFileExist (folder+"NON_VT\\"+textureName+".png")) then
-		(
-			--format "Texture is already converted: %\n" (folder+textureName+".png")
-			texmap = bitmaptexture()
-			texmap.filename = folder+"NON_VT\\"+textureName+".png"
-		)
-		else if (doesFileExist (folder+"NON_VT\\"+textureName+".tga")) then
-		(
-			--format "Texture is already converted: %\n"  (folder+textureName+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = folder+"NON_VT\\"+textureName+".tga"
-		)
-		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".png")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".png"
-		)
-		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga"
-		)
-		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png"
-		)
-		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga"
-		)
-		else if CarmaSettings.ConvertTexturesInPlace==false and (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".png")) then
-		(
-			--format "Texture is already converted: %\n" (CarmaSettings.TexturePath+"\\"+textureName+".png")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".png"
-		)
-		else if  CarmaSettings.ConvertTexturesInPlace==false and (doesFileExist (CarmaSettings.TexturePath+"\\"+textureName+".tga")) then
-		(
-			--format "Texture is already converted: %\n"  (CarmaSettings.TexturePath+"\\"+textureName+".tga")
-			texmap = bitmaptexture()
-			texmap.filename = CarmaSettings.TexturePath+"\\"+textureName+".tga"
-		)
-		else 
-		(
-			--format "Texture needs convertng!\n"
-			startPath = CarmaSettings.TexturePath
-			if startPath == "" then startPath = folder
-			TDXFilename = undefined
-			if (doesFileExist (folder+texturename+".tdx")) then TDXFilename = folder+texturename+".tdx"
-			else if (doesFileExist (folder+"NON_VT\\"+texturename+".tdx")) then TDXFilename = folder+"NON_VT\\"+texturename+".tdx"
-			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx"
-			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx"
-			
-			--format "Looking for %.tdx in \"%\" or in \"%\"\n" texturename folder (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\")
-			--format "TDXFilename: %\n" TDXFilename
-			
-			if TDXFilename != undefined do
-			(
-				
-				--HiddenDOSCommand (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") prompt:("Loading Texture: "+TDXFilename)
-				--format "Command For Converting Texture: %\n from start path: %" (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") startPath
-				convesionPath =  CarmaSettings.TexturePath
-				if CarmaSettings.ConvertTexturesInPlace then (
-					convesionPath = getFilenamePath TDXFilename
-				)
-				--if CarmaSettings.TexturePath != "" then (dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX").Convert TDXFilename CarmaSettings.TexturePath
-				ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
-				ConvertTDX.Convert TDXFilename convesionPath false 5 CarmaSettings.MaxResolution
-				--format "TDX result is %\n" tdxresult
-				texmap = bitmaptexture()
-				texmap.filename = convesionPath+"\\"+textureName+".png"
-			)
-		)
-	 texmap
-)
-fn GetMDLTexture folder materialName importTextures:false =
-(
-	texmap = undefined
-	--format "Checking if material \"%\" exists: result = % importTextures =\n" (folder+materialName+".MT2") (((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))  as string) (importTextures as string)
-	
-	global CarmaSettings
-	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))
-	if materialExists ==	false then (
-		folder = CarmaSettings.DataCorePath+"\\Content\\Textures\\"
-	)
-	if importTextures and ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) then
-	(
-		--format "Material \"%\" exists!\n" (folder+materialName+".MT2")
-		if (dotnetclass "system.xml.xmldocument") == undefined then
-			dotNet.loadAssembly "system.xml"
-		xmlDoc=dotNetObject "system.xml.xmlDocument"
-		--clearListener()
-		--format "Properties\n"
-		--showProperties xmlDoc
-		--format "\nMethods\n"
-		--showMethods xmlDoc
-		xmlDoc.load (folder+materialName+".MT2")
-		if (xmlDoc.HasChildNodes)==false then xmlDoc.load (folder+materialName+".mt2")
 
-		basedOffTag = (xmlDoc.GetElementsByTagName "BasedOffOf").item 0
-		if basedOffTag != undefined then
-		(
-			basedOffOf = (basedOffTag.Attributes.GetNamedItem "Name").Value
-		)
-		textureTags = xmlDoc.GetElementsByTagName "Texture"
-		
-		--clearListener()
-		--format "Properties\n"
-		--showProperties textureTags
-		--format "\nMethods\n"
-		--showMethods textureTags
-		textureName = undefined
-		--format "\n------------\n"
-
-		for i=1 to textureTags.count do
-		(
-			textureItem = textureTags.item (i-1)
-			textureAlias = (textureItem.Attributes.GetNamedItem "Alias").Value
-			--format "Texture Tag #%: Alias = \"%\" Filename = \"%\"\n" i textureAlias (textureItem.Attributes.GetNamedItem "FileName").Value
-			if textureAlias == "DiffuseColour" or textureAlias == "Side1_DiffuseColour"  or textureAlias == "Side1_DiffuseColour2" or textureAlias == "Decals" then
-			(
-				textureName = (textureItem.Attributes.GetNamedItem "FileName").Value
-				--format "Found diffuse texture %!\n" textureName
-			)
-		)
-		if textureName != undefined then
-		(
-		texmap = LoadCRTexture folder textureName
-		)
-		--matFile = openfile folder+materialName+".MT2" "r"
-		
-		if texmap==undefined do
-		(
-			--format "texmap undefined for \"%\" in material %, using checker!\n" (folder+textureName+".tdx") materialName
-		)
-	)
-	if texmap==undefined do
-	(
-		--format "texmap undefined for \"%\" in %, using checker!\n" materialName folder
-		texmap = checker()
-		texmap.coords.U_Tiling =10
-		texmap.coords.V_Tiling =10
-	)
-	 texmap
+fn GetMDLTexture folder materialName importTextures:false = (
+	GetMT2Texture folder materialname importTextures
 )
+
 fn BlankUnknownSkinData fileName =
 (
 	backupFileName = (getFilenamePath fileName)
@@ -495,8 +332,9 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 		if meshMaterial == undefined do
 		(
 				append globalMaterialNames materialName
-			meshMaterial = StandardMaterial()
+			meshMaterial = GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures /* StandardMaterial()
 			meshMaterial.shaderType = 1
+			meshMaterial.diffuse = color 0 0 0
 			--format "\nAbout To Call GetMDLTexture for %\n" materialName
 			meshMaterial.diffuseMap = GetMDLTexture (getFilenamePath filename) materialName importTextures:importTextures
 			
@@ -509,7 +347,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			)
 			--format "Just Called GetMDLTexture for \n\n" materialName
 			meshMaterial.name = materialName
-			showtexturemap meshMaterial meshMaterial.diffuseMap true
+			showtexturemap meshMaterial meshMaterial.diffuseMap true*/
 				append globalMaterials meshMaterial
 		)
 		if mergeMDLs == true then
@@ -558,7 +396,9 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			(
 				--format "Trying to load the material and texture!\n"
 				append globalMaterialNames materialName
-				subMat = StandardMaterial()
+				subMat =  GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures /* StandardMaterial()
+
+				subMat.diffuse = color 0 0 0
 				subMat.shaderType = 1
 				if materialName == "pup_outline" then
 				(
@@ -570,9 +410,9 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				--format "Just Called GetMDLTexture for \n\n" materialName
 				subMat.name = materialName
 				showtexturemap subMat subMat.diffuseMap true
+				*/
 				
-				
-				if  ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
+				if  subMat == undefined and ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
 				(
 					local mtlMat = MTLFile()
 					mtlMat.load ( (getFilenamePath filename)+materialname+".mtl")
@@ -2107,6 +1947,11 @@ fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mer
 	
 	f = fopen cnt_name "r"
 	
+	if f == undefined then (
+		err = StringStream()
+		format "Can't open CNT \"%\"! make sure the fucker exists" cnt_name to:err
+		throw (err as string)
+	)
 	readCNTHeader f
 	
 	cntNode = ImportCNTNode f undefined
@@ -2132,7 +1977,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mer
 
 	totalMiliseconds = stopwatch.ElapsedMilliseconds
 	totalNanoseconds = stopwatch.ElapsedTicks * nanosecspertick
-	format "% cnt nodes parsed in % milliseconds (% nanoseconds)\n" parsedCNTNodes totalMiliseconds totalNanoseconds
+--	format "% cnt nodes parsed in % milliseconds (% nanoseconds)\n" parsedCNTNodes totalMiliseconds totalNanoseconds
 
 	fclose f
 	

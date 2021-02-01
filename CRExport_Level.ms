@@ -125,14 +125,14 @@ fn ExportLevelRoutes routetxtfile =
 		(
 			linkText = linkText + "<ONEWAY>"
 		)
-		if allLinks[i].Interior == true or allLinks[i].loop == true then
+		if allLinks[i].Interior == true or allLinks[i].Isloop == true then
 		(
 			linkText = linkText + "<VALUE>"
 			if allLinks[i].Interior == true then
 			(
 				linkText = linkText + "\"\"interior\"\""
 			)
-			if allLinks[i].Loop == true then
+			if allLinks[i].IsLoop == true then
 			(
 				linkText = linkText + "\"\"loop\"\""
 			)

@@ -67,10 +67,6 @@ fn GetAllFilesToLoad pattern rootfolder = (
 	allFiles
 )
 
-fn GetFolderName filepath = (
-	pathParts = filterstring (getFilenamePath filepath) "\\/"
-	pathParts[pathParts.count]
-)
 
 fn ExportAllPeds exportFolder = (
 

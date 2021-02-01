@@ -60,6 +60,69 @@ public class DisableWindowsGhosting
     )
 )
 
+fn buildcarmaindicesarray m = (
+	indices = #()
+	verts=#()
+	t_verts=#()
+	vertstrings=#()
+	
+	model = snapshotasmesh m
+	mfaces = getNumFaces model
+	tvcount = getnumtverts model
+	if tvcount != 0 then
+	(
+		for i=1 to mfaces do (--build verts list
+			faceverts = getFace model i
+			faceuvs = gettvface model i
+			newface = [1,1,1]
+			for j=1 to 3 do (
+				vert = getvert model faceverts[j]
+				uv = gettvert model faceuvs[j]
+				index = faceverts[j]
+				vertstring = (#(vert,uv) as string)
+				vertcheck = finditem vertstrings vertstring
+				if vertcheck == 0 then (
+					append verts vert
+					append t_verts uv
+					append indices index
+					append vertstrings vertstring
+				)
+			)
+		)
+	)
+	return indices
+)
+
+fn StopNullNodesRendering = (
+	for obj in objects where IsObjectANullCNT obj do ( 
+		obj.castShadows=false
+		obj.primaryVisibility=false
+	)
+)
+
+fn computeConvexHull theNode maxVerts:64 pushAmt:0.0 cleanup:true = (
+	with redraw off (
+		local rb = MassFX_RBody()
+		select theNode
+		local cmdMode = getCommandPanelTaskMode()		-- store previous mode
+		setCommandPanelTaskMode #modify
+		addModifier theNode rb
+		rb.meshVerticesLimit  = maxVerts
+		rb.meshType = 4  		-- 3 = capsule, 4 = convex
+		rb.meshInflation = pushAmt
+		rb.RBMeshRegenerate 1
+		hull = rb.RBMeshConvertToCustomMesh 1
+		if isValidNode hull then (
+			hull.name += "_Hull"
+		-- RBMeshCustomNodeExtract 
+		)
+		if cleanup then (
+			deleteModifier theNode 1
+			setCommandPanelTaskMode cmdMode		-- restore previous mode
+		)
+	)
+	hull
+)
 fn SearchUniqueVerts pos vert = (
 	if pos < vert.pos then -1
 	else if pos > vert.pos then 1

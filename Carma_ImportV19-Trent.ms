@@ -261,7 +261,7 @@ fn readtm bf tmtab =
 	t1 = freadfloat bf
 	t2 = freadfloat bf
 	t3 = freadfloat bf
-	amatrix = (matrix3 [x1,x2,x3] [y1,y2,y3] [z1,z2,z3] [t1,t2,-t3])
+	amatrix = (matrix3 [x1,x2,x3] [y1,y2,y3] [z1,z2,z3] [-t1,t2,-t3])
 	amatrix = matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0] * amatrix * inverse(matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])
 	--amatrix = amatrix * (matrix3 [1,0,0] [0,0,-1] [0,1,0] [0,0,0])
 	if tmtab.count > 0 do
@@ -319,6 +319,7 @@ fn setmbtm m mbtm mtm filetype:".tif"=
 			
 			if bmp.hasAlpha then (
 				m.opacitymap = bitmaptexture filename:(mbtm[1] + filetype)
+				m.opacitymap.filename = bmp.filename
 				m.opacitymap.coords.u_tiling = mtm.scalepart[1]
 				m.opacitymap.coords.v_tiling = mtm.scalepart[2]
 				m.opacitymap.coords.U_Angle = (mtm as EulerAngles).x
@@ -858,6 +859,7 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 		global mname 
 
 		global loadedObjects
+		firstMesh = undefined
 	bf=openbinfile fnm "rb"
 			head=freadhead bf
 			if (head == 484) do
@@ -903,9 +905,9 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 						)
 						if chunk==26 do 
 						(
-							format "% mid pos is %\n" oname (ftell bf)
+							--format "% mid pos is %\n" oname (ftell bf)
 							mid=readmid bf
-							format "% mid's = %\n\n" oname mid
+							--format "% mid's = %\n\n" oname mid
 						)
 					)while chunk != 0
 					--Format "% has % verts and % faces\n" oname vlst.count flst.count
@@ -943,6 +945,9 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 					if imp_quad == true do fsetedgevis o edv
 					update o
 					append loadedObjects o
+					if firstMesh == undefined then (
+						firstMesh = o
+					)
 					--if imp_act.checked == false do rotate o (angleaxis 90 [1,0,0])
 					vlst=undefined
 					flst=undefined
@@ -956,6 +961,8 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 				)while binend bf == false
 			)
 			fclose bf
+
+			firstMesh
 )
 fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp_other_coord_sys:false prefix:"" imp_scale69:true =
 (
@@ -1049,16 +1056,16 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 							for mat in materials do (
 								if (toupper mat.name) == (toupper amat) then foundMat = mat
 							)
-								format "adding actor mat % to %\n" amat model.name
+								--format "adding actor mat % to %\n" amat model.name
 							if foundMat != undefined then (
 								if m.material == undefined then
 								(
-									format "\tmodel has no material\n"
+									--format "\tmodel has no material\n"
 									m.material = foundMat
 								)
 								else (
 									if classof m.material == standard then (
-										format "\tmodel has single mat\n"
+										--format "\tmodel has single mat\n"
 										material = multimaterial()
 										material.numsubs = 2
 										material.materiallist[1] = m.material
@@ -1067,7 +1074,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 									)
 									else (
 										if classof m.material == multimaterial then (
-										format "\tmodel has multimat\n"
+										--format "\tmodel has multimat\n"
 											material = m.material
 											material.numsubs = (material.numsubs + 1)
 											material[material.numsubs] = foundMat
@@ -1082,7 +1089,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 							)
 						)
 						m.name = prefix+aname
-						format "writing mesh actor: % - % / % - %\n" mname prefix aname m.pos
+						--format "writing mesh actor: % - % / % - %\n" mname prefix aname m.pos
 						setUserProp m "datName" mname
 						if addp == true do append prnt m
 						append deletemodels model
@@ -1227,7 +1234,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 				)
 				if imp_mat then for mat in dataFiles[2] do
 				(
-					format "Loading material: %\n" mat
+					--format "Loading material: %\n" mat
 					matFilename = (materialPath+mat)
 					if (doesFileExist  matFilename) == false then
 					(
@@ -1283,7 +1290,7 @@ fn LoadAllC1TXTFiles dir textfiles:undefined=
 	for f in textFiles do
 	(
 		currentPos = [colSpacing * currentCol, rowSpacing * currentRow, 0]
-		format "currentPos: % \t\tcurrentCol: %\t\t currentRow\n" (transMatrix currentPos) currentCol currentRow
+		--format "currentPos: % \t\tcurrentCol: %\t\t currentRow\n" (transMatrix currentPos) currentCol currentRow
 		in coordsys (transMatrix currentPos)
 		(
 			LoadC1TXT f &progValue &progText prefix:(getFilenameFile f) imageExtension:".png" imp_other_coord_sys:true
@@ -1371,7 +1378,7 @@ fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_qua
 				)
 			)
 			
-			LoadDATFile fnm &progressValue &progressText imp_smth: imp_smth imp_mat:imp_mat imp_quad:imp_quad imp_scale69:imp_scale69
+			rootMesh = LoadDATFile fnm &progressValue &progressText imp_smth: imp_smth imp_mat:imp_mat imp_quad:imp_quad imp_scale69:imp_scale69
 			
 			if imp_act == true do
 			(

@@ -652,6 +652,395 @@ CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) ve
 	)
 )
 
+HandlingSetupLUAAttribute = attributes HandlingSetupLUA_Def attribID:#(0x34f73ea1, 0x5e4ac92) version:1
+(
+	parameters main rollout:HandlingSetupLUAMainRollout
+	(
+		CollisionEffect_Name type:#string default:"effects.f_carsharpnel06" ui:txt_CollisionEffect_Name
+		CollisionEffect_Strength type:#float default:10.5 ui:spn_CollisionEffect_Strength  range:[0,100000,10.5]
+		Mass type:#float default:1300 ui:spn_Mass  range:[0,100000,1300]
+		WheelMass type:#float default:10 ui:spn_WheelMass  range:[0,100000,10]
+		CMPosY type:#float default:0.52 ui:spn_CMPosY  range:[0,100000,0.52]
+		CMPosZ type:#float default:0 ui:spn_CMPosZ  range:[0,100000,0]
+	)
+
+	parameters handling rollout:HandlingSetupLUAHandlingRollout
+	(
+		TractionFactor type:#float default:1.2 ui:spn_TractionFactor range:[0,1000,0]  range:[0,100000,1.2]
+		RearGrip type:#float default:1.6 ui:spn_RearGrip  range:[0,100000,1.6]
+		FrontGrip type:#float default:1.7 ui:spn_FrontGrip  range:[0,100000,1.7]
+		FrontDownforce type:#float default:20 ui:spn_FrontDownforce  range:[0,100000,20]
+		RearDownforce type:#float default:20 ui:spn_RearDownforce  range:[0,100000,20]
+		FrontRoll type:#float default:0.4 ui:spn_FrontRoll  range:[0,100000,0.4]
+		RearRoll type:#float default:0.3 ui:spn_RearRoll  range:[0,100000,0.3]
+		FrontCriticalAngle type:#float default:6 ui:spn_FrontCriticalAngle  range:[0,100000,6]
+		RearCriticalAngle type:#float default:6 ui:spn_RearCriticalAngle  range:[0,100000,6]
+		FrontSuspGive type:#float default:0.1 ui:spn_FrontSuspGive  range:[0,100000,0.1]
+		RearSuspGive type:#float default:0.08 ui:spn_RearSuspGive  range:[0,100000,0.08]
+		SuspDamping type:#float default:1 ui:spn_SuspDamping  range:[0,100000,1]
+		SuspensionRollFactor type:#float default:1 ui:spn_SuspensionRollFactor  range:[0,100000,1]
+		SuspensionPitchFactor type:#float default:1 ui:spn_SuspensionPitchFactor  range:[0,100000,1]
+		MomentOfInertiaMultiplier type:#float default:1 ui:spn_MomentOfInertiaMultiplier  range:[0,100000,1]
+		SteerSpeed1 type:#float default:1 ui:spn_SteerSpeed1  range:[0,100000,1]
+		SteerSpeed2 type:#float default:0.5 ui:spn_SteerSpeed2  range:[0,100000,0.5]
+		SteerSpeedVel type:#float default:150 ui:spn_SteerSpeedVel  range:[0,100000,150]
+		SteerCentreMultiplier type:#float default:2 ui:spn_SteerCentreMultiplier  range:[0,100000,2]
+		StabilityGripChange type:#float default:0.4 ui:spn_StabilityGripChange  range:[0,100000,0.4]
+		StabilityThreshold type:#float default:0.5 ui:spn_StabilityThreshold  range:[0,100000,0.5]
+		MaxSteeringAngle type:#float default:40 ui:spn_MaxSteeringAngle  range:[0,100000,40]
+		BrakeBalance type:#float default:60 ui:spn_BrakeBalance  range:[0,100000,60]
+		BrakeForce type:#float default:60 ui:spn_BrakeForce  range:[0,100000,60]
+		HandBrakeStrength type:#float default:10 ui:spn_HandBrakeStrength  range:[0,100000,10]
+		TorqueSplit type:#float default:65 ui:spn_TorqueSplit  range:[0,100000,65]
+		LSDThresholdF type:#float default:10 ui:spn_LSDThresholdF  range:[0,100000,10]
+		LSDThresholdR type:#float default:10 ui:spn_LSDThresholdR  range:[0,100000,10]
+		LSDThresholdM type:#float default:10 ui:spn_LSDThresholdM  range:[0,100000,10]
+		ReversePowerMulitplier type:#float default:1 ui:spn_ReversePowerMulitplier  range:[0,100000,1]
+		DragCoefficient type:#float default:0.4 ui:spn_DragCoefficient  range:[0,100000,0.4]
+		SteerLimit1 type:#float default:0 ui:spn_SteerLimit1  range:[0,100000,0]
+		SteerLimit2 type:#float default:0 ui:spn_SteerLimit2  range:[0,100000,0]
+		SteerLimitSpeed type:#float default:0 ui:spn_SteerLimitSpeed  range:[0,100000,0]
+		CastorSpeed1 type:#float default:0 ui:spn_CastorSpeed1  range:[0,100000,0]
+		CastorSpeed2 type:#float default:1 ui:spn_CastorSpeed2  range:[0,100000,1]
+		CastorSpeedVel type:#float default:100 ui:spn_CastorSpeedVel  range:[0,100000,100]
+		SteerGyroscope type:#float default:1 ui:spn_SteerGyroscope  range:[0,100000,1]
+		BrakeAttack type:#float default:1 ui:spn_BrakeAttack  range:[0,100000,1]
+		HandBrakeAttack type:#float default:0.1 ui:spn_HandBrakeAttack  range:[0,100000,0.1]
+		SlideSpinRecovery type:#float default:1 ui:spn_SlideSpinRecovery  range:[0,100000,1]
+		RollingResistance type:#float default:0.018 ui:spn_RollingResistance  range:[0,100000,0.018]
+	)
+
+	parameters engine rollout:HandlingSetupLUAEngineRollout
+	(
+		PowerMultiplier type:#float default:1.5 ui:spn_PowerMultiplier  range:[0,100000,1.5]
+		FinalDrive type:#float default:1 ui:spn_FinalDrive  range:[0,100000,1]
+		DriveMI type:#float default:2.2 ui:spn_DriveMI  range:[0,100000,2.2]
+		EngineMI type:#float default:0.06 ui:spn_EngineMI  range:[0,100000,0.06]
+		RedLine type:#float default:6500 ui:spn_RedLine  range:[0,100000,6500]
+		MaxRevs type:#float default:8000 ui:spn_MaxRevs  range:[0,100000,8000]
+		LimitRevs type:#boolean default:true ui:chk_LimitRevs
+		ConstantEngineFriction type:#float default:833 ui:spn_ConstantEngineFriction  range:[0,100000,833]
+		LinearEngineFriction type:#float default:0 ui:spn_LinearEngineFriction  range:[0,100000,0]
+		QuadraticEngineFriction type:#float default:0.0023 ui:spn_QuadraticEngineFriction  range:[0,100000,0.0023]
+		ConstantDriveFriction type:#float default:9.1 ui:spn_ConstantDriveFriction  range:[0,100000,9.1]
+		LinearDriveFriction type:#float default:0 ui:spn_LinearDriveFriction  range:[0,100000,0]
+		QuadraticDriveFriction type:#float default:0.0008 ui:spn_QuadraticDriveFriction  range:[0,100000,0.0008]
+		EngineBrakeDelay type:#float default:0.5 ui:spn_EngineBrakeDelay  range:[0,100000,0.5]
+		EngineBrakeAttack type:#float default:0.28 ui:spn_EngineBrakeAttack  range:[0,100000,0.28]
+		ClutchDelay type:#float default:0 ui:spn_ClutchDelay  range:[0,100000,0]
+		NumGears type:#float default:5 ui:spn_NumGears
+		GearRatios type:#floattab tabsizevariable:true
+		TorqueCurve type:#floattab tabsizevariable:true
+		GearRatiosPopup type:#boolean default:false ui:chk_GearRatiosPopup
+		TorqueCurvePopup type:#boolean default:false ui:chk_TorqueCurvePopup
+	)
+	rollout HandlingSetupLUAMainRollout "General Setup" (
+		edittext txt_CollisionEffect_Name "Collision Effect Name" default:"effects.f_carsharpnel06" 
+		spinner spn_CollisionEffect_Strength "Collision Effect Strength" type:#float default:10.5 range:[0,100000,10.5]
+		spinner spn_Mass "Mass" type:#float default:1300 range:[0,100000,1300]
+		spinner spn_WheelMass "WheelMass" type:#float default:10 range:[0,100000,10]
+		spinner spn_CMPosY "CMPosY" type:#float default:0.52 range:[0,100000,0.52]
+		spinner spn_CMPosZ "CMPosZ" type:#float default:0 range:[0,100000,0]
+	)
+
+	rollout HandlingSetupLUAHandlingRollout "Handling Setup" (
+		spinner spn_TractionFactor "TractionFactor" type:#float default:1.2 range:[0,100000, 1.2]
+		spinner spn_RearGrip "RearGrip" type:#float default:1.6 range:[0,100000, 1.6]
+		spinner spn_FrontGrip "FrontGrip" type:#float default:1.7 range:[0,100000, 1.7]
+		spinner spn_FrontDownforce "FrontDownforce" type:#float default:20 range:[0,100000, 20]
+		spinner spn_RearDownforce "RearDownforce" type:#float default:20 range:[0,100000, 20]
+		spinner spn_FrontRoll "FrontRoll" type:#float default:0.4 range:[0,100000, 0.4]
+		spinner spn_RearRoll "RearRoll" type:#float default:0.3 range:[0,100000, 0.3]
+		spinner spn_FrontCriticalAngle "FrontCriticalAngle" type:#float default:6 range:[0,100000, 6]
+		spinner spn_RearCriticalAngle "RearCriticalAngle" type:#float default:6 range:[0,100000, 6]
+		spinner spn_FrontSuspGive "FrontSuspGive" type:#float default:0.1 range:[0,100000, 0.1]
+		spinner spn_RearSuspGive "RearSuspGive" type:#float default:0.08 range:[0,100000, 0.08]
+		spinner spn_SuspDamping "SuspDamping" type:#float default:1 range:[0,100000, 1]
+		spinner spn_SuspensionRollFactor "SuspensionRollFactor" type:#float default:1 range:[0,100000, 1]
+		spinner spn_SuspensionPitchFactor "SuspensionPitchFactor" type:#float default:1 range:[0,100000, 1]
+		spinner spn_StabilityGripChange "StabilityGripChange" type:#float default:0.4 range:[0,100000, 0.4]
+		spinner spn_StabilityThreshold "StabilityThreshold" type:#float default:0.5 range:[0,100000, 0.5]
+		spinner spn_MomentOfInertiaMultiplier "MomentOfInertiaMultiplier" type:#float default:1 range:[0,100000, 1]
+		spinner spn_SteerSpeed1 "SteerSpeed1" type:#float default:1 range:[0,100000, 1]
+		spinner spn_SteerSpeed2 "SteerSpeed2" type:#float default:0.5 range:[0,100000, 0.5]
+		spinner spn_SteerSpeedVel "SteerSpeedVel" type:#float default:150 range:[0,100000, 150]
+		spinner spn_SteerCentreMultiplier "SteerCentreMultiplier" type:#float default:2 range:[0,100000, 2]
+		spinner spn_MaxSteeringAngle "MaxSteeringAngle" type:#float default:40 range:[0,100000, 40]
+		spinner spn_BrakeBalance "BrakeBalance" type:#float default:60 range:[0,100000, 60]
+		spinner spn_BrakeForce "BrakeForce" type:#float default:60 range:[0,100000, 60]
+		spinner spn_HandBrakeStrength "HandBrakeStrength" type:#float default:10 range:[0,100000, 10]
+		spinner spn_TorqueSplit "TorqueSplit" type:#float default:65 range:[0,100000, 65]
+		spinner spn_LSDThresholdF "LSDThresholdF" type:#float default:10 range:[0,100000, 10]
+		spinner spn_LSDThresholdR "LSDThresholdR" type:#float default:10 range:[0,100000, 10]
+		spinner spn_LSDThresholdM "LSDThresholdM" type:#float default:10 range:[0,100000, 10]
+		spinner spn_ReversePowerMulitplier "ReversePowerMulitplier" type:#float default:1 range:[0,100000, 1]
+		spinner spn_DragCoefficient "DragCoefficient" type:#float default:0.4 range:[0,100000, 0.4]
+		spinner spn_SteerLimit1 "SteerLimit1" type:#float default:0 range:[0,100000, 0]
+		spinner spn_SteerLimit2 "SteerLimit2" type:#float default:0 range:[0,100000, 0]
+		spinner spn_SteerLimitSpeed "SteerLimitSpeed" type:#float default:0 range:[0,100000, 0]
+		spinner spn_CastorSpeed1 "CastorSpeed1" type:#float default:0 range:[0,100000, 0]
+		spinner spn_CastorSpeed2 "CastorSpeed2" type:#float default:1 range:[0,100000, 1]
+		spinner spn_CastorSpeedVel "CastorSpeedVel" type:#float default:100 range:[0,100000, 100]
+		spinner spn_SteerGyroscope "SteerGyroscope" type:#float default:1 range:[0,100000, 1]
+		spinner spn_BrakeAttack "BrakeAttack" type:#float default:1 range:[0,100000, 1]
+		spinner spn_HandBrakeAttack "HandBrakeAttack" type:#float default:0.1 range:[0,100000, 0.1]
+		spinner spn_SlideSpinRecovery "SlideSpinRecovery" type:#float default:1 range:[0,100000, 1]
+		spinner spn_RollingResistance "RollingResistance" type:#float default:0.018 range:[0,100000, 0.018]
+	)
+	rollout HandlingSetupLUAEngineRollout "Engine Setup" (
+		spinner spn_PowerMultiplier "PowerMultiplier" type:#float default:1.5 range:[0,100000, 1.5]
+		spinner spn_FinalDrive "FinalDrive" type:#float default:1 range:[0,100000, 1]
+		spinner spn_DriveMI "DriveMI" type:#float default:2.2 range:[0,100000, 2.2]
+		spinner spn_EngineMI "EngineMI" type:#float default:0.06 range:[0,100000, 0.06]
+		spinner spn_RedLine "RedLine" type:#float default:6500 range:[0,100000, 6500]
+		spinner spn_MaxRevs "MaxRevs" type:#float default:8000 range:[0,100000, 8000]
+		checkbox chk_LimitRevs "Limit Revs" default:true
+		spinner spn_ConstantEngineFriction "ConstantEngineFriction" type:#float default:833 range:[0,100000, 833]
+		spinner spn_LinearEngineFriction "LinearEngineFriction" type:#float default:0 range:[0,100000, 0]
+		spinner spn_QuadraticEngineFriction "QuadraticEngineFriction" type:#float default:0.0023 range:[0,100000, 0.0023]
+		spinner spn_ConstantDriveFriction "ConstantDriveFriction" type:#float default:9.1 range:[0,100000, 9.1]
+		spinner spn_LinearDriveFriction "LinearDriveFriction" type:#float default:0 range:[0,100000, 0]
+		spinner spn_QuadraticDriveFriction "QuadraticDriveFriction" type:#float default:0.0008 range:[0,100000, 0.0008]
+		spinner spn_EngineBrakeDelay "EngineBrakeDelay" type:#float default:0.5 range:[0,100000, 0.5]
+		spinner spn_EngineBrakeAttack "EngineBrakeAttack" type:#float default:0.28 range:[0,100000, 0.28]
+		spinner spn_ClutchDelay "ClutchDelay" type:#float default:0 range:[0,100000, 0]
+		spinner spn_NumGears "NumGears" type:#float default:5 range:[0,100000, 5]
+		group "Gear Ratios" (
+			checkbox chk_GearRatiosPopup "Open In Popup Next Time" default:false
+			curvecontrol crv_GearRatios numCurves:1 x_range:[0,10] y_range:[0,1000] rcmFlags:#(#move_y) asPopup:GearRatiosPopup uiFlags:#(#drawBG, #drawgrid,#lowerToolbar, #scrollBars, #xvalue)
+			button btn_ResetGearRatios "Reset Gear Ratios"
+		)
+		group "Torque Curve" (
+			checkbox chk_TorqueCurvePopup "Open In Popup Next Time" default:false
+			curvecontrol crv_TorqueCurve numCurves:1 x_range:[0,20] y_range:[0,1000] rcmFlags:#(#move_y) asPopup:TorqueCurvePopup  uiFlags:#(#drawBG, #drawgrid,#lowerToolbar, #scrollBars, #xvalue)
+			button btn_ResetTorqueCurve "Reset Torque Curve"
+		)
+
+		fn ResetGearRatios = (
+			GearRatios = #(13.86,8.2193,5.7005,4.2327,3.2277,2.6775,2.1616,1.7157,1.3752,1.1346)
+		)
+		fn ResetTorqueCurve = (
+			TorqueCurve = #(150,232,264,280,264,240,208,160,0,0,0,0,0,0,0,0,0,0,0,0)
+			
+		)
+		on chk_GearRatiosPopup changed val do (
+			select $
+			modPanel.setCurrentObject $.modifiers["setup.lua"]
+		)
+		on chk_TorqueCurvePopup changed val do (
+			select $
+			modPanel.setCurrentObject $.modifiers["setup.lua"]
+		)
+		on btn_ResetGearRatios pressed do (
+			updatingCurve = true
+			ResetGearRatios()
+			GearCrv = crv_GearRatios.curves[1]
+			
+			for i = GearCrv.Points.count to 2 by -1 do (
+				--deletePoint GearCrv i
+			)
+			--GearCrv.numPoints = GearRatios.count
+			for i=1 to GearRatios.count do (
+				cp = GearCrv.points[i]
+
+				cp.value.y = GearRatios[i]
+				GearCrv.points[i].value.y = GearRatios[i]
+			)
+			--crv_GearRatios.curves[1] = GearCrv
+			zoom crv_GearRatios #all
+
+			updatingCurve = false
+		)
+		on btn_ResetTorqueCurve pressed do (
+			updatingCurve = true
+			ResetTorqueCurve()
+
+			TorqueCrv = crv_TorqueCurve.curves[1]
+			for i = TorqueCrv.Points.count to  2 by -1 do (
+				--deletePoint  TorqueCrv i
+			)
+			--TorqueCrv.numPoints = TorqueCurve.count
+			for i=1 to TorqueCurve.count do (
+				cp = TorqueCrv.points[i]
+				cp.value.y = TorqueCurve[i]
+
+				TorqueCrv.points[i].value.y = TorqueCurve[i]
+			)
+			--crv_TorqueCurve.curves[1] = TorqueCrv
+			zoom crv_TorqueCurve #all
+			crv_TorqueCurve.zoomValues = [crv_TorqueCurve.zoomValues.x * 2, crv_TorqueCurve.zoomValues.y]
+			
+			updatingCurve = false
+		)
+		local updatingCurve = true
+		on HandlingSetupLUAEngineRollout open do (
+			updatingCurve = true
+			if GearRatios.count < 1 then (
+				ResetGearRatios()
+			)
+			if TorqueCurve.count < 1 then (
+				ResetTorqueCurve()
+			)
+			print TorqueCurve
+			print GearRatios
+
+			GearCrv = crv_GearRatios.curves[1]
+			GearCrv.numPoints = GearRatios.count
+			for i=1 to GearRatios.count do (
+				cp = GearCrv.points[i]
+				cp.value = [i,GearRatios[i]]
+				cp.lock_x =true
+				GearCrv.points[i] = cp
+			)
+			crv_GearRatios.curves[1] = GearCrv
+			zoom crv_GearRatios #all
+
+
+			TorqueCrv = crv_TorqueCurve.curves[1]
+			TorqueCrv.numPoints = TorqueCurve.count
+			for i=1 to TorqueCurve.count do (
+				cp = TorqueCrv.points[i]
+				cp.value = [i,TorqueCurve[i]]
+
+				cp.lock_x =true
+				TorqueCrv.points[i] = cp
+			)
+			crv_TorqueCurve.curves[1] = TorqueCrv
+			zoom crv_TorqueCurve #all
+			crv_TorqueCurve.zoomValues = [crv_TorqueCurve.zoomValues.x * 2, crv_TorqueCurve.zoomValues.y]
+			
+			updatingCurve = false
+		)
+		on HandlingSetupLUAEngineRollout close do (
+			
+		)
+		on crv_GearRatios ptChanged c p do (
+			if updatingCurve == false and GearRatios.count > 0 then (
+				
+				newVal = crv_GearRatios.curves[c].points[p].value.y
+				GearRatios[p] = newVal
+			)
+		)
+		on crv_TorqueCurve ptChanged c p do (
+			if updatingCurve == false and TorqueCurve.count > 0 then (
+				
+				newVal = crv_TorqueCurve.curves[c].points[p].value.y
+				TorqueCurve[p] = newVal
+			)
+		)
+	)
+)
+/*********************************
+***** CAR VEHICLE_SETUP.LOL ATTRIBUTES
+*********************************/
+VehicleSetupLUAAttribute = attributes VehicleSetupLUA_Def attribID:#(0x1b9d3ae4, 0x1a44f0c1) version:1
+(
+	parameters main rollout:VehicleLUAMainRollout
+	(
+		default type:#Boolean ui:chk_default
+        camera_distance type:#Integer ui:spn_camera_distance default:18
+        camera_extra_tilt_angle type:#Integer ui:spn_camera_extra_tilt_angle deflect:0
+        dev type:#Boolean ui:chk_dev
+        cop type:#Boolean ui:chk_cop
+        eagle type:#Boolean ui:chk_eagle
+        tier type:#Integer ui:spn_tier
+        progress type:#Integer ui:spn_progress
+        shipped type:#Boolean ui:chk_shipped
+        leaderboard_id type:#Integer ui:spn_leaderboard_id
+        unlock_node type:#Integer ui:spn_unlock_node
+        class_rounded type:#Boolean ui:chk_class_rounded
+        class_speedy type:#Boolean ui:chk_class_speedy
+        class_smashy type:#Boolean ui:chk_class_smashy
+        barred_from_easy_on_ramp type:#Boolean ui:chk_barred_from_easy_on_ramp
+        hawk type:#Boolean ui:chk_hawk
+        suppressor type:#Boolean ui:chk_suppressor
+        product_id type:#Integer ui:spn_product_id
+        consider_in_stats type:#Boolean ui:chk_consider_in_stats
+        override_vehicle_name type:#String ui:txt_override_vehicle_name
+        override_driver_name type:#String ui:txt_override_driver_name
+        override_bio type:#String ui:txt_override_bio
+        hud_damage_levels type:#Floattab tabsizevariable:true
+	)
+	rollout VehicleLUAMainRollout "Vehicle Setup LUA"
+	(
+		group "Car Info" (
+			edittext txt_override_vehicle_name "Vehicle Name"
+			edittext txt_override_driver_name "Driver Name"
+			edittext txt_override_bio "Bio"
+		)
+		group "Camera Details" (
+			spinner spn_camera_distance "Camera Distance" range:[0,100,10] type:#integer
+			spinner spn_camera_extra_tilt_angle "Camera Tilt Angle" range:[0,60,0]  type:#integer
+
+		)
+		group "HUD Damage Levels" (
+			spinner spn_HUDDamageLevel "" range:[0,1,0] type:#float across:2
+			button but_AddToDamageLevels "Add"
+			dotnetcontrol lv_HUDDamageLevels "listview" height: 100
+			button but_DeleteFromDamageLevels "Delete Selected"
+		)
+		group "Vehicle Type" (
+			checkbox chk_default "Default"
+			checkbox chk_dev "Dev"
+			checkbox chk_shipped "Shipped"
+			checkbox chk_cop "Cop"
+			checkbox chk_eagle "Eagle"
+			checkbox chk_hawk "Hawk"
+			checkbox chk_suppressor "Suppressor"
+			checkbox chk_class_rounded "Class: Rounded"
+			checkbox chk_class_speedy "Class: Speedy"
+			checkbox chk_class_smashy "Class: Smashy"
+			checkbox chk_barred_from_easy_on_ramp "Barred From Easy On Ramp"
+			checkbox chk_consider_in_stats "Considered In Stats"
+		)
+		group "Career Settings" (
+			spinner spn_tier "Tier" range:[0,100,0] type:#integer
+			spinner spn_progress "Progress" range:[0,100,0] type:#integer
+			spinner spn_unlock_node "Unlock Node" range:[0,100,0] type:#integer
+			spinner spn_leaderboard_id "Leaderboard ID" range:[0,100,0] type:#integer
+			spinner spn_product_id "Product ID" range:[0,100000,0] type:#integer
+
+		)
+		on VehicleLUAMainRollout open  do (
+
+			--but_AddToDamageLevels.pos = [120, but_AddToDamageLevels.pos.y+15]
+			lv_HUDDamageLevels.view  = (dotnetclass "view").details
+			lv_HUDDamageLevels.fullrowselect= true
+			lv_HUDDamageLevels.gridlines = true
+			lv_HUDDamageLevels.multiselect =false
+			lv_HUDDamageLevels.columns.add "Damage Level" 110
+
+			if hud_damage_levels.count == 0 then (
+				append hud_damage_levels 0.05
+				append hud_damage_levels 0.3
+				append hud_damage_levels 0.55
+				append hud_damage_levels 0.8
+				append hud_damage_levels 1
+			)
+
+
+
+			for i=1 to hud_damage_levels.count do
+			(
+				lv_HUDDamageLevels.Items.add (hud_damage_levels[i] as string)
+			)
+		)
+		on but_DeleteFromDamageLevels pressed do
+		(
+			if lv_HUDDamageLevels.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_HUDDamageLevels.SelectedIndices.Item[0]
+				lv_HUDDamageLevels.Items.removeat selectedIndex
+				deleteItem hud_damage_levels (selectedIndex+1)
+			)
+		)
+		on but_AddToDamageLevels pressed do
+		(
+			lv_HUDDamageLevels.Items.add (txt_DriverName.text)
+			append hud_damage_levels txt_DriverName.text
+		)
+	)
+)
 
 /*********************************
 ***** CAR VEHICLE_SETUP.CFG ATTRIBUTES
@@ -661,8 +1050,6 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 	parameters main rollout:VehicleCFGMainRollout
 	(
 		AIScript type:#string ui:txt_AIScript default:""
-		SkidMarksImage type:#string default:""
-		TyreParticlesVFX type:#string default:""
 		MaxCompression type:#float ui:spn_MaxCompression
 		MaxExtension type:#float ui:spn_MaxExtension
 		RideHeight type:#float ui:spn_RideHeight
@@ -671,9 +1058,6 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		MaxExtension_Active type:#boolean ui:chk_MaxExtension_Active
 		RideHeight_Active type:#boolean ui:chk_RideHeight_Active
 		MaxSteeringLock_Active type:#boolean ui:chk_MaxSteeringLock_Active
-		ExhaustParticlesVFX type:#string default:""
-		ExhaustAnchor type:#maxObject
-		SkidNoise type:#stringTab tabSizeVariable:true
 		TopSpeed type:#integer 	default:155	ui:spn_TopSpeed
 		To60Time type:#float 	default:3.1 ui:spn_To60Time
 		Weight type:#float 		default:1.3 ui:spn_Weight
@@ -688,7 +1072,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		spinner spn_To60Time "0-60 Time (secs)" range:[0,50,0.1] type:#float
 		spinner spn_Weight "Weight (tons)" range:[0,50,0.1] type:#float
 		spinner spn_Toughness "Toughness" range:[0,50,0.1] type:#float
-		spinner spn_UnlockLevel "Unlock Level" range:[0,50,1] type:#integer
+		spinner spn_UnlockLevel "Unlock Level" range:[-1,50,1] type:#integer
 		label lbl_Suspension "Suspension"
 		label lbl_MaxCompression "Max Compression" across:1 align:#right
 		checkbox chk_MaxCompression_Active "" default:false  across:2 width:15
@@ -737,7 +1121,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		edittext txt_flwheelFolderName "Wheel FL Folder Name" labelOntop:true
 		edittext txt_rrwheelFolderName "Wheel RR Folder Name" labelOntop:true
 		edittext txt_rlwheelFolderName "Wheel RL Folder Name" labelOntop:true
-		checkbox chk_showExtraWheels "Show extra wheels?"
+		checkbox chk_showExtraWheels "Show extra wheels?" visible:false
 		edittext txt_d4wheelFolderName "Wheel 5 Folder Name" labelOntop:true
 		edittext txt_d5wheelFolderName "Wheel 6 Folder Name" labelOntop:true
 		edittext txt_d6wheelFolderName "Wheel 7 Folder Name" labelOntop:true
@@ -772,7 +1156,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 			append GarageSetFolderNames ""
 				lv_Wheels.Items.add wheelName
 		)
-		fn UpdateWheel do (
+		fn UpdateWheel =  (
 			if lv_Wheels.SelectedIndices.count > 0 then 
 			(
 				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
@@ -796,91 +1180,9 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 				lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text = txt_wheelName.text
 			)	
 		)
-		on VehicleCFGWheelsRollout open do (
+		fn ToggleExtraWheels state = (
 
-			lv_Wheels.view  = (dotnetclass "view").details
-			lv_Wheels.fullrowselect= true
-			lv_Wheels.gridlines = true
-			lv_Wheels.multiselect =false
-			lv_Wheels.columns.add "Wheel" 110
-			for i=1 to WheelNames.count do
-			(
-				lv_Wheels.Items.add WheelNames[i]
-			)
-			if WheelNames.count < 1 then (
-				AddDefaultWheel wheelName:"default" localisedName:"Default"
-			)
-		)
-
-		on txt_wheelLocalisedName changed do ( UpdateWheel() )
-		on txt_frwheelFolderName changed do ( UpdateWheel() )
-		on txt_flwheelFolderName changed do ( UpdateWheel() )
-		on txt_rrwheelFolderName changed do ( UpdateWheel() )
-		on txt_rlwheelFolderName changed do ( UpdateWheel() )
-		on txt_d4wheelFolderName changed do ( UpdateWheel() )
-		on txt_d5wheelFolderName changed do ( UpdateWheel() )
-		on txt_d6wheelFolderName changed do ( UpdateWheel() )
-		on txt_d7wheelFolderName changed do ( UpdateWheel() )
-		on txt_d8wheelFolderName changed do ( UpdateWheel() )
-		on txt_d9wheelFolderName changed do ( UpdateWheel() )
-		on txt_d10wheelFolderName changed do ( UpdateWheel() )
-		on txt_d11wheelFolderName changed do ( UpdateWheel() )
-		on txt_garageSetFolderNames changed do ( UpdateWheel() )
-
-		on lv_Wheels selectedindexchanged do
-		(
-			if lv_Wheels.SelectedIndices.count > 0 then 
-			(
-				but_DeleteFromWheels.enabled = true
-				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
-				wheelIndex = finditem WheelNames selectedItem
-				txt_wheelName.text = WheelNames[wheelIndex]
-				txt_wheelLocalisedName.text = WheelLocalisedNames[wheelIndex]
-				txt_frwheelFolderName.text = FRWheelFolderNames[wheelIndex]
-				txt_flwheelFolderName.text = FLWheelFolderNames[wheelIndex]
-				txt_rrwheelFolderName.text = RRWheelFolderNames[wheelIndex]
-				txt_rlwheelFolderName.text = RLWheelFolderNames[wheelIndex]
-				chk_showExtraWheels.checked = D4WheelFolderNames[wheelIndex] != ""
-				if chk_showExtraWheels.checked then (
-					txt_d4wheelFolderName.visible = true
-					txt_d5wheelFolderName.visible = true
-					txt_d6wheelFolderName.visible = true
-					txt_d7wheelFolderName.visible = true
-					txt_d8wheelFolderName.visible = true
-					txt_d9wheelFolderName.visible = true
-					txt_d10wheelFolderName.visible = true
-					txt_d11wheelFolderName.visible = true
-					txt_garageSetFolderNames.visible = true
-
-				)
-				else (
-					txt_d4wheelFolderName.visible = false
-					txt_d5wheelFolderName.visible = false
-					txt_d6wheelFolderName.visible = false
-					txt_d7wheelFolderName.visible = false
-					txt_d8wheelFolderName.visible = false
-					txt_d9wheelFolderName.visible = false
-					txt_d10wheelFolderName.visible = false
-					txt_d11wheelFolderName.visible = false
-					txt_garageSetFolderNames.visible = false
-
-				)
-				txt_d4wheelFolderName.text = D4WheelFolderNames[wheelIndex]
-				txt_d5wheelFolderName.text = D5WheelFolderNames[wheelIndex]
-				txt_d6wheelFolderName.text = D6WheelFolderNames[wheelIndex]
-				txt_d7wheelFolderName.text = D7WheelFolderNames[wheelIndex]
-				txt_d8wheelFolderName.text = D8WheelFolderNames[wheelIndex]
-				txt_d9wheelFolderName.text = D9WheelFolderNames[wheelIndex]
-				txt_d10wheelFolderName.text = D10WheelFolderNames[wheelIndex]
-				txt_d11wheelFolderName.text = D11WheelFolderNames[wheelIndex]
-				txt_garageSetFolderNames.text = GarageSetFolderNames[wheelIndex]
-			)
-			else (
-				but_DeleteFromWheels.enabled = false
-			)
-		)
-		on chk_showExtraWheels changed state do (
-			if state  then (
+			if state or true then (
 				txt_d4wheelFolderName.visible = true
 				txt_d5wheelFolderName.visible = true
 				txt_d6wheelFolderName.visible = true
@@ -904,6 +1206,72 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 				txt_garageSetFolderNames.visible = false
 
 			)
+		)
+		on VehicleCFGWheelsRollout open do (
+
+			lv_Wheels.view  = (dotnetclass "view").details
+			lv_Wheels.fullrowselect= true
+			lv_Wheels.gridlines = true
+			lv_Wheels.multiselect =false
+			lv_Wheels.columns.add "Wheel" 110
+			for i=1 to WheelNames.count do
+			(
+				lv_Wheels.Items.add WheelNames[i]
+			)
+			if WheelNames.count < 1 then (
+				AddWheel wheelName:"default" localisedName:"Default"
+			)
+			ToggleExtraWheels chk_showExtraWheels.checked
+				
+		)
+
+		on txt_wheelLocalisedName changed val do ( UpdateWheel() )
+		on txt_frwheelFolderName changed val do ( UpdateWheel() )
+		on txt_flwheelFolderName changed val do ( UpdateWheel() )
+		on txt_rrwheelFolderName changed val do ( UpdateWheel() )
+		on txt_rlwheelFolderName changed val do ( UpdateWheel() )
+		on txt_d4wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d5wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d6wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d7wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d8wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d9wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d10wheelFolderName changed val do ( UpdateWheel() )
+		on txt_d11wheelFolderName changed val do ( UpdateWheel() )
+		on txt_garageSetFolderNames changed val do ( UpdateWheel() )
+
+		on lv_Wheels selectedindexchanged do
+		(
+			if lv_Wheels.SelectedIndices.count > 0 then 
+			(
+				but_DeleteFromWheels.enabled = true
+				selectedItem = lv_Wheels.Items.item[lv_Wheels.SelectedIndices.Item[0]].text
+				wheelIndex = finditem WheelNames selectedItem
+				txt_wheelName.text = WheelNames[wheelIndex]
+				txt_wheelLocalisedName.text = WheelLocalisedNames[wheelIndex]
+				txt_frwheelFolderName.text = FRWheelFolderNames[wheelIndex]
+				txt_flwheelFolderName.text = FLWheelFolderNames[wheelIndex]
+				txt_rrwheelFolderName.text = RRWheelFolderNames[wheelIndex]
+				txt_rlwheelFolderName.text = RLWheelFolderNames[wheelIndex]
+				chk_showExtraWheels.checked = D4WheelFolderNames[wheelIndex] != ""
+				ToggleExtraWheels chk_showExtraWheels.checked
+				
+				txt_d4wheelFolderName.text = D4WheelFolderNames[wheelIndex]
+				txt_d5wheelFolderName.text = D5WheelFolderNames[wheelIndex]
+				txt_d6wheelFolderName.text = D6WheelFolderNames[wheelIndex]
+				txt_d7wheelFolderName.text = D7WheelFolderNames[wheelIndex]
+				txt_d8wheelFolderName.text = D8WheelFolderNames[wheelIndex]
+				txt_d9wheelFolderName.text = D9WheelFolderNames[wheelIndex]
+				txt_d10wheelFolderName.text = D10WheelFolderNames[wheelIndex]
+				txt_d11wheelFolderName.text = D11WheelFolderNames[wheelIndex]
+				txt_garageSetFolderNames.text = GarageSetFolderNames[wheelIndex]
+			)
+			else (
+				but_DeleteFromWheels.enabled = false
+			)
+		)
+		on chk_showExtraWheels changed state do (
+			ToggleExtraWheels state
 		)
 		on but_AddToWheels pressed do (
 			AddWheel()
@@ -933,6 +1301,88 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		)
 	)
 
+	parameters wheelModules rollout:VehicleCFGWheelModulesRollout
+	(
+
+		SkidMarksImage type:#string default:"skidmark" ui:txt_SkidMarksImage
+		TyreParticlesVFX type:#string default:"effects.drift" ui:txt_TyreParticlesVFX
+		OnlyTrails type:#boolean default:false ui:chk_OnlyTrails
+		SkidNoises type:#string default:"sounds\\tyre\\skid1,sounds\\tyre\\skid2" ui:txt_SkidNoises
+		UseScrapeSounds type:#boolean default: false ui:chk_UseScrapeSounds
+		ScrapeIndex type:#integer default:1 ui:spn_ScrapeIndex
+		volume type:#integer default:10 ui:spn_Volume
+	)
+	rollout VehicleCFGWheelModulesRollout "Wheel Module Settings"
+	(
+		group "Skid marks"
+		(
+			edittext txt_SkidMarksImage "Skid Marks Image" labelontop:true
+		)
+		group "Tyre Particles"
+		(
+			edittext txt_TyreParticlesVFX "Tyre Particle VFX" labelontop:true
+			checkbox chk_OnlyTrails "Use Only Trails"
+		)
+		group "Wheel Sounds"
+		(
+			edittext txt_SkidNoises "Skid Noises" labelontop:true
+			checkbox chk_UseScrapeSounds "Use Scrape Sounds"
+			spinner spn_ScrapeIndex "Scrape Index" type:#integer range: [0,1000,1]
+			spinner spn_Volume "Scrape Volume" type:#integer range: [0,1000,1]
+		)
+	)
+
+	parameters attachements rollout:VehicleCFGAttachmentRollout
+	(
+		ExhaustParticleVFX type:#string default:"effects.f_yankv8_exhaustsmoke02" ui:txt_ExhaustParticleVFX
+		ExhaustParticleUnderwaterVFX type:#string default:"effects.f_underwaterexhaust" ui:txt_ExhaustParticleUnderwaterVFX
+		ExhaustAnchor type:#string default:"Exhaust" ui:txt_ExhaustAnchor
+		ExhaustMultiplier type:#float default:0 ui:spn_ExhaustMultiplier
+		ExhaustNeutralMultiplier type:#float default:0 ui:spn_ExhaustNeutralMultiplier
+		HornSound type:#string default:"generic02_horn" ui:txt_HornSound
+		ReverseLightSound type:#string default:"" ui:txt_ReverseLightSound
+		ContinuousSound type:#string default:"" ui:txt_ContinuousSound
+		ContinuousSound_Lump type:#string default:"" ui:txt_ContinuousSound_Lump
+
+		FMODEngine type:#string default:"Euro_V8" ui:txt_FMODEngine
+		FMODEngine_RPMSmooth type:#float default:0.35 ui:spn_FMODEngine_RPMSmooth
+		FMODEngine_OnLoadSmooth type:#float default:0.45 ui:spn_FMODEngine_OnLoadSmooth
+		FMODEngine_OffLoadSmooth type:#float default:15 ui:spn_FMODEngine_OffLoadSmooth
+		FMODEngine_LoadMin type:#float default:0 ui:spn_FMODEngine_LoadMin
+		FMODEngine_MaxSpeed type:#float default:0 ui:spn_FMODEngine_MaxSpeed
+		FMODEngine_MaxRevs type:#float default:0 ui:spn_FMODEngine_MaxRevs
+		FMODEngine_MinRevs type:#float default:0 ui:spn_FMODEngine_MinRevs
+
+	)
+
+	rollout VehicleCFGAttachmentRollout "Attachment Settings"
+	(
+		group "Exhaust" (
+			edittext txt_ExhaustParticleVFX "Exhaust Particle VFX" labelontop:true
+			edittext txt_ExhaustParticleUnderwaterVFX "Exhaust Underwater Particle VFX" labelontop:true
+			edittext txt_ExhaustAnchor "Exhaust Anchor" labelontop:true
+			spinner spn_ExhaustMultiplier "Exhaust Multiplier" type:#float
+			spinner spn_ExhaustNeutralMultiplier "Exhaust Neutral Multiplier" type:#float
+
+		)
+		group "Sounds" (
+			edittext txt_HornSound "Horn Sound" labelontop:true
+			edittext txt_ReverseLightSound "Reverse Sound" labelontop:true
+			edittext txt_ContinuousSound "Continuous Sound" labelontop:true
+			edittext txt_ContinuousSound_Lump "Continuous Sound Object" labelontop:true
+
+		)
+		group "Engine Sound" (
+		    edittext txt_FMODEngine "Engine Type" labelontop:true
+		    spinner spn_FMODEngine_RPMSmooth "RPM Smooth" range:[0, 100, 0.35] type:#float
+		    spinner spn_FMODEngine_OnLoadSmooth "On Load Smooth" range:[0, 100, 0.45] type:#float
+		    spinner spn_FMODEngine_OffLoadSmooth "Off Load Smooth" range:[0, 100, 15] type:#float
+		    spinner spn_FMODEngine_LoadMin "Load Min" range:[0, 300, 0] type:#float
+		    spinner spn_FMODEngine_MaxSpeed "Max Speed" range:[0, 300, 0] type:#float
+		    spinner spn_FMODEngine_MinRevs "Min Revs" range:[0, 300, 0] type:#float
+		    spinner spn_FMODEngine_MaxRevs "Max Revs" range:[0, 300, 0] type:#float
+		)
+	)
 	parameters cams rollout:VehicleCFGCameraRollout 
 	(
 
@@ -947,13 +1397,15 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 	rollout VehicleCFGCameraRollout "Camera" (
 
 		checkbox chk_GarageCamera "Garage Camera Offset" acrosss:1 default:false
-		spinner spn_GarageCamera_x "" range:[-100,100,1] type:#float fieldwidth:40 across:3
-		spinner spn_GarageCamera_y "" range:[-100,100,1] type:#float fieldwidth:40 across:3
-		spinner spn_GarageCamera_z "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_GarageCamera_x "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		spinner spn_GarageCamera_y "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		spinner spn_GarageCamera_z "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		button btn_GarageCamera "Get Position From Selected Object"
 		label lbl_InCarCamera "In Car Camera Position" acrosss:1
-		spinner spn_InCarCamera_x "" range:[-100,100,1] type:#float fieldwidth:40 across:3
-		spinner spn_InCarCamera_y "" range:[-100,100,1] type:#float fieldwidth:40 across:3
-		spinner spn_InCarCamera_z "" range:[-100,100,1] type:#float fieldwidth:40 across:3
+		spinner spn_InCarCamera_x "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		spinner spn_InCarCamera_y "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		spinner spn_InCarCamera_z "" range:[-100,100,0] type:#float fieldwidth:40 across:3
+		button btn_InCarCamera "Get Position From Selected Object"
 	)
 
 	parameters driver rollout:VehicleCFGDriverRollout (
@@ -1005,7 +1457,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 	parameters materialMap rollout:VehicleCFGMaterialMapRollout (
 		PaintJobNames type:#stringTab tabSizeVariable:true
 		PaintJobLocalisedNames type:#stringTab tabSizeVariable:true
-		ShrapneColours type:#poiny3Tab tabSizeVariable:true
+		ShrapneColours type:#point3Tab tabSizeVariable:true
 		MatReplacements type:#stringTab tabSizeVariable:true
 	)
 	rollout VehicleCFGMaterialMapRollout "Paint Jobs" (
@@ -1030,7 +1482,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		edittext txt_matToUse "Target Material"		
 
 
-		fn AddPaintJob paintJobName:undefined localisedName:undefined sourceMat:undefined targetMat:undefined = (
+		fn AddPaintJob paintJobName:undefined localisedName:undefined sourceMat:"" targetMat:"" = (
 			if paintJobName == undefined then (
 				paintJobName = "paint"+((paintJobNames.count + 1) as string )
 			)
@@ -1046,7 +1498,13 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		)
 
 		fn UpdatePaintJob = (
+			if lv_MatMaps.SelectedIndices.count > 0 then (
+				selectedItem = lv_MatMaps.Items.item[lv_MatMaps.SelectedIndices.Item[0]].text
 
+				PaintJobNames[selectedIndex] = txt_paintJobName.text
+				PaintJobLocalisedNames[selectedIndex] = txt_paintJobLocalisedName.text
+				ShrapneColours[selectedIndex] = [spn_Shrapnel_R.value,spn_Shrapnel_G.value,spn_Shrapnel_B.value]
+			)
 		)
 
 		fn SetReplacement source target = (
@@ -1127,9 +1585,9 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 				paintJobIndex = finditem PaintJobNames selectedItem
 				txt_paintJobName.text = PaintJobNames[paintJobIndex]
 				txt_paintJobLocalisedName.text = PaintJobLocalisedNames[paintJobIndex]
-				spn_Shrapnel_R = ShrapneColours[paintJobIndex].x
-				spn_Shrapnel_G = ShrapneColours[paintJobIndex].y
-				spn_Shrapnel_B = ShrapneColours[paintJobIndex].z
+				spn_Shrapnel_R.value = ShrapneColours[paintJobIndex].x
+				spn_Shrapnel_G.value = ShrapneColours[paintJobIndex].y
+				spn_Shrapnel_B.value = ShrapneColours[paintJobIndex].z
 
 				SetupReplacementsList MatReplacements[paintJobIndex]
 				
@@ -1139,7 +1597,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 			)
 		) 
 		on lv_Replacement selectedindexchanged do (
-			if lv_Replacement.SelectedIndices.count >0 the (
+			if lv_Replacement.SelectedIndices.count >0 then (
 					replacements = filterstring replacementString ";"
 					splitReplacement = filterstring replacement[replacements[lv_Replacement.SelectedIndices[0]]] ":"
 					txt_matToReplace.text = splitReplacement[1]
@@ -1163,6 +1621,452 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 				lv_MatMaps.Item.removeAt lv_MatMaps.selectedIndices.Item[0]
 			)
 		)
+		on txt_paintJobName changed val do ( UpdatePaintJob() )
+		on txt_paintJobLocalisedName changed val do ( UpdatePaintJob() )
+		on spn_Shrapnel_R changed val do ( UpdatePaintJob() )
+		on spn_Shrapnel_G changed val do ( UpdatePaintJob() )
+		on spn_Shrapnel_B changed val do ( UpdatePaintJob() )
+		on txt_matToUse changed val do ( SetReplacement txt_matToReplace.text val)
+		on txt_matToReplace changed val do ( SetReplacement val txt_matToUse.text)
+	)
+
+	parameters trailers rollout: VehicleCFGTrailersRollout
+	(
+		HumanTrailers type:#stringTab tabSizeVariable:true
+		AITrailers type:#stringTab tabSizeVariable:true
+		MPTrailers type:#stringTab tabSizeVariable:true
+	)
+	rollout VehicleCFGTrailersRollout "Trailers" (
+		group "Human Trailers" (
+			edittext txt_HumanTrailerName "" fieldwidth: 100 across:2
+			button but_AddToHumanTrailers "Add"
+			dotnetcontrol lv_HumanTrailers "listview" height: 100
+			button but_DeleteFromHumanTrailers "Delete Selected"
+		)
+		group "MP Trailers" (
+			edittext txt_MPTrailerName "" fieldwidth: 100 across:2
+			button but_AddToMPTrailers "Add"
+			dotnetcontrol lv_MPTrailers "listview" height: 100
+			button but_DeleteFromMPTrailers "Delete Selected"
+		)
+		group "AI Trailers" (
+			edittext txt_AITrailerName "" fieldwidth: 100 across:2
+			button but_AddToAITrailers "Add"
+			dotnetcontrol lv_AITrailers "listview" height: 100
+			button but_DeleteFromAITrailers "Delete Selected"
+		)
+
+		on VehicleCFGTrailersRollout open do (
+			lv_HumanTrailers.view  = (dotnetclass "view").details
+			lv_HumanTrailers.fullrowselect= true
+			lv_HumanTrailers.gridlines = true
+			lv_HumanTrailers.multiselect =false
+			lv_HumanTrailers.columns.add "Trailer" 110
+			for i=1 to HumanTrailers.count do
+			(
+				lv_HumanTrailers.Items.add HumanTrailers[i]
+			)
+
+			lv_MPTrailers.view  = (dotnetclass "view").details
+			lv_MPTrailers.fullrowselect= true
+			lv_MPTrailers.gridlines = true
+			lv_MPTrailers.multiselect =false
+			lv_MPTrailers.columns.add "Trailer" 110
+			for i=1 to MPTrailers.count do
+			(
+				lv_MPTrailers.Items.add MPTrailers[i]
+			)
+
+			lv_AITrailers.view  = (dotnetclass "view").details
+			lv_AITrailers.fullrowselect= true
+			lv_AITrailers.gridlines = true
+			lv_AITrailers.multiselect =false
+			lv_AITrailers.columns.add "Trailer" 110
+			for i=1 to AITrailers.count do
+			(
+				lv_AITrailers.Items.add AITrailers[i]
+			)
+		)
+
+		on but_AddToHumanTrailers pressed do (
+			if txt_HumanTrailerName.text != "" then (
+				append HumanTrailers txt_HumanTrailerName.text
+				lv_HumanTrailers.Items.add txt_HumanTrailerName.text
+			)
+		)
+		on but_AddToMPTrailers pressed do (
+			if txt_MPTrailerName.text != "" then (
+				append MPTrailers txt_MPTrailerName.text
+				lv_MPTrailers.Items.add txt_MPTrailerName.text
+			)
+		)
+		on but_AddToAITrailers pressed do (
+			if txt_AITrailerName.text != "" then (
+				append AITrailers txt_AITrailerName.text
+				lv_AITrailers.Items.add txt_AITrailerName.text
+			)
+		)
+
+		on but_DeleteFromHumanTrailers pressed do (
+			if lv_HumanTrailers.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_HumanTrailers.Items.item[lv_HumanTrailers.SelectedIndices.Item[0]].text
+				trailerIndex = finditem HumanTrailers selectedItem
+
+				deleteItem HumanTrailers (trailerIndex + 1)
+				lv_HumanTrailers.Item.removeAt lv_HumanTrailers.selectedIndices.Item[0]
+			)
+		)
+		on but_DeleteFromMPTrailers pressed do (
+			if lv_MPTrailers.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_MPTrailers.Items.item[lv_MPTrailers.SelectedIndices.Item[0]].text
+				trailerIndex = finditem MPTrailers selectedItem
+
+				deleteItem MPTrailers (trailerIndex + 1)
+				lv_MPTrailers.Item.removeAt lv_MPTrailers.selectedIndices.Item[0]
+			)
+		)
+		on but_DeleteFromAITrailers pressed do (
+			if lv_AITrailers.SelectedIndices.count > 0 then 
+			(
+				selectedItem = lv_AITrailers.Items.item[lv_AITrailers.SelectedIndices.Item[0]].text
+				trailerIndex = finditem AITrailers selectedItem
+
+				deleteItem AITrailers (trailerIndex + 1)
+				lv_AITrailers.Item.removeAt lv_AITrailers.selectedIndices.Item[0]
+			)
+		)
+	)
+)
+
+/*********************************
+***** Complicated Wheel ATTRIBUTES
+*********************************/
+ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e276, 0x54cd3c7) version:1
+(
+	parameters main rollout:ComplicatedWheelRollout
+	(
+		RotateTyre type:#boolean default:false ui:chk_RotateTyre
+		ScrollTyreTiles type:#integer default:1 ui:spn_ScrollTyreTiles
+		UseSkidmarkWidth type:#boolean default:false ui:chk_UseSkidmarkWidth
+		SkidmarkWidth type:#float default:1.0 ui:spn_SkidmarkWidth
+		PunctureStage_Value type:#inttab tabSizeVariable:true
+		PunctureStage_Mesh type:#stringtab tabSizeVariable:true
+		TyreMaterial type:#string default:"TYRE" ui:txt_TyreMaterial
+		TyrePuncturedMaterial type:#string default:"TYRE_PUNCTURED" ui:txt_TyrePuncturedMaterial
+		TyreDerimmedMaterial type:#string default:"TYRE_PUNCTURED" ui:txt_TyreDerimmedMaterial
+		TyreDetachedMaterial type:#string default:"TYRE_PUNCTURED" ui:txt_TyreDetachedMaterial
+	)
+
+	parameters weapons rollout:ComplicatedWheelWeaponsRollout
+	(
+		HasBlades type:#boolean default:false ui:chk_HasBlades
+		HasDistinctBlades type:#boolean default:false ui:chk_HasDistinctBlades
+		BladeRadius type:#float default:1 ui:spn_BladeRadius
+
+		HasSimpleWeapon type:#boolean default:false ui:chk_HasSimpleWeapon
+		SimpleWeapon type:#float default:1 ui:spn_SimpleWeapon
+
+		HasVehicleWeapon type:#boolean default:false ui:chk_HasVehicleWeapon
+		VehicleWeaponScript type:#string default:"Vehicle_TyreRipper" ui:txt_VehicleWeaponScript
+		VehicleWeaponVariable type:#string default:"WHEEL_SPEED" ui:txt_VehicleWeaponVariable
+		VehicleWeaponMultiplier type:#float default:0.1 ui:spn_VehicleWeaponMultiplier
+		VehicleWeaponMin type:#float default:1 ui:spn_VehicleWeaponMin
+		VehicleWeaponMax type:#float default:3.0 ui:spn_VehicleWeaponMax
+
+		HasPedWeapon type:#boolean default:false ui:chk_HasPedWeapon
+		PedWeaponScript type:#string default:"Ped_Explode" ui:txt_PedWeaponScript
+		PedWeaponVariable type:#string default:"WHEEL_SPEED" ui:txt_PedWeaponVariable
+		PedWeaponMultiplier type:#float default:0.1 ui:spn_PedWeaponMultiplier
+		PedWeaponMin type:#float default:1 ui:spn_PedWeaponMin
+		PedWeaponMax type:#float default:3.0 ui:spn_PedWeaponMax
+
+		HasAccessoryWeapon type:#boolean default:false ui:chk_HasAccessoryWeapon
+		AccessoryWeaponScript type:#string default:"Accessory_Rip_X" ui:txt_AccessoryWeaponScript
+		AccessoryWeaponVariable type:#string default:"WHEEL_SPEED" ui:txt_AccessoryWeaponVariable
+		AccessoryWeaponMultiplier type:#float default:0.1 ui:spn_AccessoryWeaponMultiplier
+		AccessoryWeaponMin type:#float default:1 ui:spn_AccessoryWeaponMin
+		AccessoryWeaponMax type:#float default:3.0 ui:spn_AccessoryWeaponMax
+	)
+
+	parameters forcefactors rollout:ComplicatedWheelForceFactorsRollout
+	(
+		WheelBoundsXFactor type:#float default:1.2 ui:spn_WheelBoundsXFactor
+		WheelBoundsYZFactor type:#float default:1.1 ui:spn_WheelBoundsYZFactor
+		WheelDamageMaxRandom type:#float default:5.0 ui:spn_WheelDamageMaxRandom
+		WheelDamageWeldThreshold type:#float default:0.1 ui:spn_WheelDamageWeldThreshold
+		TyreDamageWeldThreshold type:#float default:0.01 ui:spn_TyreDamageWeldThreshold
+		TyreDamageWeldMax type:#float default:0.7 ui:spn_TyreDamageWeldMax
+	)
+
+	parameters positionalfactors rollout:ComplicatedWheelPositionalFactorsRollout
+	(
+		PuncturedHeightPercentage type:#float default:20.0 ui:spn_PuncturedHeightPercentage
+		DerimmedHeightPercentage type:#float default:60.0 ui:spn_DerimmedHeightPercentage
+		DerimmedTyrePenetrationPercentage type:#float default:20.0 ui:spn_DerimmedTyrePenetrationPercentage
+		DerimmedTyreTopPenetrationPercentage type:#float default:20.0 ui:spn_DerimmedTyreTopPenetrationPercentage
+	)
+
+	parameters physicsfactors rollout:ComplicatedWheelPhysicsFactorsRollout
+	(
+		-- Rolling resistance caused by punctures (higher number means more resistance)
+			Punctured_RollingResistance type:#float default:0.1 ui:spn_Punctured_RollingResistance
+-- Grip attenuator caused by punctures (lower number means less grip)
+			Punctured_FrictionFactor type:#float default:0.8 ui:spn_Punctured_FrictionFactor
+-- Rolling resistance caused by de-rimmed tyres (higher number means more resistance)
+			Derimmed_RollingResistance type:#float default:0.1 ui:spn_Derimmed_RollingResistance
+-- Grip attenuator caused by de-rimmed tyres (lower number means less grip)
+			Derimmed_FrictionFactor type:#float default:0.6 ui:spn_Derimmed_FrictionFactor
+-- Rolling resistance caused by detached tyres (higher number means more resistance)
+			TyreDetached_RollingResistance type:#float default:0.1 ui:spn_TyreDetached_RollingResistance
+-- Grip attenuator caused by detached tyres (lower number means less grip)
+			TyreDetached_FrictionFactor type:#float default:0.4 ui:spn_TyreDetached_FrictionFactor
+-- Additional rolling resistance added to the above if the steering linkage is broken
+			SteeringBroken_RollingResistance type:#float default:0.05 ui:spn_SteeringBroken_RollingResistance
+-- Additional grip attenuator that multiplies the above if the steering linkage is broken
+			SteeringBroken_FrictionFactor type:#float default:0.75 ui:spn_SteeringBroken_FrictionFactor
+-- General Y-offset for damaged tyres to make sure they perfectly align with the ground
+			Damaged_Tyre_Rim_Offset type:#float default:0.01 ui:spn_Damaged_Tyre_Rim_Offset
+-- The time in seconds before a broken wheel returns to the car that the car is lifted
+-- in order to make the wheel more likely to fit without intersecting the ground
+			Damage_WheelOnTime type:#float default:0.5 ui:spn_Damage_WheelOnTime
+	)
+
+	parameters derimmedtyeeffects rollout:ComplicatedWheelPhysicsDerimmedTyreEffectsRollout
+	(
+		-- Minimum spin-speed (in revolutions per second) of wheel before rim starts spinning 
+-- inside a de-rimmed tye
+			Derimmed_MaxSpinSpeedBeforeSlipping type:#float default:1.0 ui:spn_Derimmed_MaxSpinSpeedBeforeSlipping
+-- The power (in the mathematical sense) that the rim's speed is risen to in order
+-- to determine the diminished spinning of a derimmed tyre. So 0.33333 means that it
+-- spins at the cube root of the rim speed. The smaller the number, the more a
+-- derimmed tyre will lag behind the spinning of its rim.
+			Derimmed_SpinSpeedSlipPower type:#float default:0.3333 ui:spn_Derimmed_SpinSpeedSlipPower
+-- The fraction of the steering angle that a de-rimmed tyre steers at. 1 would mean that
+-- it turns with the rim; 0 that it doesn't turn at all. 0.5 would mean that with the rim
+-- at, say, 20 degrees, the tyre turns at 10 degrees.
+			Derimmed_SlipAngleFactor type:#float default:0.75 ui:spn_Derimmed_SlipAngleFactor
+-- The speed (in MPH) of the car at which derimmed tyres start to wobble in the Y axis
+			Derimmed_MinSpeedForYWobble type:#float default:3.0 ui:spn_Derimmed_MinSpeedForYWobble
+-- The speed (in MPH) of the car at which derimmed tyres are at max wobbliness in the Y axis
+			Derimmed_MaxSpeedForYWobble type:#float default:30.0 ui:spn_Derimmed_MaxSpeedForYWobble
+-- The maximum amount of wobbliness, in degrees of wobble around the Y axis, of de-rimmed tyres
+-- (This will be at the speed defined above)
+			Derimmed_YWobbleMaxAmplitude type:#float default:10.0 ui:spn_Derimmed_YWobbleMaxAmplitude
+-- The maximum speed of wobbliness (in wobbles per second), of de-rimmed tyres
+-- (This will be at the speed defined above)
+			Derimmed_YWobbleMaxRate type:#float default:10.0 ui:spn_Derimmed_YWobbleMaxRate
+-- The absolute maximum angle that a de-rimmed tyre can deflect in the Y axis, due to wobbling,
+-- splip and any other combined factors. This prevents the tyre from cutting into the
+-- rim too much.
+			Derimmed_YWobbleMaxAngle type:#float default:20.0 ui:spn_Derimmed_YWobbleMaxAngle
+-- The speed (in MPH) of the car at which a de-rimmed tyre shifts completely in the Z
+-- axis (i.e. is dragged into the rim by the car's forward or backward movement)
+			Derimmed_MaxZSpeed type:#float default:10.0 ui:spn_Derimmed_MaxZSpeed
+-- The fraction of the tyre's radius that a de-rimmed tyre shifts completely in the Z
+-- axis at the max speed given above
+			Derimmed_ZShiftFactor type:#float default:0.3 ui:spn_Derimmed_ZShiftFactor
+-- The sideways speed (in MPH) of the car at which a de-rimmed tyre shifts completely in the X
+-- axis (i.e. is dragged across the inside or outside of the rim as car steers or slides)
+			Derimmed_MaxXSpeed type:#float default:3.0 ui:spn_Derimmed_MaxXSpeed
+-- The minimum amount as a fraction of the tyre's width that a de-rimmed tyre shifts in the X
+-- axis. This is in order to make it 'hook' on either the inside or outside of the rim without
+-- any mesh intersections
+			Derimmed_MinXShift type:#float default:0.3 ui:spn_Derimmed_MinXShift
+-- The maximum amount as a fraction of the tyre's width that a de-rimmed tyre shifts in the X
+-- axis. This is in order to make it not move too far inside or outside of the rim and thus
+-- cause mesh intersections
+			Derimmed_MaxXShift type:#float default:0.7 ui:spn_Derimmed_MaxXShift
+	)
+	parameters bentaxles rollout:ComplicatedWheelBentAxlesRollout
+	(
+		-- The maximum angle that an axle can bend at
+			BentAxle_MaxAngle type:#float default:10.0 ui:spn_BentAxle_MaxAngle
+-- The X offset from the origin of the point in the rim that the axle bends
+-- around. This is typically quite outboard in order to make it bend on the face where the wheel
+-- bolts to the hub. Note that this is something that is quite likely to be overridden in a
+-- particular wheel's folder.
+			BentAxle_XOffset type:#float default:0.05 ui:spn_BentAxle_XOffset
+-- The fraction of the bent axle angle that a de-rimmed tyre on a bent axle follows the wobbling
+-- of the rim. So 1 would make it perfectly follow it; 0 would make the tyre not following the
+-- wobbling axle at all.
+			BentAxle_DerimmedTyreFactor type:#float default:0.5 ui:spn_BentAxle_DerimmedTyreFactor
+	)
+
+	parameters damagedwheelphysics rollout: ComplicatedWheelDamagedWheelPhysics
+	(
+		-- The mass of a detached tyre
+			Physics_TyreMass type:#float default:5.0 ui:spn_Physics_TyreMass
+-- The coefficient of restitution of a detached tyre (i.e. how bouncy it is)
+			Physics_TyreRestitution type:#float default:1.5 ui:spn_Physics_TyreRestitution
+-- The instant jump that a detaching tyre is given in order to make sure that it clears the
+-- ground as it comes off the car
+			Physics_TyreDetachUpOffset type:#float default:0.25 ui:spn_Physics_TyreDetachUpOffset
+-- The speed (in m/s) upwards that a detaching tyre is given (on top of the car's velocity)
+			Physics_TyreDetachUpThrust type:#float default:3.0 ui:spn_Physics_TyreDetachUpThrust
+-- The speed (in m/s) outwardswards that a detaching tyre is given (on top of the car's velocity)
+			Physics_TyreDetachOutThrust type:#float default:3.0 ui:spn_Physics_TyreDetachOutThrust
+-- The mass of a detached rim
+			Physics_RimMass type:#float default:15.0 ui:spn_Physics_RimMass
+-- WHEEL ANIMATION SMOOTHING (Not really damage)
+			Wheels_MaxCompressionRate type:#float default:4.0 ui:spn_Wheels_MaxCompressionRate
+			Wheels_MaxExtensionRate type:#float default:2.0 ui:spn_Wheels_MaxExtensionRate
+	)
+	
+	rollout ComplicatedWheelRollout "ComplicatedWheelRollout"
+	(
+		checkbox chk_RotateTyre "RotateTyre" default:false
+		spinner spn_ScrollTyreTiles "ScrollTyreTiles" type:#integer default:false
+		checkbox chk_UseSkidmarkWidth "" default:false across:2
+		spinner spn_SkidmarkWidth "SkidmarkWidth" type:#float default:false
+
+		group "Puncture Stages" (
+			spinner spn_PunctureStage_Value "Stage" labelOnTop:true fieldwidth: 70 across:2
+			edittext txt_PunctureStage_Mesh "CNT" labelOnTop:true fieldwidth: 130 across:2
+			button but_AddToPunctureStage "Add"
+			dotnetcontrol lv_PunctureStages "listview" height: 100
+			button but_DeleteFromPunctureStage "Delete Selected"
+		)
+		edittext txt_TyreMaterial "TyreMaterial" type:#string default:"default_tyre"
+		edittext txt_TyrePuncturedMaterial "TyrePuncturedMaterial" type:#string default:"default_tyre"
+		edittext txt_TyreDerimmedMaterial "TyreDerimmedMaterial" type:#string default:"default_tyre"
+		edittext txt_TyreDetachedMaterial "TyreDetachedMaterial" type:#string default:"default_tyre"
+
+		on ComplicatedWheelRollout open do (
+
+			lv_PunctureStages.view  = (dotnetclass "view").details
+			lv_PunctureStages.fullrowselect= true
+			lv_PunctureStages.gridlines = true
+			lv_PunctureStages.multiselect =false
+			lv_PunctureStages.columns.add "Stage" 35
+			lv_PunctureStages.columns.add "CNT" 135
+			for i=1 to PunctureStage_Value.count do
+			(
+				lvItem = dotnetobject "listviewitem" PunctureStage_Value[i]
+				lvitem.subitems.add PunctureStage_Mesh[i]
+				lv_PunctureStages.Items.add lvitem
+			)
+		)
+
+		on but_AddToPunctureStage pressed do (
+			stage = spn_PunctureStage_Value.value
+			cnt = txt_PunctureStage_Mesh.text
+			stageIndex = 0
+			for i = 1 to PunctureStage_Value.count do (
+				if PunctureStage_Value[i] > stage and stageIndex == 0 then (
+					stageIndex = i
+				)
+			)
+			if stageIndex == 0 then (
+				append PunctureStage_Value stage
+				append PunctureStage_Mesh cnt
+			)
+			else (
+				insertItem stage PunctureStage_Value stageIndex
+				insertItem cnt PunctureStage_Mesh stageIndex
+			)
+		)
+		on but_DeleteFromPunctureStage pressed do (
+			if lv_PunctureStages.SelectedIndices.count > 0 then (
+				selectedIndex = lv_PunctureStages.SelectedIndices[0]
+				lv_PunctureStages.Items.removeat selectedIndex
+				deleteItem PunctureStage_Mesh (selectedIndex + 1)
+				deleteItem PunctureStage_Value (selectedIndex + 1)
+			)
+		)
+	)
+	rollout ComplicatedWheelWeaponsRollout "ComplicatedWheelWeaponsRollout"
+	(
+		checkbox chk_HasBlades "HasBlades" default:false
+		checkbox chk_HasDistinctBlades "HasDistinctBlades" default:false
+		spinner spn_BladeRadius "BladeRadius" type:#float default:1
+		checkbox chk_HasSimpleWeapon "HasSimpleWeapon" default:false
+		spinner spn_SimpleWeapon "SimpleWeapon" type:#float default:1
+		checkbox chk_HasVehicleWeapon "HasVehicleWeapon" default:false
+		edittext txt_VehicleWeaponScript "VehicleWeaponScript" type:#string default:"Vehicle_TyreRipper"
+		edittext txt_VehicleWeaponVariable "VehicleWeaponVariable" type:#string default:"WHEEL_SPEED"
+		spinner spn_VehicleWeaponMultiplier "VehicleWeaponMultiplier" type:#float default:0.1
+		spinner spn_VehicleWeaponMin "VehicleWeaponMin" type:#float default:1
+		spinner spn_VehicleWeaponMax "VehicleWeaponMax" type:#float default:3.0
+		checkbox chk_HasPedWeapon "HasPedWeapon" default:false
+		edittext txt_PedWeaponScript "PedWeaponScript" type:#string default:"Ped_Explode"
+		edittext txt_PedWeaponVariable "PedWeaponVariable" type:#string default:"WHEEL_SPEED"
+		spinner spn_PedWeaponMultiplier "PedWeaponMultiplier" type:#float default:0.1
+		spinner spn_PedWeaponMin "PedWeaponMin" type:#float default:1
+		spinner spn_PedWeaponMax "PedWeaponMax" type:#float default:3.0
+		checkbox chk_HasAccessoryWeapon "HasAccessoryWeapon" default:false
+		edittext txt_AccessoryWeaponScript "AccessoryWeaponScript" type:#string default:"Accessory_Rip_X"
+		edittext txt_AccessoryWeaponVariable "AccessoryWeaponVariable" type:#string default:"WHEEL_SPEED"
+		spinner spn_AccessoryWeaponMultiplier "AccessoryWeaponMultiplier" type:#float default:0.1
+		spinner spn_AccessoryWeaponMin "AccessoryWeaponMin" type:#float default:1
+		spinner spn_AccessoryWeaponMax "AccessoryWeaponMax" type:#float default:3.0
+	)
+	rollout ComplicatedWheelForceFactorsRollout "ComplicatedWheelForceFactorsRollout"
+	(
+		spinner spn_WheelBoundsXFactor "WheelBoundsXFactor" type:#float default:1.2
+		spinner spn_WheelBoundsYZFactor "WheelBoundsYZFactor" type:#float default:1.1
+		spinner spn_WheelDamageMaxRandom "WheelDamageMaxRandom" type:#float default:5.0
+		spinner spn_WheelDamageWeldThreshold "WheelDamageWeldThreshold" type:#float default:0.1
+		spinner spn_TyreDamageWeldThreshold "TyreDamageWeldThreshold" type:#float default:0.01
+		spinner spn_TyreDamageWeldMax "TyreDamageWeldMax" type:#float default:0.7
+	)
+	rollout ComplicatedWheelPositionalFactorsRollout "ComplicatedWheelPositionalFactorsRollout"
+	(
+		spinner spn_PuncturedHeightPercentage "PuncturedHeightPercentage" type:#float default:20.0
+		spinner spn_DerimmedHeightPercentage "DerimmedHeightPercentage" type:#float default:60.0
+		spinner spn_DerimmedTyrePenetrationPercentage "DerimmedTyrePenetrationPercentage" type:#float default:20.0
+		spinner spn_DerimmedTyreTopPenetrationPercentage "DerimmedTyreTopPenetrationPercentage" type:#float default:20.0
+	)
+	rollout ComplicatedWheelPhysicsFactorsRollout "ComplicatedWheelPhysicsFactorsRollout"
+	(
+		
+			spinner spn_Punctured_RollingResistance "Punctured_RollingResistance" type:#float default:0.1
+			spinner spn_Punctured_FrictionFactor "Punctured_FrictionFactor" type:#float default:0.8
+			spinner spn_Derimmed_RollingResistance "Derimmed_RollingResistance" type:#float default:0.1
+			spinner spn_Derimmed_FrictionFactor "Derimmed_FrictionFactor" type:#float default:0.6
+			spinner spn_TyreDetached_RollingResistance "TyreDetached_RollingResistance" type:#float default:0.1
+			spinner spn_TyreDetached_FrictionFactor "TyreDetached_FrictionFactor" type:#float default:0.4
+			spinner spn_SteeringBroken_RollingResistance "SteeringBroken_RollingResistance" type:#float default:0.05
+			spinner spn_SteeringBroken_FrictionFactor "SteeringBroken_FrictionFactor" type:#float default:0.75
+			spinner spn_Damaged_Tyre_Rim_Offset "Damaged_Tyre_Rim_Offset" type:#float default:0.01
+			spinner spn_Damage_WheelOnTime "Damage_WheelOnTime" type:#float default:0.5
+	)
+	rollout ComplicatedWheelPhysicsDerimmedTyreEffectsRollout "ComplicatedWheelPhysicsDerimmedTyreEffectsRollout"
+	(
+		
+			spinner spn_Derimmed_MaxSpinSpeedBeforeSlipping "Derimmed_MaxSpinSpeedBeforeSlipping" type:#float default:1.0
+			spinner spn_Derimmed_SpinSpeedSlipPower "Derimmed_SpinSpeedSlipPower" type:#float default:0.3333
+			spinner spn_Derimmed_SlipAngleFactor "Derimmed_SlipAngleFactor" type:#float default:0.75
+			spinner spn_Derimmed_MinSpeedForYWobble "Derimmed_MinSpeedForYWobble" type:#float default:3.0
+			spinner spn_Derimmed_MaxSpeedForYWobble "Derimmed_MaxSpeedForYWobble" type:#float default:30.0
+			spinner spn_Derimmed_YWobbleMaxAmplitude "Derimmed_YWobbleMaxAmplitude" type:#float default:10.0
+			spinner spn_Derimmed_YWobbleMaxRate "Derimmed_YWobbleMaxRate" type:#float default:10.0
+			spinner spn_Derimmed_YWobbleMaxAngle "Derimmed_YWobbleMaxAngle" type:#float default:20.0
+			spinner spn_Derimmed_MaxZSpeed "Derimmed_MaxZSpeed" type:#float default:10.0
+			spinner spn_Derimmed_ZShiftFactor "Derimmed_ZShiftFactor" type:#float default:0.3
+			spinner spn_Derimmed_MaxXSpeed "Derimmed_MaxXSpeed" type:#float default:3.0
+			spinner spn_Derimmed_MinXShift "Derimmed_MinXShift" type:#float default:0.3
+			spinner spn_Derimmed_MaxXShift "Derimmed_MaxXShift" type:#float default:0.7
+	)
+	rollout ComplicatedWheelBentAxlesRollout "ComplicatedWheelBentAxlesRollout"
+	(
+		
+			spinner spn_BentAxle_MaxAngle "BentAxle_MaxAngle" type:#float default:10.0
+			spinner spn_BentAxle_XOffset "BentAxle_XOffset" type:#float default:0.05
+			spinner spn_BentAxle_DerimmedTyreFactor "BentAxle_DerimmedTyreFactor" type:#float default:0.5
+	)
+	rollout ComplicatedWheelDamagedWheelPhysics "ComplicatedWheelDamagedWheelPhysics"
+	(
+		
+			spinner spn_Physics_TyreMass "Physics_TyreMass" type:#float default:5.0
+			spinner spn_Physics_TyreRestitution "Physics_TyreRestitution" type:#float default:1.5
+			spinner spn_Physics_TyreDetachUpOffset "Physics_TyreDetachUpOffset" type:#float default:0.25
+			spinner spn_Physics_TyreDetachUpThrust "Physics_TyreDetachUpThrust" type:#float default:3.0
+			spinner spn_Physics_TyreDetachOutThrust "Physics_TyreDetachOutThrust" type:#float default:3.0
+			spinner spn_Physics_RimMass "Physics_RimMass" type:#float default:15.0
+			spinner spn_Wheels_MaxCompressionRate "Wheels_MaxCompressionRate" type:#float default:4.0
+			spinner spn_Wheels_MaxExtensionRate "Wheels_MaxExtensionRate" type:#float default:2.0
 	)
 )
 

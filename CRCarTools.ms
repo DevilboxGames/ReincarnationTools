@@ -11,6 +11,27 @@ fn SetAllCNTsToBakeScale obj =
 	for i=1 to obj.children.count do SetAllCNTsToBakeScale obj.children[i]
 )
 
+fn AddHandlingSetupLUAModifier obj =
+(
+	max modify mode
+	structPartModifier = emptyModifier()
+	
+	structPartModifier.name = "setup.lua"
+	addModifier obj structPartModifier
+	custattributes.add structPartModifier HandlingSetupLUAAttribute baseObject:false
+	structPartModifier
+)
+
+fn AddVehilceSetupLUAModifier obj =
+(
+	max modify mode
+	structPartModifier = emptyModifier()
+	
+	structPartModifier.name = "vehicle_setup.lua"
+	addModifier obj structPartModifier
+	custattributes.add structPartModifier VehicleSetupLUAAttribute baseObject:false
+	structPartModifier
+)
 fn AddVehilceCFGModifier obj =
 (
 	max modify mode
@@ -98,8 +119,9 @@ fn AddStructureCharacteristicsModifier obj =
 		structPartModifier.name = "Car Characteristics"
 		addModifier obj structPartModifier
 		custattributes.add structPartModifier StructureCharacteristicsAttribute baseObject:false
-		
+	
 	)
+	structPartModifier
 )
 
 fn AddStructurePartModifier obj doChildren:false =
@@ -195,7 +217,7 @@ fn SetCarWheelType mdl wheeltype ignoreCheck:false =
 (
 	if (IsObjectAWheel mdl) or ignoreCheck do
 	(
-		format "Setting % wheel type to: %\n" mdl.name wheeltype
+		--format "Setting % wheel type to: %\n" mdl.name wheeltype
 		if wheelType == "Wheel_FR" then append mdl.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_WHEEL"
 		else if wheelType == "Wheel_FL" then append mdl.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_WHEEL"
 		else if wheelType == "Wheel_RR" then append mdl.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_WHEEL"
@@ -269,9 +291,9 @@ fn CreateNewWheelNode trans wheelType selectAndFocus:false addAttributes:true wh
 	m.transform = trans
 	m.name = wheelType
 	m.previewWheel=true
-	format "\n\nAbout to set wheel filename to: %\n" (CarmaSettings.DataCorePath+"\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt")
+	--format "\n\nAbout to set wheel filename to: %\n" (CarmaSettings.DataCorePath+"\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt")
 	m.wheelFilename = CarmaSettings.DataCorePath+"\\Content\\Vehicles\\Wheels\\"+wheelName+"\\rim.cnt"
-	format "Just set wheel filename to: %\n" m.wheelFilename
+	--format "Just set wheel filename to: %\n" m.wheelFilename
 --	name:wheelType wheelType:CarmaHelper_WheelPlaceholder transform: trans
 		
 	if addAttributes do

@@ -53,12 +53,12 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 	if charmod.AerofoilMovementDownTime_Active then str += "CVehicleCharacteristics:Set_AerofoilMovementDownTime( "+(charmod.AerofoilMovementDownTime as string)+" )"+whiteSpaceString
 	if charmod.Aerofoil2UpSpeed_Active then str += "CVehicleCharacteristics:Set_Aerofoil2UpSpeed( "+(charmod.Aerofoil2UpSpeed as string)+" )"+whiteSpaceString
 	if charmod.Aerofoil2DownSpeed_Active then str += "CVehicleCharacteristics:Set_Aerofoil2DownSpeed( "+(charmod.Aerofoil2DownSpeed as string)+" )"+whiteSpaceString
-	if charmod.Aerofoil2MovementUpTime_Active then str += "CVehicleCharacteristics:Set_Offence( "+(charmod.Aerofoil2MovementUpTime as string)+" )"+whiteSpaceString
-	if charmod.Aerofoil2MovementDownTime_Active then str += "CVehicleCharacteristics:Set_Offence( "+(charmod.Aerofoil2MovementDownTime as string)+" )"+whiteSpaceString
+	if charmod.Aerofoil2MovementUpTime_Active then str += "CVehicleCharacteristics:Set_Aerofoil2MovementUpTime( "+(charmod.Aerofoil2MovementUpTime as string)+" )"+whiteSpaceString
+	if charmod.Aerofoil2MovementDownTime_Active then str += "CVehicleCharacteristics:Set_Aerofoil2MovementDownTime( "+(charmod.Aerofoil2MovementDownTime as string)+" )"+whiteSpaceString
 	
 	if charmod.CaterpillerTracks_Enabled then
 	(
-		for i=0 to charmod.SegmentDefinition_Name.count do
+		for i=1 to charmod.SegmentDefinition_Name.count do
 		(
 			str += "CVehicleCharacteristics:Set_CaterpillarTrack_SegmentDefinition("+(i as string)+", "+(charmod.SegmentDefinition_Name[i])+", \""+(charmod.SegmentDefinition_SegmentPitch as string)+"\", "+(charmod.SegmentDefinition_XOffset)+")"+whiteSpaceString
 			str += "CVehicleCharacteristics:Set_CaterpillarTrack_SagHeights("+(i as string)+", "+(charmod.SagHeight_AmbientLowestPoint as string)+", "+(charmod.SagHeight_LowestAllowablePoint as string)+")"+whiteSpaceString
@@ -357,7 +357,7 @@ fn CreatePartCDataSection obj isRootNode:false indentation:1 =
 )
 fn WriteJointTag xmlDoc obj jointObj indentation:1 = 
 (
-	
+	--format "Joint Transform: %\n" jointObj.transform
 	whiteSpaceString = "\n"
 	for i=1 to indentation do whiteSpaceString += "\t"
 		
@@ -417,6 +417,9 @@ fn WriteJointTag xmlDoc obj jointObj indentation:1 =
 	xmlDoc.WriteCData str
 	xmlDoc.WriteWhitespace(whiteSpaceString)
 	xmlDoc.WriteEndElement()
+
+
+	--format "Post Writing - Joint Transform: %\n" jointObj.transform
 	--xmlDoc.WriteWhitespace(whiteSpaceString)
 	--cData = xmlDoc.createcdatasection (str)
 	--jointNode.appendchild cdata
@@ -442,7 +445,7 @@ fn WriteWeldTag xmlDoc obj weldMod indentation:1 =
 	)
 	
 	str = whiteSpaceString
-	if obj.modifiers["CNT Hierarchy"].NodeType == "MODL" then str += "CWeldParameters:Set_VertexColour( "+(weldMod.VertexColourR as string)+", "+(weldMod.VertexColourG as string)+", "+(weldMod.VertexColourB as string)+", "+(weldMod.VertexColourA as string)+" )"+whiteSpaceString
+	if obj.modifiers["CNT Hierarchy"].NodeType == "MODL" and weldMod.WeldVertexPosition.count < 1 then str += "CWeldParameters:Set_VertexColour( "+(weldMod.VertexColourR as string)+", "+(weldMod.VertexColourG as string)+", "+(weldMod.VertexColourB as string)+", "+(weldMod.VertexColourA as string)+" )"+whiteSpaceString
 	if weldMod.Weakness_Set then str += "CWeldParameters:Set_Weakness( "+(weldMod.Weakness as string)+" )"+whiteSpaceString
 	if weldMod.AbsoluteLimit_Set then str += "CWeldParameters:Set_AbsoluteLimit( "+(weldMod.AbsoluteLimit as string)+" )"+whiteSpaceString
 	if weldMod.ChanceOfFailure_Set then str += "CWeldParameters:Set_ChanceOfFailure( "+(weldMod.ChanceOfFailure as string)+" )"+whiteSpaceString
@@ -629,6 +632,368 @@ fn ExportStructureXML xmlFilename obj =
 	(
 		format "Current exception: %\n" (getCurrentException())
 		if xmlwriter != undefined then xmlwriter.close()
+		throw()
+	)
+)
+
+fn ExportVFXAnchors filename carRoot = (
+)
+fn ExportSystemsDamageXML filename carRoot = (
+)
+
+fn ExportCarVehicleCFG filename cfgMod = (
+	cfg = dotNetObject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupConfig"
+
+	cfg.AIScript = cfgMod.AIScript
+	cfg.DriverSuffix = cfgMod.DriverSuffix
+	cfg.SmallDriver = cfgMod.SmallDriver
+	cfg.EjectDriver = cfgMod.EjectDriver
+	for driver in cfgMod.Drivers do (
+		cfg.Drivers.Add(driver)
+	)
+	if cfgMod.GarageCameraOffset_x != 0 or cfgMod.GarageCameraOffset_y != 0 or cfgMod.GarageCameraOffset_z != 0 then
+	(
+		cfg.GarageCameraOffset.x = -cfgMod.GarageCameraOffset_x
+		cfg.GarageCameraOffset.y = cfgMod.GarageCameraOffset_z
+		cfg.GarageCameraOffset.z = -cfgMod.GarageCameraOffset_y
+	)
+	cfg.InCarCamOffset.x = -cfgMod.InCarCameraPos_x
+	cfg.InCarCamOffset.y = cfgMod.InCarCameraPos_z
+	cfg.InCarCamOffset.z = -cfgMod.InCarCameraPos_y
+
+	for i = 1 to cfgMod.PaintJobNames.count do (
+		matMap = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleMaterialMap"
+		matMap.Name = cfgMod.PaintJobNames[i]
+		matMap.Localisation = cfgMod.PaintJobLocalisedNames[i]
+		matMap.Shrapnel.x = cfgMod.ShrapneColours[i].x
+		matMap.Shrapnel.y = cfgMod.ShrapneColours[i].y
+		matMap.Shrapnel.z = cfgMod.ShrapneColours[i].z
+		replacements = filterstring cfgMod.MatReplacements[i] ";"
+		for replacement in replacements do (
+			matMap.Substitutions.Add replacement[1] replacement[2]
+		)
+		cfg.MaterialMaps.Add(matMap)
+	)
+
+	for i = 1 to cfgMod.WheelNames.count do (
+		wheelMap = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelMap"
+		wheelMap.Name = cfgMod.WheelNames[i]
+		wheelMap.Localisation = cfgMod.WheelLocalisedNames[i]
+		wheelEntries = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachmentComplicatedWheels"
+		wheelEntries.FLWheel = cfgMod.FLWheelFolderNames[i]
+		wheelEntries.FRWheel = cfgMod.FRWheelFolderNames[i]
+		wheelEntries.RLWheel = cfgMod.RLWheelFolderNames[i]
+		wheelEntries.RRWheel = cfgMod.RRWheelFolderNames[i]
+		wheelEntries.D4 = cfgMod.D4WheelFolderNames[i]
+		wheelEntries.D5 = cfgMod.D5WheelFolderNames[i]
+		wheelEntries.D6 = cfgMod.D6WheelFolderNames[i]
+		wheelEntries.D7 = cfgMod.D7WheelFolderNames[i]
+		wheelEntries.D8 = cfgMod.D8WheelFolderNames[i]
+		wheelEntries.D9 = cfgMod.D9WheelFolderNames[i]
+		wheelEntries.D10 = cfgMod.D10WheelFolderNames[i]
+		wheelEntries.D11 = cfgMod.D11WheelFolderNames[i]
+		wheelMap.Wheels = wheelEntries
+		cfg.WheelMaps.Add(wheelMap)
+	)
+
+	stats = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleStats"
+	stats.TopSpeed = cfgMod.TopSpeed
+	stats.Time = cfgMod.To60Time
+	stats.Toughness = cfgMod.Toughness
+	stats.Weight = cfgMod.Weight
+	stats.UnlockLevel = cfgMod.UnlockLevel
+
+	cfg.stats = stats
+	if cfgMod.MaxCompression_Active or cfgMod.MaxExtension_Active or cfgMod.RideHeight_Active or cfgMod.MaxSteeringLock_Active  then (
+
+		suspFactors = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSuspensionFactors"
+		if cfgMod.MaxCompression_Active then (
+			suspFactors.MaxCompression = cfgMod.MaxCompression
+		)
+		if cfgMod.MaxExtension_Active then (
+			suspFactors.MaxExtension = cfgMod.MaxExtension
+		)
+		if cfgMod.RideHeight_Active then (
+			suspFactors.RightHeight = cfgMod.RideHeight
+		)
+		if cfgMod.MaxSteeringLock_Active then (
+			suspFactors.MaxSteeringLock = cfgMod.MaxSteeringLock
+		)
+
+		cfg.SuspensionFactors = suspFactors;
+	)
+	attachTypeClass = dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment+AttachmentType"
+	wheelModuleTypeClass = dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelModule+WheelModuleType"
+	dynWheelAttachment = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+	dynWheelAttachment.Type = attachTypeClass.DynamicsWheels
+	cfg.Attachments.add dynWheelAttachment
+
+	attachments = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+	attachments.Type = attachTypeClass.ExhaustParticles
+	exhaustVFX = dotNetObject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachmentExhaust"
+	exhaustVFX.VFX = cfgMod.ExhaustParticleVFX
+	exhaustVFX.UnderwaterVFX = cfgMod.ExhaustParticleUnderwaterVFX
+	exhaustVFX.Anchor = cfgMod.ExhaustAnchor
+	exhaustVFX.Multiplier = cfgMod.ExhaustMultiplier
+	exhaustVFX.NeutralMultiplier = cfgMod.ExhaustNeutralMultiplier
+	attachments.Exhaust = exhaustVFX
+	cfg.Attachments.add attachments
+
+	if cfgMod.HornSound != "" do (
+		attachments = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+		attachments.Type =attachTypeClass.Horn
+		attachments.Horn = cfgMod.HornSound
+		cfg.Attachments.add attachments
+	)
+	if cfgMod.ReverseLightSound != "" do (
+		attachments = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+		attachments.Type =attachTypeClass.ReverseLightSound
+		attachments.ReverseLightSound = cfgMod.ReverseLightSound
+		cfg.Attachments.add attachments
+	)
+	if cfgMod.ContinuousSound != "" do (
+		attachments = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+		attachments.Type =attachTypeClass.ContinuousSound
+		attachments.ContinuousSound = cfgMod.ContinuousSound
+		attachments.ContinuousSoundLump = cfgMod.ContinuousSound_Lump
+		cfg.Attachments.add attachments
+	)
+	if cfgMod.SkidMarksImage != "" do (
+		wheelmodule = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelModule"
+		wheelmodule.type = wheelModuleTypeClass.SkidMarks
+		wheelmodule.SkidMarkImage = cfgMod.SkidMarksImage
+		wheelmodule.OnlyTrails = cfgMod.OnlyTrails
+		cfg.WheelModules.add wheelmodule
+	)
+	if cfgMod.TyreParticlesVFX != "" do (
+		wheelmodule = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelModule"
+		wheelmodule.type = wheelModuleTypeClass.TyreParticles
+		wheelmodule.TyreParticleVFX = cfgMod.TyreParticlesVFX
+		cfg.WheelModules.add wheelmodule
+
+	)
+	if cfgMod.SkidNoises != "" or cfgMod.UseScrapeSounds == true do (
+		wheelmodule = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelModule"
+		wheelmodule.type = wheelModuleTypeClass.SkidNoise
+		wheelModule.UseScrapeSounds = cfgMod.UseScrapeSounds
+		wheelModule.Volume = cfgMod.volume
+		wheelModule.ScrapeSoundIndex =cfgMod.ScrapeIndex
+		wheelModule.SkidNoiseSound = cfgMod.SkidNoises
+		
+		cfg.WheelModules.add wheelmodule
+
+	)
+
+	for trailer in cfgMod.HumanTrailers do (
+		cfg.HumanTrailer.add trailer
+	)
+ 	
+	for trailer in cfgMod.AITrailers do (
+		cfg.AITrailer.add trailer
+	)
+ 	
+	for trailer in cfgMod.MPTrailers do (
+		cfg.MPTrailer.add trailer
+	)
+
+	attachments = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment"
+	fmodengine = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachmentFModEngine"
+	attachments.Type =attachTypeClass.DynamicsFmodEngine
+	fmodengine.RPMSmooth = cfgMod.FMODEngine_RPMSmooth
+	fmodengine.OnLoadSmooth = cfgMod.FMODEngine_OnLoadSmooth
+	fmodengine.OffLoadSmooth = cfgMod.FMODEngine_OffLoadSmooth
+	fmodengine.LoadMin = cfgMod.FMODEngine_LoadMin
+	fmodengine.MaxSpeed = cfgMod.FMODEngine_MaxSpeed
+	fmodengine.MinRevs = cfgMod.FMODEngine_MinRevs
+	fmodengine.MaxRevs = cfgMod.FMODEngine_MaxRevs
+	fmodengine.Engine = cfgMod.FMODEngine
+	attachments.FModEngine = fmodengine
+	cfg.Attachments.add attachments
+
+	cfg.Save filename
+)
+fn ExportCarSetupLUA filename setupMod = (
+	setupFile = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.Setup" 
+	setupFile.Settings = dotNetObject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupCode"
+
+	setupFile.Settings.SetParameterForMethod "CollisionEffect" "Effect"  setupMod.CollisionEffect_Name
+setupFile.Settings.SetParameterForMethod "CollisionEffect" "Value"  setupMod.CollisionEffect_Strength
+
+setupFile.Settings.SetParameterForMethod "PowerMultiplier" "Value" setupMod.PowerMultiplier
+setupFile.Settings.SetParameterForMethod "TractionFactor" "Factor" setupMod.TractionFactor
+setupFile.Settings.SetParameterForMethod "FinalDrive" "Value" setupMod.FinalDrive
+setupFile.Settings.SetParameterForMethod "RearGrip" "Value" setupMod.RearGrip
+setupFile.Settings.SetParameterForMethod "FrontGrip" "Value" setupMod.FrontGrip
+setupFile.Settings.SetParameterForMethod "CMPosY" "Value" setupMod.CMPosY
+setupFile.Settings.SetParameterForMethod "CMPosZ" "Value" setupMod.CMPosZ
+setupFile.Settings.SetParameterForMethod "FrontDownforce" "Value" setupMod.FrontDownforce
+setupFile.Settings.SetParameterForMethod "RearDownforce" "Value" setupMod.RearDownforce
+setupFile.Settings.SetParameterForMethod "FrontRoll" "Value" setupMod.FrontRoll
+setupFile.Settings.SetParameterForMethod "RearRoll" "Value" setupMod.RearRoll
+setupFile.Settings.SetParameterForMethod "FrontCriticalAngle" "Value" setupMod.FrontCriticalAngle
+setupFile.Settings.SetParameterForMethod "RearCriticalAngle" "Value" setupMod.RearCriticalAngle
+setupFile.Settings.SetParameterForMethod "FrontSuspGive" "Value" setupMod.FrontSuspGive
+setupFile.Settings.SetParameterForMethod "RearSuspGive" "Value" setupMod.RearSuspGive
+setupFile.Settings.SetParameterForMethod "SuspDamping" "Value" setupMod.SuspDamping
+setupFile.Settings.SetParameterForMethod "SuspensionRollFactor" "Value" setupMod.SuspensionRollFactor
+setupFile.Settings.SetParameterForMethod "SuspensionPitchFactor" "Value" setupMod.SuspensionPitchFactor
+setupFile.Settings.SetParameterForMethod "MomentOfInertiaMultiplier" "Value" setupMod.MomentOfInertiaMultiplier
+setupFile.Settings.SetParameterForMethod "SteerSpeed1" "Value" setupMod.SteerSpeed1
+setupFile.Settings.SetParameterForMethod "SteerSpeed2" "Value" setupMod.SteerSpeed2
+setupFile.Settings.SetParameterForMethod "SteerSpeedVel" "Value" setupMod.SteerSpeedVel
+setupFile.Settings.SetParameterForMethod "SteerCentreMultiplier" "Value" setupMod.SteerCentreMultiplier
+setupFile.Settings.SetParameterForMethod "MaxSteeringAngle" "Value" setupMod.MaxSteeringAngle
+setupFile.Settings.SetParameterForMethod "BrakeBalance" "Value" setupMod.BrakeBalance
+setupFile.Settings.SetParameterForMethod "BrakeForce" "Value" setupMod.BrakeForce
+setupFile.Settings.SetParameterForMethod "HandBrakeStrength" "Value" setupMod.HandBrakeStrength
+setupFile.Settings.SetParameterForMethod "TorqueSplit" "Value" setupMod.TorqueSplit
+setupFile.Settings.SetParameterForMethod "LSDThresholdF" "Value" setupMod.LSDThresholdF
+setupFile.Settings.SetParameterForMethod "LSDThresholdR" "Value" setupMod.LSDThresholdR
+setupFile.Settings.SetParameterForMethod "LSDThresholdM" "Value" setupMod.LSDThresholdM
+setupFile.Settings.SetParameterForMethod "ReversePowerMulitplier" "Value" setupMod.ReversePowerMulitplier
+setupFile.Settings.SetParameterForMethod "WheelMass" "Value" setupMod.WheelMass
+setupFile.Settings.SetParameterForMethod "DragCoefficient" "Value" setupMod.DragCoefficient
+setupFile.Settings.SetParameterForMethod "SteerLimit1" "Value" setupMod.SteerLimit1
+setupFile.Settings.SetParameterForMethod "SteerLimit2" "Value" setupMod.SteerLimit2
+setupFile.Settings.SetParameterForMethod "SteerLimitSpeed" "Value" setupMod.SteerLimitSpeed
+setupFile.Settings.SetParameterForMethod "CastorSpeed1" "Value" setupMod.CastorSpeed1
+setupFile.Settings.SetParameterForMethod "CastorSpeed2" "Value" setupMod.CastorSpeed2
+setupFile.Settings.SetParameterForMethod "CastorSpeedVel" "Value" setupMod.CastorSpeedVel
+setupFile.Settings.SetParameterForMethod "SteerGyroscope" "Value" setupMod.SteerGyroscope
+setupFile.Settings.SetParameterForMethod "BrakeAttack" "Value" setupMod.BrakeAttack
+setupFile.Settings.SetParameterForMethod "HandBrakeAttack" "Value" setupMod.HandBrakeAttack
+setupFile.Settings.SetParameterForMethod "SlideSpinRecovery" "Value" setupMod.SlideSpinRecovery
+setupFile.Settings.SetParameterForMethod "RollingResistance" "Value" setupMod.RollingResistance
+setupFile.Settings.SetParameterForMethod "DriveMI" "Value" setupMod.DriveMI
+setupFile.Settings.SetParameterForMethod "EngineMI" "Value" setupMod.EngineMI
+setupFile.Settings.SetParameterForMethod "RedLine" "Value" setupMod.RedLine
+setupFile.Settings.SetParameterForMethod "MaxRevs" "Value" setupMod.MaxRevs
+setupFile.Settings.SetParameterForMethod "LimitRevs" "Value" setupMod.LimitRevs
+setupFile.Settings.SetParameterForMethod "ConstantEngineFriction" "Value" setupMod.ConstantEngineFriction
+setupFile.Settings.SetParameterForMethod "LinearEngineFriction" "Value" setupMod.LinearEngineFriction
+setupFile.Settings.SetParameterForMethod "QuadraticEngineFriction" "Value" setupMod.QuadraticEngineFriction
+setupFile.Settings.SetParameterForMethod "ConstantDriveFriction" "Value" setupMod.ConstantDriveFriction
+setupFile.Settings.SetParameterForMethod "LinearDriveFriction" "Value" setupMod.LinearDriveFriction
+setupFile.Settings.SetParameterForMethod "QuadraticDriveFriction" "Value" setupMod.QuadraticDriveFriction
+setupFile.Settings.SetParameterForMethod "EngineBrakeDelay" "Value" setupMod.EngineBrakeDelay
+setupFile.Settings.SetParameterForMethod "EngineBrakeAttack" "Value" setupMod.EngineBrakeAttack
+setupFile.Settings.SetParameterForMethod "ClutchDelay" "Value" setupMod.ClutchDelay
+setupFile.Settings.SetParameterForMethod "Mass" "Value" setupMod.Mass
+setupFile.Settings.SetParameterForMethod "NumGears" "Value" setupMod.NumGears
+setupFile.Settings.SetParameterForMethod "StabilityGripChange" "Value" setupMod.StabilityGripChange
+setupFile.Settings.SetParameterForMethod "StabilityThreshold" "Value" setupMod.StabilityThreshold
+setupFile.Settings.SetParameterForMethod "GearRatios" "Count" 10
+for i = 1 to setupMod.GearRatios.count do (
+	setupFile.Settings.SetParameterForMethod "GearRatios" (i as string) setupMod.GearRatios[i]
+)
+setupFile.Settings.SetParameterForMethod "TorqueCurve" "Count" 20
+for i = 1 to setupMod.TorqueCurve.count do (
+	setupFile.Settings.SetParameterForMethod "TorqueCurve" (i as string) setupMod.TorqueCurve[i]
+)
+/*
+setupFile.Settings.SetParameterForMethod "PowerMultiplier" "Value" 1.5
+setupFile.Settings.SetParameterForMethod "TractionFactor" "Factor" 1.2
+setupFile.Settings.SetParameterForMethod "FinalDrive" "Value" 1
+setupFile.Settings.SetParameterForMethod "RearGrip" "Value" 1.6
+setupFile.Settings.SetParameterForMethod "FrontGrip" "Value" 1.7
+setupFile.Settings.SetParameterForMethod "CMPosY" "Value" carRoot.min.z
+setupFile.Settings.SetParameterForMethod "CMPosZ" "Value" (carRoot.min.y + (carRoot.max.y - carRoot.min.y) * 0.5)
+setupFile.Settings.SetParameterForMethod "FrontDownforce" "Value" 20
+setupFile.Settings.SetParameterForMethod "RearDownforce" "Value" 20
+setupFile.Settings.SetParameterForMethod "FrontRoll" "Value" 0.4
+setupFile.Settings.SetParameterForMethod "RearRoll" "Value" 0.3
+setupFile.Settings.SetParameterForMethod "FrontCriticalAngle" "Value" 6
+setupFile.Settings.SetParameterForMethod "RearCriticalAngle" "Value" 6
+setupFile.Settings.SetParameterForMethod "FrontSuspGive" "Value" 0.1
+setupFile.Settings.SetParameterForMethod "RearSuspGive" "Value" 0.08
+setupFile.Settings.SetParameterForMethod "SuspDamping" "Value" 1
+setupFile.Settings.SetParameterForMethod "SuspensionRollFactor" "Value" 1
+setupFile.Settings.SetParameterForMethod "SuspensionPitchFactor" "Value" 1
+setupFile.Settings.SetParameterForMethod "MomentOfInertiaMultiplier" "Value" 1
+setupFile.Settings.SetParameterForMethod "SteerSpeed1" "Value" 1
+setupFile.Settings.SetParameterForMethod "SteerSpeed2" "Value" 0.5
+setupFile.Settings.SetParameterForMethod "SteerSpeedVel" "Value" 150
+setupFile.Settings.SetParameterForMethod "SteerCentreMultiplier" "Value" 2
+setupFile.Settings.SetParameterForMethod "MaxSteeringAngle" "Value" 40
+setupFile.Settings.SetParameterForMethod "BrakeBalance" "Value" 60
+setupFile.Settings.SetParameterForMethod "BrakeForce" "Value" 60
+setupFile.Settings.SetParameterForMethod "HandBrakeStrength" "Value" 10
+setupFile.Settings.SetParameterForMethod "TorqueSplit" "Value" 65
+setupFile.Settings.SetParameterForMethod "LSDThresholdF" "Value" 10
+setupFile.Settings.SetParameterForMethod "LSDThresholdR" "Value" 10
+setupFile.Settings.SetParameterForMethod "LSDThresholdM" "Value" 10
+setupFile.Settings.SetParameterForMethod "ReversePowerMulitplier" "Value" 1
+setupFile.Settings.SetParameterForMethod "WheelMass" "Value" 10
+setupFile.Settings.SetParameterForMethod "DragCoefficient" "Value" 0.4
+setupFile.Settings.SetParameterForMethod "SteerLimit1" "Value" 0
+setupFile.Settings.SetParameterForMethod "SteerLimit2" "Value" 0
+setupFile.Settings.SetParameterForMethod "SteerLimitSpeed" "Value" 0
+setupFile.Settings.SetParameterForMethod "CastorSpeed1" "Value" 0
+setupFile.Settings.SetParameterForMethod "CastorSpeed2" "Value" 1
+setupFile.Settings.SetParameterForMethod "CastorSpeedVel" "Value" 100
+setupFile.Settings.SetParameterForMethod "SteerGyroscope" "Value" 1
+setupFile.Settings.SetParameterForMethod "BrakeAttack" "Value" 1
+setupFile.Settings.SetParameterForMethod "HandBrakeAttack" "Value" 0.1
+setupFile.Settings.SetParameterForMethod "SlideSpinRecovery" "Value" 1
+setupFile.Settings.SetParameterForMethod "RollingResistance" "Value" 0.018
+setupFile.Settings.SetParameterForMethod "DriveMI" "Value" 2.2
+setupFile.Settings.SetParameterForMethod "EngineMI" "Value" 0.06
+setupFile.Settings.SetParameterForMethod "RedLine" "Value" 6500
+setupFile.Settings.SetParameterForMethod "MaxRevs" "Value" 8000
+setupFile.Settings.SetParameterForMethod "LimitRevs" "Value" true
+setupFile.Settings.SetParameterForMethod "ConstantEngineFriction" "Value" 833
+setupFile.Settings.SetParameterForMethod "LinearEngineFriction" "Value" 0
+setupFile.Settings.SetParameterForMethod "QuadraticEngineFriction" "Value" 0.0023
+setupFile.Settings.SetParameterForMethod "ConstantDriveFriction" "Value" 9.1
+setupFile.Settings.SetParameterForMethod "LinearDriveFriction" "Value" 0
+setupFile.Settings.SetParameterForMethod "QuadraticDriveFriction" "Value" 0.0008
+setupFile.Settings.SetParameterForMethod "EngineBrakeDelay" "Value" 0.5
+setupFile.Settings.SetParameterForMethod "EngineBrakeAttack" "Value" 0.28
+setupFile.Settings.SetParameterForMethod "ClutchDelay" "Value" 0
+setupFile.Settings.SetParameterForMethod "Mass" "Value" 1300
+setupFile.Settings.SetParameterForMethod "NumGears" "Value" 5
+setupFile.Settings.SetParameterForMethod "StabilityGripChange" "Value" 0.4
+setupFile.Settings.SetParameterForMethod "StabilityThreshold" "Value" 0.5
+ */
+	setupFile.Save filename
+)
+fn ExportCarVehicleSetupLUA filename luaMod = (
+	lua = stringstream ""
+	format "module( ... )\n\n" to:lua
+	format "camera_distance = %\n" luaMod.camera_distance to:lua
+	format "camera_extra_tilt_angle = %\n" luaMod.camera_extra_tilt_angle to:lua
+	format "default = %\n" luaMod.default to:lua
+	format "dev = %\n" luaMod.dev to:lua
+	format "cop = %\n" luaMod.cop to:lua
+	format "eagle = %\n" luaMod.eagle to:lua
+	format "tier = %\n" luaMod.tier to:lua
+	format "progress = %\n" luaMod.progress to:lua
+	format "shipped = %\n" luaMod.shipped to:lua
+	format "leaderboard_id = %\n" luaMod.leaderboard_id to:lua
+	format "unlock_node = %\n" luaMod.unlock_node to:lua
+	format "class_rounded = %\n" luaMod.class_rounded to:lua
+	format "class_speedy = %\n" luaMod.class_speedy to:lua
+	format "class_smashy = %\n" luaMod.class_smashy to:lua
+	format "barred_from_easy_on_ramp = %\n" luaMod.barred_from_easy_on_ramp to:lua
+	format "hawk = %\n" luaMod.hawk to:lua
+	format "suppressor = %\n" luaMod.suppressor to:lua
+	format "product_id = %\n" luaMod.product_id to:lua
+	format "consider_in_stats = %\n" luaMod.consider_in_stats to:lua
+	format "override_vehicle_name = \"%\"\n" (substituteString  luaMod.override_vehicle_name "\"" "\\\"") to:lua
+	format "override_driver_name = \"%\"\n" (substituteString  luaMod.override_driver_name "\"" "\\\"") to:lua
+	format "override_bio = \"%\"\n" (substituteString  luaMod.override_bio "\"" "\\\"") to:lua
+	format "hud_damage_levels = \n{\n" to:lua
+	for damageLevel in luaMod.hud_damage_levels do (
+		format "%," damageLevel to:lua
+	)
+	format "\n}" to:lua
+
+
+	if filename != undefined then (
+
+		f = openfile filename mode:"w"
+		format "%" (lua as string) to:f
+		close f
 	)
 )
 

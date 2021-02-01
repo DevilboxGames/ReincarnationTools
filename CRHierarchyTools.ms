@@ -41,8 +41,12 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 		addModifier mdl cntHierarchyModifier
 		custattributes.add cntHierarchyModifier CNTAttribute baseObject:false
 		if fileName != undefined then cntHierarchyModifier.fileName = fileName
-		else cntHierarchyModifier.fileName = mdl.name
-		
+		else if mdl.name != undefined and mdl.name != "" then cntHierarchyModifier.fileName = mdl.name
+		else cntHierarchyModifier.filename = "Unnamed"
+		splitFilename = (FilterString cntHierarchyModifier.filename ".")
+		if splitFilename != undefined and splitFilename.count > 1 then (
+			cntHierarchyModifier.filename = splitFilename[1]
+		)
 		if (classof mdl) == dummy then 
 		(
 			SetCNTNodeType mdl "NULL"
@@ -68,6 +72,13 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 )
 fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false nodeType: "NULL" =
 (
+	global forceDummyNull
+	if forceDummyNull == true then 
+	(
+		m = dummy boxsize:[0.05,0.05,0.05] name:nodename transform:trans
+
+	)
+	else (
 	m = mesh vertices:#([-0.00750644, -0.292164, -0.0157009],[0.00750644, -0.292164, -0.0157009],[-0.0225933, -0.022668, -0.0224066],[0.0225186, -0.0225186, -0.0224066],[-0.00750644, -0.292164, -0.000688014],[0.00750644, -0.292164, -0.000688014],[-0.0225933, -0.022668, 0.0224065],[0.0225186, -0.0225186, 0.0224065],[0.292164, -0.00750644, -0.00750644],[0.292164, 0.00750644, -0.00750644],[0.292164, -0.00750644, 0.00750644],[0.292164, 0.00750644, 0.00750644],[-0.0225933, 0.0225933, -0.0224065],[-0.00750644, 0.00750644, 0.27705],[0.00750644, 0.00750644, 0.27705],[0.022668, 0.0225933, -0.0224065],[0.00750644, -0.00750645, 0.27705],[-0.00750644, -0.00750645, 0.27705],[0.022668, 0.0225933, 0.0224065],[-0.0225933, 0.0225933, 0.0224065]) faces:#([1.0, 3.0, 4.0],[4.0, 2.0, 1.0],[5.0, 6.0, 8.0],[8.0, 7.0, 5.0],[1.0, 2.0, 6.0],[6.0, 5.0, 1.0],[2.0, 4.0, 8.0],[8.0, 6.0, 2.0],[3.0, 1.0, 5.0],[5.0, 7.0, 3.0],[9.0, 4.0, 16.0],[16.0, 10.0, 9.0],[11.0, 12.0, 19.0],[19.0, 8.0, 11.0],[9.0, 10.0, 12.0],[12.0, 11.0, 9.0],[10.0, 16.0, 19.0],[19.0, 12.0, 10.0],[4.0, 9.0, 11.0],[11.0, 8.0, 4.0],[13.0, 19.0, 16.0],[13.0, 4.0, 3.0],[15.0, 14.0, 18.0],[18.0, 17.0, 15.0],[20.0, 7.0, 18.0],[18.0, 14.0, 20.0],[14.0, 15.0, 19.0],[19.0, 20.0, 14.0],[17.0, 18.0, 7.0],[7.0, 8.0, 17.0],[15.0, 17.0, 8.0],[8.0, 19.0, 15.0],[20.0, 13.0, 7.0],[13.0, 20.0, 19.0],[13.0, 16.0, 4.0],[13.0, 3.0, 7.0])
 
 	setFaceSmoothGroup m 1 1
@@ -156,9 +167,10 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false node
 		if mat.name == "crTools_NullNodeMaterial" do 
 		(
 			newmat = mat
-			exit
+			--exit
 		)
 	)
+	
 	if newmat == undefined do
 	(
 		newmat = multimaterial numsubs:3
@@ -180,7 +192,7 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false node
 	)
 	m.material = newmat
 	
-	
+	)
 	if addAttributes do
 	(
 		/*custAttributes.add m CNTAttribute #unique BaseObject:true

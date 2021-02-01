@@ -4,7 +4,7 @@ rollout carma_reincarnation_dockfloater "Carmageddon Reincarnation Tools" width:
 	local doRefresh = true
 	
 	on carma_reincarnation_dockfloater open do
-	(
+	(	
 		global CRToolsUI = eh
 		carma_reincarnation_dockfloater.resized([405,500])
 	)

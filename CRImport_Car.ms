@@ -1,4 +1,4 @@
-fn ParseStructurePartCData cData obj =
+fn ParseStructurePartCData cData obj carroot:undefined =
 (
 	--format "Part CData: %\n\n" cData
 	splitCData = filterstring cdata "\n"
@@ -136,7 +136,7 @@ fn ParseStructurePartCData cData obj =
 					splitArguments = filterstring splitline[3] ", \""
 					append obj.modifiers["Car Structure Part"].FunctionalLightType splitArguments[1]
 					
-					append obj.modifiers["Car Structure Part"].FunctionalLightObject (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[2]) forwardTransformChangeMsgs:false)
+					append obj.modifiers["Car Structure Part"].FunctionalLightObject (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[2]) forwardTransformChangeMsgs:false)
 				)
 				"set_driverejectionsmash":
 				(
@@ -198,7 +198,7 @@ fn ParseStructurePartCData cData obj =
 				"add_lumprenderlevel":
 				(
 					splitArguments = filterstring splitline[3] ", \""
-					targetNode = GetDescendantByName $ splitArguments[1]
+					targetNode = GetDescendantByName carRoot splitArguments[1]
 					if targetNode != undefined then
 					(
 						append obj.modifiers["Car Structure Part"].LumpRenderLevel_Node (nodeTransformMonitor node:targetNode forwardTransformChangeMsgs:false)
@@ -555,7 +555,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrotateiny":
 				(
@@ -570,7 +570,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrotateinz":
 				(
@@ -585,7 +585,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedslideinx":
 				(
@@ -600,7 +600,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedslideiny":
 				(
@@ -615,7 +615,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedslideinz":
 				(
@@ -630,7 +630,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.controlledbyselection = finditem StructureAnimationControllers animMod.controlledby
 					animMod.amount = splitarguments[2] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[3]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[3]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedoscillateinx":
 				(
@@ -646,7 +646,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.amount = splitarguments[2] as float
 					animMod.amount2 = splitarguments[3] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[4]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[4]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedoscillateiny":
 				(
@@ -662,7 +662,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.amount = splitarguments[2] as float
 					animMod.amount2 = splitarguments[3] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[4]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[4]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedoscillateinz":
 				(
@@ -678,7 +678,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.amount = splitarguments[2] as float
 					animMod.amount2 = splitarguments[3] as float
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[4]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[4]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrockinx":
 				(
@@ -706,7 +706,7 @@ fn ParseStructurePartCData cData obj =
 					)
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummyy forwardTransformChangeMsgs:false)
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[7]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[7]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrockiny":
 				(
@@ -735,7 +735,7 @@ fn ParseStructurePartCData cData obj =
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
 					
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[7]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[7]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrockinz":
 				(
@@ -763,7 +763,7 @@ fn ParseStructurePartCData cData obj =
 					)
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[7]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[7]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrotatevibratex":
 				(
@@ -795,7 +795,7 @@ fn ParseStructurePartCData cData obj =
 					)
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[11]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[11]) forwardTransformChangeMsgs:false)
 				)
 				"add_postik_namedrotatevibratey":
 				(
@@ -827,7 +827,7 @@ fn ParseStructurePartCData cData obj =
 					)
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[11]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[11]) forwardTransformChangeMsgs:false)
 					
 				)
 				"add_postik_namedrotatevibratez":
@@ -860,7 +860,7 @@ fn ParseStructurePartCData cData obj =
 					)
 					animMod.CentreOfRotation =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
 					animMod.UseNamedObject=true
-					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[11]) forwardTransformChangeMsgs:false)
+					animMod.NamedObject= (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[11]) forwardTransformChangeMsgs:false)
 				)
 				"set_preik_snappointtopointonotherpart":
 				(
@@ -881,7 +881,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj =  (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[4]) forwardTransformChangeMsgs:false)
+					otherObj =  (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[4]) forwardTransformChangeMsgs:false)
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_SnapPointToPoint_OtherPart"
@@ -916,7 +916,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject =  (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj =  (nodeTransformMonitor node:(GetDescendantByName $ splitArguments[4]) forwardTransformChangeMsgs:false)
+					otherObj =  (nodeTransformMonitor node:(GetDescendantByName carRoot splitArguments[4]) forwardTransformChangeMsgs:false)
 					p2pMod.OtherObject = otherObj -- nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_RotatePointToLine_OtherPart"
@@ -962,7 +962,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject =   (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj =   GetDescendantByName $ splitArguments[4]
+					otherObj =   GetDescendantByName carRoot splitArguments[4]
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_RotatePointToPoint_OtherPart"
@@ -997,7 +997,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject = (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj = GetDescendantByName $ splitArguments[4]
+					otherObj = GetDescendantByName carRoot splitArguments[4]
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 
 					--format "this obj: % - %\notherobj: % - %\n" obj obj.transform otherObj otherObj.transform
@@ -1039,7 +1039,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject = (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj =GetDescendantByName $ splitArguments[4]
+					otherObj =GetDescendantByName carRoot splitArguments[4]
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_RotatePointToLine_OtherPart"
@@ -1085,7 +1085,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject = (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj =GetDescendantByName $ splitArguments[4]
+					otherObj =GetDescendantByName carRoot splitArguments[4]
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_RotatePointToPoint_OtherPart"
@@ -1119,7 +1119,7 @@ fn ParseStructurePartCData cData obj =
 						newDummy.cross = true
 					)
 					p2pMod.PointOnThisObject = (nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false)
-					otherObj = GetDescendantByName $ splitArguments[4]
+					otherObj = GetDescendantByName carRoot splitArguments[4]
 					p2pMod.OtherObject = nodeTransformMonitor node:otherObj forwardTransformChangeMsgs:false
 					
 					newDummyName= obj.name+"_RotatePointToPointWithScaling_OtherPart"
@@ -2154,7 +2154,7 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 	if JointObj.UseLocation == false then JointObj.pos = obj.pos
 	if JointObj.AxisIsSet == false then JointObj.JointAxis = GetJointAxisByVertexColour obj (color 255 0 0)
 )
-fn ParseStructureWeldNode xmlNode obj =
+fn ParseStructureWeldNode xmlNode obj carRoot:undefined=
 (
 	WeldModifier = AddStructureWeldModifier obj
 	
@@ -2171,7 +2171,7 @@ fn ParseStructureWeldNode xmlNode obj =
 		(
 			--format "found the partner attribute: %\n" attrib.value
 			partnerName = attrib.value
-			partnerNode = GetDescendantByName $ partnerName
+			partnerNode = GetDescendantByName carRoot partnerName
 			weldmodifier.WeldPartner =  (nodeTransformMonitor node:partnerNode forwardTransformChangeMsgs:false)
 		)
 	)
@@ -2190,7 +2190,7 @@ fn ParseStructureWeldNode xmlNode obj =
 		)
 	)
 )
-fn ParseStructurePartNode xmlNode obj =
+fn ParseStructurePartNode xmlNode obj carroot:undefined =
 (
 	AddStructurePartModifier obj doChildren:false
 	
@@ -2201,7 +2201,7 @@ fn ParseStructurePartNode xmlNode obj =
 		child = xmlnode.childnodes.item ( i-1)
 		if child.nodetype == child.nodetype.cdata then
 		(
-			ParseStructurePartCData child.value obj
+			ParseStructurePartCData child.value obj carroot:carroot
 		)
 		else
 		(
@@ -2231,19 +2231,19 @@ fn ParseStructurePartNode xmlNode obj =
 				)
 				if childObj != undefined then
 				(
-					ParseStructurePartNode child childObj
+					ParseStructurePartNode child childObj carroot:carroot
 				)
 			)
 			else if child.name == "WELD" then
 			(
-				ParseStructureWeldNode child obj
+				ParseStructureWeldNode child obj carRoot:carRoot
 			)
 		)
 
 	)
 )
 
-fn ParseStructureCharacteristicsCData CData obj =
+fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 (
 	splitCData = filterstring cdata "\n"
 	structMod = obj.modifiers["Car Structure Part"]
@@ -2383,8 +2383,8 @@ fn ParseStructureCharacteristicsCData CData obj =
 				"set_aerofoilsoundlump":
 				(
 					lumpName = (filterstring splitline[3] " \",")[1] 
-					--format "===============\nAerofoilsoundlump: %\n===========\n" (GetDescendantByName $ lumpName)
-					obj.modifiers["Car Characteristics"].aerofoilsoundlump = (nodeTransformMonitor node:(GetDescendantByName $ lumpName) forwardTransformChangeMsgs:false)
+					--format "===============\nAerofoilsoundlump: %\n===========\n" (GetDescendantByName carRoot lumpName)
+					obj.modifiers["Car Characteristics"].aerofoilsoundlump = (nodeTransformMonitor node:(GetDescendantByName carRoot lumpName) forwardTransformChangeMsgs:false)
 				)
 				"set_downwardcrushingextraoffence":
 				(
@@ -2571,7 +2571,7 @@ fn ParseStructureCharacteristicsCData CData obj =
 		)
 	)
 )
-fn ParseStructureCharacteristicsNode xmlNode obj =
+fn ParseStructureCharacteristicsNode xmlNode obj carRoot:undefined =
 (
 		
 	AddStructureCharacteristicsModifier obj
@@ -2583,7 +2583,7 @@ fn ParseStructureCharacteristicsNode xmlNode obj =
 		
 		if child.nodetype == child.nodetype.cdata then
 		(
-			ParseStructureCharacteristicsCData child.value obj
+			ParseStructureCharacteristicsCData child.value obj carRoot:carRoot
 			break
 		)
 		--format "childnod type: %\nchildnode data:%\n\n" child.nodetype child.value
@@ -2602,14 +2602,14 @@ fn LoadStructureXML file rootMesh =
 	--format "filename: %\n\n" file
 		xmlDoc.load (file)
 	select rootMesh
-	
+	clearSelection()
 	characteristicsBlock = (xmlDoc.GetElementsByTagName "CHARACTERISTICS").item 0
 	
-	ParseStructureCharacteristicsNode characteristicsBlock rootMesh
+	ParseStructureCharacteristicsNode characteristicsBlock rootMesh carRoot:rootMesh
 	
 	xmlRootNode = (xmlDoc.GetElementsByTagName "ROOT").item 0
 	
-	ParseStructurePartNode xmlRootNode rootMesh
+	ParseStructurePartNode xmlRootNode rootMesh carroot:rootMesh
 )
 
 fn RecurseCarHierarchyToFindWheels obj =
@@ -2649,39 +2649,39 @@ fn ReplaceWheels rootMesh =
 		(
 			"wheel_fr":
 			(
-				if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
+				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
 				(
-					ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FRWheelFolderName 
+					ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FRWheelFolderNames[1] 
 				)
-				else 
-					ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
+				--else 
+				--	ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
 			)
 			"wheel_fl":
 			(
-				if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
+				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
 				(
-					ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FLWheelFolderName
+					ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FLWheelFolderNames[1]
 				)
-				else 
-					ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
+				--else 
+				--	ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
 			)
 			"wheel_rr":
 			(
-				if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
+				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
 				(
-					ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RRWheelFolderName
+					ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RRWheelFolderNames[1]
 				)
-				else 
-					ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
+				--else 
+				--	ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
 			)
 			"wheel_rl":
 			(
-				if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
+				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
 				(
-					ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RLWheelFolderName
+					ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RLWheelFolderNames[1]
 				)
-				else 
-					ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
+				--else 
+				--	ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
 			)
 		)
 		
@@ -2728,32 +2728,32 @@ fn LoadVehicleConfig obj folderName =
 						(
 							"wheel_folder_name":
 							(
-								obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=true
-								obj.modifiers["vehicle_setup.cfg"].WheelFolderName = wheelFolder
-								obj.modifiers["vehicle_setup.cfg"].FRWheelFolderName = wheelFolder
-								obj.modifiers["vehicle_setup.cfg"].FLWheelFolderName = wheelFolder
-								obj.modifiers["vehicle_setup.cfg"].RRWheelFolderName = wheelFolder
-								obj.modifiers["vehicle_setup.cfg"].RLWheelFolderName = wheelFolder
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=true
+								--obj.modifiers["vehicle_setup.cfg"].WheelFolderName = wheelFolder
+								append obj.modifiers["vehicle_setup.cfg"].FRWheelFolderNames  wheelFolder
+								append obj.modifiers["vehicle_setup.cfg"].FLWheelFolderNames  wheelFolder
+								append obj.modifiers["vehicle_setup.cfg"].RRWheelFolderNames  wheelFolder
+								append obj.modifiers["vehicle_setup.cfg"].RLWheelFolderNames  wheelFolder
 							)
 							"fr_wheel_folder_name":
 							(
-								obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=false
-								obj.modifiers["vehicle_setup.cfg"].FRWheelFolderName = wheelFolder
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].FRWheelFolderNames  wheelFolder
 							)
 							"fl_wheel_folder_name":
 							(
-								obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=false
-								obj.modifiers["vehicle_setup.cfg"].FLWheelFolderName = wheelFolder
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].FLWheelFolderNames  wheelFolder
 							)
 							"rr_wheel_folder_name":
 							(
-								obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=false
-								obj.modifiers["vehicle_setup.cfg"].RRWheelFolderName = wheelFolder
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].RRWheelFolderNames  wheelFolder
 							)
 							"rl_wheel_folder_name":
 							(
-								obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame=false
-								obj.modifiers["vehicle_setup.cfg"].RLWheelFolderName = wheelFolder
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].RLWheelFolderNames  wheelFolder
 							)
 						)
 					)

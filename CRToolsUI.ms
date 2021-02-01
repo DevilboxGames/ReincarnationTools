@@ -123,7 +123,7 @@ fn ToolsStartup =
 			CarmaSettings.AllowSeperateDataCore = false
 			CarmaSettings.DataCorePath = CarmaSettings.GamePath+"\\Data_Core"
 		)
-		CarmaSettings.DataCorePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath"
+		--CarmaSettings.DataCorePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "DataCorePath"
 		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "ConvertTexturesInPlace") == "true" then
 			CarmaSettings.ConvertTexturesInPlace = true
 		else
@@ -170,8 +170,9 @@ fn ToolsStartup =
 				local imgtooldotNetType = imgAssembly.GetType "IMGToolLib.IMGTool"
 				local imgConvertClass = (dotnetClass "System.Activator").CreateInstance imgtooldotNetType
 
-				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll");
-		format "GamePath: %\nTexturePath: %\n GibbedTools: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools
+				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll")
+				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"CMDControls.dll")
+		format "GamePath: %\nTexturePath: %\n GibbedTools: %\nToxicRages: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools (dllpath+"toxicragers.dll")
 		if CarmaSettings.GamePath == undefined or CarmaSettings.GamePath == "" then
 		(
 			--parentDialogs = windows.getChildrenHWND #max

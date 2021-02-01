@@ -18,6 +18,7 @@ fileIn "CRHierarchyTools.ms"
 
 fileIn "CRPlugins.ms"
 fileIn "CRCarTools.ms"
+fileIn "CRMaterialTools.ms"
 fileIn "CRAccessory.ms"
 fileIn "CRExport.ms"
 fileIn "CRExport_car.ms"
@@ -29,6 +30,9 @@ fileIn "CRImport_Level.ms"
 fileIn "CRImport_Peds.ms"
 
 filein "CRLights.ms"
+
+fileIn "CRWheelTools.ms"
+fileIn "CRLevelTools.ms"
 
 fileIn "CRToolsUI.ms"
 

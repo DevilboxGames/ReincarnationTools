@@ -682,11 +682,17 @@ fn ExportMTLMaterial mtlfilename mat = (
 		mtl.Save mtlfilename
 	)
 )
-fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
+
+struct OtherTexturesDef (
+	TextureName,
+	Alias
+)
+
+fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" diffuseAlias:"DiffuseColour" otherTextures:#() =
 (
 	dotNet.loadAssembly "system.xml"
 	xmlDoc=dotNetObject "system.xml.xmlDocument"
-	
+	--format "exporting mat %\\%\n.mt2" folder materialName
 	
 	
 	xmlRoot = xmlDoc.CreateElement "Material"
@@ -699,21 +705,33 @@ fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
 	xmlBaseOff.setAttribute "Name" baseMaterial
 	xmlRoot.AppendChild xmlBaseOff
 	
-	xmlDoubleSided = xmlDoc.CreateElement "DoubleSided"
-	xmlDoubleSided.SetAttribute "Value" "true"
-	xmlRoot.AppendChild xmlDoubleSided
+	xmlBaseOff = xmlDoc.CreateElement "DoubleSided"
+	xmlBaseOff.setAttribute "Value" "TRUE"
+	xmlRoot.AppendChild xmlBaseOff
 	
 	xmlPass = xmlDoc.CreateElement "Pass"
 	xmlPass.SetAttribute "Number" "0"
-	xmlRoot.AppendChild xmlPass
+	--xmlRoot.AppendChild xmlPass
 	
 	xmlTexture = xmlDoc.CreateElement "Texture"
-	xmlTexture.SetAttribute "Alias" "DiffuseColour"
+	xmlTexture.SetAttribute "Alias" diffuseAlias
 	if bitmapName != undefined and bitmapName != "" then textureFileName = getFilenameFile bitmapName
 	else textureFileName = "NOTEXTURE"
 	xmlTexture.SetAttribute "FileName" textureFileName
-	
-	xmlPass.AppendChild xmlTexture
+
+	xmlRoot.AppendChild xmlTexture
+	if otherTextures != undefined then (
+		for  otherTexture in otherTextures do (
+			xmlOtherTexture = xmlDoc.CreateElement "Texture"
+			xmlOtherTexture.SetAttribute "Alias" otherTexture.Alias
+			if otherTexture.TextureName != undefined and otherTexture.TextureName != "" then textureFileName = getFilenameFile otherTexture.TextureName
+			else textureFileName = "NOTEXTURE"
+			xmlOtherTexture.setAttribute "FileName" textureFileName
+
+			xmlRoot.AppendChild xmlOtherTexture
+		)
+	)
+
 	
 	xmlDoc.Save (folder+materialName+".MT2")
 	
@@ -726,7 +744,7 @@ fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" =
 	free xmlTexture
 	--gc()
 )
-fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true funsizeExport:false =
+fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true funsizeExport:false onlyUsedByMesh:undefined baseMaterial:"simple_base" diffuseAlias:"DiffuseColour" transparentDiffuseAlias:"DiffuseColour" baseTransparentMaterial:"glass_base" alphaTextureName:"" alphaTextureIndex:0 forceAlphaReplacement:false =
 (
 	global MaterialsToExport
 	if(MaterialsToExport==undefined) then (
@@ -735,15 +753,24 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 	bitmaps = #()
 	rawBitmaps = #()
 	rawAlphas = #()
+	--print MaterialsToExport
 	for i=1 to MaterialsToExport.count do
 	(
 		mtlName = MaterialsToExport[i][1]
-		
+		baseMat = baseMaterial
+		diffAlias = diffuseAlias
 		actualMat = MaterialsToExport[i][2]
 		bitmapFileName = undefined
+		oppactiyMapFileName = undefined
+
 		if actualMat != undefined and actualMat.diffuseMap != undefined and (classof actualMat.diffuseMap) == bitmaptexture then
 		(
 			bitmapFileName = actualMat.diffuseMap.filename
+		)
+		if actualMat != undefined and actualMat.OpacityMap != undefined and (classof actualMat.OpacityMap) == bitmaptexture then
+		(
+			baseMat = baseTransparentMaterial
+			diffAlias = transparentDiffuseAlias
 		)
 		if bitmapFileName!=undefined and exportTextures do
 		(
@@ -762,12 +789,13 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 				ExportMTLMaterial (outputFolder+mtlName+".mtl") actualMat
 			)
 			else  (
-				ExportMaterial outputFolder mtlName bitmapFileName
+				ExportMaterial outputFolder mtlName bitmapFileName baseMaterial:baseMat otherTextures:MaterialsToExport[i][3] diffuseAlias:diffAlias
 			)
 		)
 	)
 	if bitmaps.count > 0 then (
 		makeUniqueArray bitmaps
+		
 		if funsizeExport then (
 			alphas = #()
 			for bmp in bitmaps do (
@@ -778,8 +806,15 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 		)
 		else  (
 			for bitmapFilename in bitmaps do (
+				alphaTex = alphaTextureName
+				--format "converting texture % using % for alpha\n" bitmapFilename alphaTex
+				bmp = openBitMap bitmapFilename
+				if bmp.hasAlpha and forceAlphaReplacement == false then (
+					alphaTex = ""
+					--format "removing alpha image"
+				)
 				ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
-				ConvertTDX.Convert bitmapFileName outputFolder 5
+				ConvertTDX.Convert bitmapFileName outputFolder 5 alphaTex alphaTextureIndex
 			)
 		)
 	)
@@ -884,6 +919,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	
 	--if meshop.getNumMaps model > 2 and meshop.getNumMapVerts m 2 > 0 then meshop.buildMapFaces model 2 keep:true
 	m = snapshotasmesh model
+	if (getNumTVerts m) < 1 then (
+		setNumTVerts m ((getNumFaces m) * 3)
+		buildTVFaces m
+	)
 	meshop.buildMapFaces m 1 keep:true
 	
 	numFaces  = getNumFaces m
@@ -954,9 +993,12 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		else faceTVertInds = vertInds
 		--format "Face % uses vert inds % and tvertinds %\n" i vertinds tvertinds
 		faceMatID = getfacematid m i
+		if faceMatID >= 65536 then (
+			faceMatID = 1
+		)
 		if (classof  model.material) == multimaterial and model.material.materiallist[faceMatID] == undefined then
 		(
-			format "Face % has matID % which is not in material\n" i faceMatID
+			--format "Face % has matID % which is not in material\n" i faceMatID
 		)
 		
 		rNorms = meshop.getFaceRNormals m i
@@ -1205,9 +1247,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			for i=1 to mid.count do
 			(
 				faceMatID = mid[i]
-				subMatName = modelMat.materiallist[faceMatID].name
-				if subMatName != undefined do
+				if modelMat.materiallist[faceMatID] != undefined and modelMat.materiallist[faceMatID].name != undefined do
 				(
+					
+					subMatName = modelMat.materiallist[faceMatID].name
 					usedMatPos = finditem usedMats subMatName
 					matUsedBefore = "Mat Used Before"
 					rawMaterials[faceMatID] = modelMat.materiallist[faceMatID]
@@ -1230,15 +1273,16 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			(
 				--format "Setting Default Name\n"
 				matName =usedMats[i]
-				if usedMats[i] == undefined then continue --or usedMats[i] == "" do matName = "Default"
+				if usedMats[i] != undefined then ( --or usedMats[i] == "" do matName = "Default"
 				
-				append mtl matName
+					append mtl matName
+				)
 			)
 		)
 		--format "Used Mats Count: %\n" usedMatsCount
 		if classof modelMat == standardmaterial do
 		(
-		
+			--format "material % is a stdmat\n" modelMat.name
 			append mtl modelMat.name
 			append rawMaterials modelMat
 			
@@ -1255,7 +1299,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	)
 	if mtl.count==0 then
 	(
-		format "No Material Assigned, using default material\n"
+		--format "No Material Assigned, using default material\n"
 		append mtl "Default1"
 		
 		for i=1 to mid.count do
@@ -1275,11 +1319,12 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		for i=1 to mtl.count do
 		(
 			
-			if (finditem mtlconv i) == 0 then continue
-			faceMatID = finditem mtlconv i
-			actualMat = rawMaterials[faceMatID]
-			
-			if (MaterialAlreadySetToExport mtl[i]) == false do append MaterialsToExport #(mtl[i], actualMat)
+			if (finditem mtlconv i) != 0 then (
+				faceMatID = finditem mtlconv i
+				actualMat = rawMaterials[faceMatID]
+				
+				if (MaterialAlreadySetToExport mtl[i]) == false do append MaterialsToExport #(mtl[i], actualMat, #())
+			)
 		)
 	)
 	free facesForMatID
@@ -1294,7 +1339,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	--format "--------- model.transform[2]: [%, %, %]\n" oldTransform[2].x oldTransform[2].y oldTransform[2].z
 	--format "--------- model.transform[3]: [%, %, %]\n" oldTransform[3].x oldTransform[3].y oldTransform[3].z
 	
-	format "Number of mtls: %\n" mtl.count
+	--format "Number of mtls: %\n" mtl.count
 	
 	for i=1 to mtl.count do
 	(
@@ -1554,7 +1599,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			else if b.name == "torso" then bonesList[25] = b
 		)*/
 	)
-	printFlagBits PREPflags 32 "PREP flags: "
+	--printFlagBits PREPflags 32 "PREP flags: "
 	
 	try
 	(
@@ -1626,11 +1671,11 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		-- TODO Add Space For total ByteSize - Header
 		minLength = length model.min
 		maxLength = length model.max
-		format "Min length: % - Max Length: %" minLength maxLength
+		--format "Min length: % - Max Length: %" minLength maxLength
 		bboxHalfDistance = maxLength --(length (model.max - model.min) ) / 2
 		if minLength > maxLength then bboxHalfDistance = minLength
-		format "BBox Radius: %\n" bboxHalfDistance
-		format "BBox: \tMin: [%, %, %]\n\tMax: [%, %, %]\n\tCenter: [%, %, %]" -model.max.x model.min.z -model.max.y -model.min.x model.max.z -model.min.y -model.center.x model.center.z -model.center.y
+		--format "BBox Radius: %\n" bboxHalfDistance
+		--format "BBox: \tMin: [%, %, %]\n\tMax: [%, %, %]\n\tCenter: [%, %, %]" -model.max.x model.min.z -model.max.y -model.min.x model.max.z -model.min.y -model.center.x model.center.z -model.center.y
 		writefloat f bboxHalfDistance
 		writefloat f -model.max.x
 		writefloat f model.min.z
@@ -1939,13 +1984,13 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 							j = bonesList.count + 1
 						)
 					)
-					format "Vertex #% (%)\tboneID: %\tboneNum: %\n\t\"%\"\t%\n" i vertNum boneID boneNum boneName bonesList[boneNum+1]
+					--format "Vertex #% (%)\tboneID: %\tboneNum: %\n\t\"%\"\t%\n" i vertNum boneID boneNum boneName bonesList[boneNum+1]
 					writeshort f (boneId - 1) #unsigned
 				)
 				
 			)
 			
-			format "Writing weights\n"
+			--format "Writing weights\n"
 			for i=1 to PREPVerts.count do
 			(
 				vertNum = PREP2USERvertConv[i] as integer
@@ -2060,7 +2105,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		--format "Writing PREP2USER face map data %\n" " "
 		--print "Writing Face Numbers"
 		-- TODO Write Sequence Of Faces Numbers ???
-		format "PREP2USER Face Conversion:\n"
+		--format "PREP2USER Face Conversion:\n"
 		for i=1 to PREP2USERfaceConv.count do
 		(
 			--format "% % \t\t\t=> \t% [%, %, %]\n" i PREPFaces[i][1] PREP2USERfaceConv[i] USERFaces[PREP2USERfaceConv[i]].v1 USERFaces[PREP2USERfaceConv[i]].v2 USERFaces[PREP2USERfaceConv[i]].v3
@@ -2073,7 +2118,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		
 		--format "Writing PREP2USER vert count data %\n" " "
 		writelong f PREP2USERvertConv.count
-		format "PREPVerts.Count = %\n PREP2USERvertConv.Count = %\n" PREPVerts.count PREP2USERvertConv.count
+		--format "PREPVerts.Count = %\n PREP2USERvertConv.Count = %\n" PREPVerts.count PREP2USERvertConv.count
 		
 		
 		--format "Writing PREP2USER vert map data %\n" " "
@@ -2259,7 +2304,7 @@ fn GatherMDLs nodes exportHierarchy =
 		(
 			if finditem models model == 0 do
 			(
-				format "Found model \"%\" which is a %\n" model.name (classof model)
+				--format "Found model \"%\" which is a %\n" model.name (classof model)
 				append models model
 			)
 			
@@ -2303,18 +2348,20 @@ fn ExportLight folder_name nodeToExport exportGobo:false =
 		)
 	)
 )
-fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false =
+fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false nodes:undefined =
 (
 	global materials = #()
 	global models = #()
 	modelsDone = #()
+	global MaterialsToExport
+	MaterialsToExport=#()
 	
-	local nodes
-	if exportSelected == true do
+	--local nodes
+	if exportSelected == true then
 	(
 		nodes = selection
 	)
-	if exportSelected == false do
+	else if nodes == undefined or nodes.count < 1 do
 	(
 		nodes = for model in objects where model.ishidden == false collect model
 	)
@@ -2326,16 +2373,17 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 	(
 		if classof mat == standardmaterial do
 		(
-			if finditem materials mat == 0 do append materials mat
+			--if finditem materials mat == 0 do append materials mat
 		)
 		if classof mat == multimaterial do
 		(
-			for i = 1 to mat.numsubs do
+			for i = 1000 to mat.numsubs do
 			(
 				submat = getsubmtl mat i
-				if submat == undefined then continue
+				if submat != undefined then (
 				if submat.name == "crTools_NullNodeMaterial_X" or submat.name == "crTools_NullNodeMaterial_Y" or submat.name == "crTools_NullNodeMaterial_Z" then i = mat.numsubs + 1
-				if finditem materials submat == 0 do append materials submat
+					if finditem materials submat == 0 do append materials submat
+				)
 			)
 		)
 	)
@@ -2362,7 +2410,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 
 fn ExportCNTModel f model =
 (
-	format "Saving node % to CNT\n" model.name
+	--format "Saving node % to CNT\n" model.name
 	model_name = model.name
 	model_name_length =  model_name.count
 	
@@ -2417,15 +2465,19 @@ fn ExportCNTModel f model =
 	oldEulerAngles.z = -oldEulerAngles.z
 	model.rotation = oldEulerAngles as quat
 	if (IsObjectACNT model) == true and model.modifiers["CNT Hierarchy"].BakeScaleIntoMesh == true then model.scale = [1,1,1]
+	
 	model.position = oldPosition
 	tm = copy model.transform
+
+	--format "old pos: %, new pos: %\n" oldPosition model.position;
 	model.rotation = oldRotation
 	model.scale = oldScale
 	
 	model.position = oldPosition
 	model.transform = oldtm
 	--tm = (model.rotation as matrix3) * (transMatrix model.position) 
-	
+
+
 	numAxisNegativeScale = 0
 	mirroredTransformScale = [1,1,1]
 	
@@ -2448,6 +2500,7 @@ fn ExportCNTModel f model =
 	tm = scale tm mirroredTransformScale false
 	if model.parent != undefined do
 	(
+		--format "====This has a parent! %\n" model.parent.name
 		oldParentScale= model.parent.scale
 		model.parent.scale = [1,1,1]
 		tm = tm * (inverse model.parent.transform)
@@ -2456,6 +2509,7 @@ fn ExportCNTModel f model =
 	tm = matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0])
 	--tm = matrix3 [tm[1].x,tm[1].z,-tm[1].y] [tm[3].x,tm[3].z,-tm[3].y] [tm[2].x,tm[2].z,-tm[2].y] [tm[4].x,tm[4].z,-tm[4].y]
 		
+	--format "old tm: %, new tm: %\n" oldtm tm;
 		writefloat f tm.row1.x
 		writefloat f tm.row1.y
 		writefloat f tm.row1.z
@@ -2613,7 +2667,8 @@ fn ExportMDLButtonPressed sender arg =
 			if mdl_name != undefined do
 			(
 				mdl_path = getFilenamePath mdl_name
-				global MaterialsToExport = #()
+				global MaterialsToExport
+				MaterialsToExport=#()
 				ExportMDLMesh mdl_path selection[1] forcedFilename:mdl_name exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:createOctree
 				ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked
 				messageBox ("Export MDL to "+mdl_name+" completed!") title:"Export Finished!"
@@ -2663,13 +2718,14 @@ fn ExportFullHierarchyButtonPressed sender arg =
 			exportMatsChecked = sender.parent.controls.Item["CreateMaterialsCheckbox"].checked
 			exportMTLChecked = sender.parent.controls.Item["MTLMaterialsCheckbox"].checked
 			exportOctreeChecked = sender.parent.controls.Item["CreateOctreeCheckbox"].checked
-			global MaterialsToExport=#()
+			global MaterialsToExport
+			MaterialsToExport=#()
 			mdl_path = getFilenamePath cnt_name
 			selectedModel = selection[1]
 			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			ExportCNT cnt_name selectedModel
 			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
-			PrintArrayInFull MaterialsToExport "MaterialsToExport"
+			--PrintArrayInFull = "MaterialsToExport"
 			messageBox ("Export CNT & MDL Hierarchy to "+mdl_path+" completed!") title:"Export Finished!"
 		)
 	)	

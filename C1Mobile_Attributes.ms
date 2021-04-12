@@ -234,3 +234,10 @@ fn FunsizeSetDefaultHudDamageEntries hudModifier = (
 	append hudModifier.FlippedHorizontally false
 	append hudModifier.FlippedVertically false
 )
+
+fn QuickSetupMobileCar = (
+	local carRoot = selection[1]
+	AddFunsizeCarAttributes carRoot
+	hudModifier = FunsizeAddHudDamageAttributes carRoot
+	FunsizeSetDefaultHudDamageEntries hudModifier
+)

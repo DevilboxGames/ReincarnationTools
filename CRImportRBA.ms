@@ -491,7 +491,7 @@ fn ImportRBA file =
 	fclose f
 	rba
 )
-fn LoadRBA debugPrint:false =
+fn LoadRBA debugPrint:false autoApply:false =
 (
 	rba = undefined
 	rba_name = GetOpenFileName caption:"Open RBA File" types:"RBA(*.RBA)|*.rba"
@@ -499,7 +499,10 @@ fn LoadRBA debugPrint:false =
 		(
 			rba = ImportRBA rba_name
 			if debugPrint then PrintRBA rba
-			
+			if autoApply then
+			(
+				ApplyRBA rba
+			)
 		)
 		rba
 )

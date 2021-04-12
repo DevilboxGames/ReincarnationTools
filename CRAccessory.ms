@@ -1,4 +1,25 @@
-
+AccessoryTypes = #(
+	"StandardAccessory",
+	"RotatingAccessory",
+	"AngularDampedAccessory",
+	"Checkpoint",
+	"ManagedAccessory",
+	"Powerup",
+	"ConveyorAccessory",
+	"CopSpawn",
+	"StartingGrid",
+	"MultiplayerSpawn",
+	"TrailerSpawn",
+	"ExplodingAccessory",
+	"RockingAccessory",
+	"RigidBodyAnimation"
+)
+struct AccessoryJoiny_Weakness (
+	Type,						-- string
+	p3_Unknown,					-- point3
+	strength,					-- float
+	twistStrength				-- float
+)
 struct AccessoryShape
 (
 	Type,
@@ -6,11 +27,173 @@ struct AccessoryShape
 	Radius,
 	Part
 )
+struct AccessoryJoint_Constraint (
+	i_Unknown,						-- int
+	strength, 						-- float
+	f_Unknown1, 					-- float
+	minDirection, 					-- point3
+	maxDirection, 					-- point3
+	f_Unknown2,						-- float
+	weakness, 						-- string (none) or BreakJoint/another weakness type
+	p3_Unknown1, 					-- point3
+	p3_Unknown2 					-- point3
+)
+struct AccessoryJoint (
+	type,							--string: world or child
+	flags,							-- int
+									-- ????   Constraints?  ????    JointAxis?
+									--   |		|		____/	______/
+									--   |		|	   /	   /
+									-- [0000] [0000] [0000] [0000]
+									-------------------------------------------
+	f_Unknown1,						-- float
+	position,						-- point3 - in accessory's local space
+	joint_normal,					-- point3
+	p3_Unknown1,					-- point3
+	p3_Unknown2,					-- point3
+	p3_Unknown3,					-- point3
+	p3_Unknown4,					-- point3
+	p3_Unknown5,					-- point3
+	numConstraints,					-- int
+	constraints, 					-- AccessoryJoint_Constraint
+	hasWeakness, 					-- bool outputs: (no_weakness) or weakness
+	weakness1,		     			-- AccessoryJoint_Constraint
+	weakness2		     			-- AccessoryJoint_Constraint
+)
 
+struct AccessoryType_RotatingAccessory (
+	Speed								--float
+)
+struct AccessoryType_AngularDampedAccessory (
+	Damper								--float
+)
+
+struct AccessoryType_Checkpoint (
+	top,								--Int
+	bottom,								--Int
+	left,								--Int
+	right,								--Int
+	deactivated,						--String
+	next								--String
+
+)
+
+struct AccessoryType_ManagedAccessory (
+	break_fuse,							--Float
+	management_policy,					--String
+	trigger_particles					--String
+)
+
+struct AccessoryType_Powerup (
+	type,								--String
+	respawn_time						--Float
+)
+
+struct AccessoryType_RigidBodyAnimation (
+	anim,								--string
+	looping,							--bool
+	hit_to_trigger,						--bool
+	time_offset,						--float
+	max_acceleration,					--float
+	max_angular_acceleration,			--float
+	max_force,							--float
+	max_force_linear,					--float
+	break_factor,						--float
+	stop_factor,						--float
+	message_triggered					--string
+)
+struct Accessory_StandardAppData (
+	CollisionAudioEvent,				--string
+	CollisionAudioMinTime,				--string
+	CollisionAudioLump,					--string
+	CollisionAudioEventScrape,			--string
+	damage_magnifier,					--float
+	damage_magnifier_X,					--float
+	damage_magnifier_Y,					--float
+	damage_magnifier_Z,					--float
+	speed_sensitive_damage_magnifier,	--float
+	dont_target,						--bool
+	disable_pinball,					--bool
+	vehicle_vfx,						--bool
+	AccessoryAudio_Sound1,				--String
+	AccessoryAudio_Sound2,				--String
+	AccessoryAudio_Type,					--String
+	AccessoryAudio_LumpName,				--String
+	force_target,						--bool
+	recovery_exclusion_radius,			--float
+	special_flags						--int
+	
+)
+struct CustomAccessoryBlock
+(
+	Type,
+	Data
+)
+
+struct AccessoryBreakableReplacement
+(
+	Axis, 							--string +x,-x,+y,-y,+z,-z
+	Replacement 					--string
+)
+
+struct AccessoryBreakableBlock
+(
+	Breakable,						--bool
+	break_impulse,					--float
+	replace,						--string
+	directional_replacements = #(), --AccessoryBreakableReplacement[]
+	explode_force,					--float
+	trigger_particles,				--bool
+	sound,							--string
+	random_rotation,				--point2
+	detach_children,				--bool
+	destroy_children				--bool
+)
+struct AccessoryDynamicsShapeBlock
+(
+	label,							--string
+	shapes =#()
+)
+
+struct AccessoryDynamicsBlock
+(
+	lump_name, 						--string
+	centre_of_mass,					--point3
+	moments,						--point3
+	mass, 							--float
+	solid,							--bool
+	inf_mi,							--bool
+	inf_mass,						--bool
+	drivable_on,					--bool
+	part_of_world,					--bool
+	stop_sinking_into_ground,		--bool
+	ignore_gravity,				 	--bool
+	ignore_world,				 	--bool
+	group,							--int
+	ignore_group,					--int[]
+	buoyant,						--bool
+	buoyancy_relative_to_com,		--float?
+	sphere_rolling_resistance,		--float
+	substance,						--int
+	linear_acceleration,			--point3
+	regular_acceleration,			--point3
+	Shape							--AccessoryDynamicsShapeBlock
+)
 struct AccessoryFileLump
 (
-	Mass,
-	CentreOfMass,
+	Joints,								--string	
+	DynamicsBlocks = #(),
+	BreakableBlocks = #(),
+	Accessory_StandardAppData,
+	CustomAccessoryBlocks = #(),
+	--ManagedAccessory
+
+	--Powerup
+
+
+	--Rigidbody Animation
+	UseRBA,								--bool
+	Children = #(),
 
 	Shapes =#(),
 	fn CreateShape objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
@@ -241,7 +424,177 @@ fn AddAccessoryShapeModifier obj = (
 	)
 	accessoryModifier
 )
+AccessoruBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#(0x43628563, 0x36485726) version:1
+(
+	paarameters main rollout:mainbreakablerollout (
+		break_impulse type:#float default:100 ui:spn_break_impulse
+		replace type:#string ui:txt_replace
+		directional_replacements type:#stringtab tabsizevariable:true
+		directional_replacements_direction type:#stringtab tabsizevariable:true
+		explode_force type:#float default:0 ui:spn_explode_force
+		trigger_particles type:#boolean default:false ui:chk_trigger_particles
+		sound type:#string ui:txt_sound
+		random_rotation type:#point3 
+		detach_children type:#boolean ui:chk_detach_chilren
+		destroy_children type:#boolean ui:chk_destroy_children
+	)
+	
+)
+AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0x2944a50e, 0x438ecc79) version:1
+(
+	parameters main rollout:mainacessorydynamicsrollout (
+		CentreOfMassHelper type:#maxobject
+		moments type:#point3 default:[0,0,0]
+		mass type:#float default: 1000 ui:spn_mass
+		solid type:#boolean default:false ui:chk_solid
+		inf_mi type:#boolean default:false ui:chk_inf_mi
+		inf_mass type:#boolean default:false ui:chk_inf_mass
+		drivable_on type:#boolean default:true ui:chk_drivable_on
+		part_of_world type:#boolean default:false ui:chk_part_of_worl
+		stop_sinking_into_ground type:#boolean default:false ui:chk_stop_sinking_into_ground
+		ignore_gravity type:#boolean default:false ui:chk_ignore_gravity
+		ignore_world type:#boolean default:false ui:chk_ignore_world
+		ignore_group type:#boolean default:false ui:chk_ignore_group
+		group type:#intTab tabsizevariable:true
+		buoyant type:#boolean default:false; ui:chk_buoyant
+		buoyancy_relative_to_com type:#point3 default:[0,0,0]
+		sphere_rolling_resistance type:#float default:0 ui:spn_sphere_rolling_resistance
+		substance type:#integer default:0 ui:spn_substance
+		linear_acceleration type:#point3
+		regular_acceleration type:#point3
+		collisionshapes type:#maxObjectTab tabsizevariable:true
 
+	)
+
+	fn GuessMoments = (
+		ownerObject = (refs.dependentNodes (custAttributes.getOwner this))[1]
+		bounds = nodeGetBoundingBox ownerObject ownerObject.transform
+
+		extents = bounds[2] - bounds[1]
+		Moments.x = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.z * extents.z)
+		Moments.y = (1.0/12.0) * (Mass as float) * (extents.x * extents.x + extents.z * extents.z)
+		Moments.z = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.x * extents.x)
+
+		select ownerObject
+	)
+	rollout mainacessorydynamicsrollout "Accesory Dynamics" (
+		group "Options" (
+			checkbox chk_solid "Solid" across:2
+			checkbox chk_part_of_world "Part Of World" across:2
+			checkbox chk_inf_mass "Infinite Mass" across:2
+			checkbox chk_inf_mi "Infinite MI" across:2
+			checkbox chk_drivable_on "Drivable On" across:2
+			checkbox chk_stop_sinking_into_ground "Dont Sink In Ground" across:2
+			checkbox chk_buoyant "Buoyant" across:2
+			checkbox chk_ignore_gravity "Ignore Gravity" across:2
+			checkbox chk_ignore_world "Ignore World" across:2
+			checkbox chk_ignore_group "Ignore Group" across:2
+		)
+
+		group "Properties" (
+
+			label lbl_Moments "Moments Of Inertia"
+			spinner spn_MomentsX "X" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_MomentsY "Y" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_MomentsZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
+			button btn_GuessMoments "Estimate Moments"
+			spinner spn_mass "Mass" type:#float range:[0,10000000,0]
+			button btn_SelectCentreOfMassHelper "Select CoM Helper"
+
+
+			label lbl_Buoyancy "Buoyancy Relative To CoM"
+			spinner spn_BuoyancyX "X" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_BuoyancyY "Y" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_BuoyancyZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
+
+			spinner spn_substance "Substance Type" type:#integer range:[0,1000,0]
+		)
+
+		group "Collision Shapes" (
+
+			pickbutton pck_AddShape "Add"
+			button btn_DeleteShape "Delete"
+			dotNetControl lv_shapes	 "listview" height:150
+		)
+
+		fn UpdateCoMButtonLabel = (
+			if CentreOfMassHelper == undefined or CentreOfMassHelper.node == undefined or isDeleted CentreOfMassHelper.node then (
+				btn_SelectCentreOfMassHelper.text="Create CoM Helper"
+			)
+			else (
+				btn_SelectCentreOfMassHelper.text="Select CoM Helper"
+			)
+		)
+
+		fn CreateCoMHelper = (
+			UpdateCoMButtonLabel()
+			newDummy = point prefix:("_CoMHelper") position:newDummyPosition scale:scale rotation:((EulerAngles rot.x rot.y rot.z) as quat)					
+			newDummy.size = 1
+			--newDummy.axistripod = true
+			newDummy.cross = true
+
+		)
+		fn SelectCoMHelper = (
+			select CentreOfMassHelper
+		)
+		fn GuessMoments = (
+			ownerObject = (refs.dependentNodes (custAttributes.getOwner this))[1]
+			bounds = nodeGetBoundingBox ownerObject ownerObject.transform
+
+			extents = bounds[2] - bounds[1]
+			Moments.x = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.z * extents.z)
+			Moments.y = (1.0/12.0) * (Mass as float) * (extents.x * extents.x + extents.z * extents.z)
+			Moments.z = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.x * extents.x)
+
+			select ownerObject
+		)
+		fn AddCollisionShape obj= (
+			if obj.modifiers["Accessory Shape"] == undefined then (
+				AddAccessoryShapeModifier obj 
+			)
+			existingShape = for oldshape in CollisionShapes where oldshape.node == obj collect oldshape
+
+			if(existingShape == undefined or existingShape.count == 0) then
+			(
+				append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
+			)
+		)
+		fn refreshShapesList = (
+			lv_shapes.Items.clear()
+			for shape in collisionshapes do (
+				lvItem = dotnetobject "listviewitem" shape.name
+				lv_Layers.Items.add lvitem
+			)
+		)
+
+
+		on btn_GuessMoments pressed do (
+			GuessMoments()
+		)
+		on pck_AddShape picked obj do (
+			AddCollisionShape obj
+			refreshShapesList()
+		)
+		on btn_DeleteShape pressed do (
+			if lv_shapes.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_shapes.SelectedIndices.Item[0]
+				deleteItem lv_shapes (selectedIndex+1)
+				refreshShapesList()
+			)
+		)
+		on mainacessorydynamicsrollout open do (
+			UodateCoMButtonLabel()
+
+			lv_shapes.view  = (dotnetclass "view").details
+			lv_shapes.fullrowselect= true
+			lv_shapes.gridlines = true
+			lv_shapes.multiselect =false
+			lv_shapes.columns.add "Name" 140
+			refreshShapesList()
+		)
+	)
+)
 AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e, 0x438e5c79) version:1
 (
 
@@ -249,13 +602,59 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 		StopSinkingIntoTheGround type:#boolean default:false ui:chk_StopSinking
 		DrivableOn type:#boolean default:false ui:chk_DrivableOn
 		PartOfWorld type:#boolean default:false ui:chk_PartOfWorld
-		Moments type:#point3
+		Solid type:#boolean default:false ui:chk_Solid
+		Moments type:#point3 default:[0,0,0]
 		Mass type:#integer default:100 ui:spn_Mass
 		CentreOfMassHelper type:#maxobject
 		CollisionShapes type:#maxObjectTab tabsizevariable:true
-		Joints type:#string ui:txt_Joints height:200
-	)
+		Joints type:#string ui:txt_Joints
+		UseRBA type:#boolean ui:chk_UseRBA default:false
+		RBAFilename type:#string ui:txt_RBAFilename 
+		RBALooping type:#boolean ui:chk_RBALooping default:false
+		HitToTrigger type:#boolean ui:chk_HitToTrigger default:false
+		ForceTarget type:#boolean ui:chk_ForceTarget default:false
+		MaxAcceleration type:#float ui:spn_MaxAcceleration default:0
+		MaxAngularAcceleration type:#float ui:spn_MaxAngularAcceleration default:0
+		BreakFactor type:#float ui:spn_BreakFactor default:0
+		MessageTriggered type:#string ui:txt_MessageTriggered default:""
 
+	)
+	fn GetAccessoryObject = (
+		ownerObject = (refs.dependentNodes (custAttributes.getOwner this))[1]
+
+		accessoryObject = AccessoryFileLump()
+		accessoryObject.StopSinkingIntoTheGround = StopSinkingIntoTheGround
+		accessoryObject.drivable_on = DrivableOn
+		accessoryObject.PartOfWorld = PartOfWorld
+		accessoryObject.Solid = Solid
+		accessoryObject.Moments = Moments
+		accessoryObject.Mass = Mass
+		in coordsys ownerObject (
+			accessoryObject.CentreOfMass = CentreOfMassHelper.node.position
+		)
+		accessoryObject.Joints = Joints	
+		accessoryObject.UseRBA =UseRBA
+		accessoryObject.anim =RBAFilename
+		accessoryObject.looping =RBALooping
+		accessoryObject.hit_to_trigger =HitToTrigger
+		accessoryObject.force_target =ForceTarget
+		accessoryObject.max_acceleration =MaxAcceleration
+		accessoryObject.max_angular_acceleration =MaxAngularAcceleration
+		accessoryObject.break_factor =BreakFactor
+		accessoryObject.message_triggered =MessageTriggered
+		accessoryObject
+	)
+	fn GuessMoments = (
+		ownerObject = (refs.dependentNodes (custAttributes.getOwner this))[1]
+		bounds = nodeGetBoundingBox ownerObject ownerObject.transform
+
+		extents = bounds[2] - bounds[1]
+		Moments.x = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.z * extents.z)
+		Moments.y = (1.0/12.0) * (Mass as float) * (extents.x * extents.x + extents.z * extents.z)
+		Moments.z = (1.0/12.0) * (Mass as float) * (extents.y * extents.y + extents.x * extents.x)
+
+		select ownerObject
+	)
 	fn AddCollisionShape obj= (
 		if obj.modifiers["Accessory Shape"] == undefined then (
 			AddAccessoryShapeModifier obj 
@@ -267,20 +666,63 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 			append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
 		)
 	)
+	fn SetDefaultJoint = (
+		Joints = "<world_joint>\njoint\n771\n0.000000\n0.917262,-0.400000,-0.000526\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\n1\n1\n0.850000\n0.000000\n0.000000,1.000000,0.000000\n0.000000,1.000000,0.000000\n0.000000\nBreakJoint\n0.000000,0.000000,0.000000\n0.000000,0.000000,0.000000\nweakness\nConstraintForceWeaknessCallBack\n0.000000,0.000000,0.000000\n1000000.000000\nConstraintTorqueWeaknessNoTwistCallBack\n0.000000,0.000000,0.000000\n30000.000000"
+	)
 	rollout mainaccessoryrollout "Accessory" (
 		checkbox chk_StopSinking "Stop Sinking Into Ground"
 		checkbox chk_DrivableOn "Drivable On"
 		checkbox chk_PartOfWorld "Part Of World"
-		spinner spn_Mass "Mass" type:#float
+		checkbox chk_Solid "Solid"
+		spinner spn_Mass "Mass" type:#integer range:[0,10000000,0]
 		label lbl_Moments "Moments Of Inertia"
-		spinner spn_MomentsX "" across:3
-		spinner spn_MomentsY "" across:3
-		spinner spn_MomentsZ "" across:3
+		spinner spn_MomentsX "X" across:1 width:110 type:#float range:[0,100000000,0]
+		spinner spn_MomentsY "Y" across:1 width:110 type:#float range:[0,100000000,0]
+		spinner spn_MomentsZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
 		button btn_GuessMoments "Estimate Moments"
 		pickbutton pck_CentreOfMassHelper "Centre of Mass"
-		edittext txt_Joints "Joints Data" Labelontop:true
+		button btn_DefaultJoint "Set Default Joint"
+		edittext txt_Joints "Joints Data" Labelontop:true  height:200
 		pickbutton pck_AddShape "Add Collision Shape"
 
+		Group "RBA" (
+			checkbox chk_UseRBA "Use RBA Animation"
+			edittext txt_RBAFilename "RBA Filename"
+			checkbox chk_RBALooping "Looping"
+			checkbox chk_HitToTrigger "Hit To Trigger"
+			checkbox chk_ForceTarget "Force Target (?)"
+			spinner spn_MaxAcceleration "Max Acceleration" type:#float range:[0,1000000,0]
+			spinner spn_MaxAngularAcceleration "Max Angular Acceleration" type:#float range:[0,10000, 0]
+			spinner spn_BreakFactor "BreakFactor" type:#float range:[0,10000,0]
+			edittext txt_MessageTriggered "Message Trigger"
+
+		)
+
+		on btn_GuessMoments pressed do (
+			GuessMoments()
+			spn_MomentsX.value = Moments.x
+			spn_MomentsY.value = Moments.y
+			spn_MomentsZ.value = Moments.z
+		)
+		on btn_DefaultJoint pressed do (
+			SetDefaultJoint()
+		)
+		on mainaccessoryrollout open do (
+			spn_MomentsX.value = Moments.x
+			spn_MomentsY.value = Moments.y
+			spn_MomentsZ.value = Moments.z
+
+		)
+
+		on spn_MomentsX changed val do (
+			Moments.x = val
+		)
+		on spn_MomentsY changed val do (
+			Moments.y = val
+		)
+		on spn_MomentsZ changed val do (
+			Moments.z = val
+		)
 		on pck_AddShape picked obj do (
 			AddCollisionShape obj
 		)

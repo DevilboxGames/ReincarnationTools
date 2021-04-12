@@ -3,7 +3,8 @@ struct AccessoryShape
 (
 	Type,
 	Points = #(),
-	Radius
+	Radius,
+	Part
 )
 
 struct AccessoryFileLump
@@ -12,12 +13,16 @@ struct AccessoryFileLump
 	CentreOfMass,
 
 	Shapes =#(),
-	fn CreateShape objects moveToOrigin:false forcePolyhedron:false =
+	fn CreateShape objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
 	(
 		for obj in objects do
 		(
+			oldVis = obj.isHidden
+			obj.isHidden = false
 			oldPos = obj.pos
-			obj.pos = [0,0,0]
+			if moveToOrigin then (
+				obj.pos = [0,0,0]
+			)
 			oldRot = obj.rotation
 			objType = classof obj
 
@@ -56,6 +61,10 @@ struct AccessoryFileLump
 			(
 				msh = snapshotasmesh obj
 				accShape = AccessoryShape Type:"Polyhedron"
+				if roundedPolyhedronAmount != unsupplied then (
+					accShape.type = "RoundedPolyhedron"
+					accShape.Radius = RoundedPolyhedronAmount
+				)
 				numShapeVerts = getNumVerts msh
 				for v=1 to numShapeVerts do
 				(
@@ -66,13 +75,14 @@ struct AccessoryFileLump
 			append Shapes accShape
 			obj.pos = oldPos
 			obj.rotation = oldRot
+			obj.isHidden = oldVis
 		)
 	),
 	fn OutputShapeString =
 	(
 		strstream = StringStream ""
-		append strStream "<shape>\n"
-		append strstream "(default_label)\n"
+		append strStream "<Shape>\n"
+		append strstream "(default label)\n"
 		append strstream (shapes.count as string)
 				append strStream "\n"
 		for shape in Shapes do
@@ -121,9 +131,21 @@ struct AccessoryFileLump
 					format "%,%,%\n" pos1.x pos1.y pos1.z to:strStream
 				)
 			)
+			else if shape.type == "RoundedPolyhedron" then
+			(
+				append strStream (shape.Radius as string)
+				append strStream "\n"
+				append strStream (shape.points.count as string)
+				append strStream "\n"
+				for v in shape.points do
+				(
+					pos1 = ConvertToCRSpace v
+					format "%,%,%\n" pos1.x pos1.y pos1.z to:strStream
+				)
+			)
 				append strStream "\n"
 				append strStream "\n"
-			append strStream  "form_collision_groups\n1"
+			append strStream  "form_collision_groups\n1\n\n"
 		)
 		--format "%" (strStream as string)
 		strStream as string
@@ -184,4 +206,86 @@ fn MakeQuatFrom3Verts vertO vertX vertY upVector:[0,0,1] = (
 	local xAxis = normalize ((getVert $ vertY) - (getVert $ vertO))
 	
 	(matrix3 xAxis yAxis upVector [0,0,0]) as quat
+)
+
+CollisionShapeTypes = #("Polyhedron", "RoundedPolyhedron", "TicTac", "Wireframe", "AlignedCuboid", "Sphere")
+AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a3ce, 0x4f8eec73) version:1
+(
+	parameters main rollout:mainaccessoryshaperollout (
+		CollisionType type:#string default:"Polyhedron"
+	)
+	rollout mainaccessoryshaperollout "Accessory" (
+		dropdownlist dpdn_CollisionType items:CollisionShapeTypes default:1
+
+		on mainaccessoryshaperollout open do (
+			dpdn_CollisionType.value = finditem CollisionShapeTypes CollisionType
+		)
+
+		on dpdn_CollisionType selected selectedIndex do (
+			CollisionType = CollisionShapeTypes[selectedIndex]
+		)
+
+	)
+)
+
+fn AddAccessoryShapeModifier obj = (
+
+	max modify mode
+	accessoryModifier = emptyModifier()
+	
+	accessoryModifier.name = "Accessory Shape"
+	addModifier obj accessoryModifier
+	custattributes.add accessoryModifier AccessoryShapeAttribute baseObject:false
+	accessoryModifier
+)
+
+AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e, 0x438e5c79) version:1
+(
+
+	fn AddCollisionShape obj= (
+		if obj.modifiers["Accessory Shape"] == undefined then (
+			AddAccessoryShapeModifier obj 
+		)
+		append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
+	)
+
+	parameters main rollout:mainaccessoryrollout (
+		StopSinkingIntoTheGround type:#boolean default:false ui:chk_StopSinking
+		DrivableOn type:#boolean default:false ui:chk_DrivableOn
+		PartOfWorld type:#boolean default:false ui:chk_PartOfWorld
+		Moments type:#point3
+		Mass type:#integer default:100 ui:spn_Mass
+		CentreOfMassHelper type:#maxobject
+		CollisionShapes type:#maxObjectTab tabsizevariable:true
+		Joints type:#string ui:txt_Joints height:200
+	)
+	rollout mainaccessoryrollout "Accessory" (
+		checkbox chk_StopSinking "Stop Sinking Into Ground"
+		checkbox chk_DrivableOn "Drivable On"
+		checkbox chk_PartOfWorld "Part Of World"
+		spinner spn_Mass "Mass" type:#float
+		label lbl_Moments "Moments Of Inertia"
+		spinner spn_MomentsX "" across:3
+		spinner spn_MomentsY "" across:3
+		spinner spn_MomentsZ "" across:3
+		button btn_GuessMoments "Estimate Moments"
+		pickbutton pck_CentreOfMassHelper "Centre of Mass"
+		edittext txt_Joints "Joints Data" Labelontop:true
+		pickbutton pck_AddShape "Add Collision Shape"
+
+		on pck_AddShape picked obj do (
+			AddCollisionShape obj
+		)
+
+	)
+)
+fn AddAccessoryTXTModifier obj = (
+
+	max modify mode
+	accessoryModifier = emptyModifier()
+	
+	accessoryModifier.name = "Accessory Settings"
+	addModifier obj accessoryModifier
+	custattributes.add accessoryModifier AccessoryTXTAttribute baseObject:false
+	accessoryModifier
 )

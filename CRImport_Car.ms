@@ -2612,6 +2612,143 @@ fn LoadStructureXML file rootMesh =
 	ParseStructurePartNode xmlRootNode rootMesh carroot:rootMesh
 )
 
+fn ParseSystemsDamageUnitCData CData systemDamageMod carRoot:carRoot =
+(
+	splitCData = filterstring cdata "\n"
+
+	for i =1 to splitcdata.count do
+	(
+		--format "\nline #% of cdata: %\n" i splitcdata[i]
+		splitLine = filterstring splitcdata[i] ":()"
+		if splitline.count > 1 then 
+		(
+			objectType = (filterstring splitLine[1] "\t ")
+			if objectType[1][1] == "-" and objectType[1][2]=="-" then
+			(
+				--format "This line is a comment: %\n" splitcdata[i]
+				continue
+			)
+			case (tolower splitline[2]) of
+			(
+				"set_damageeffect_drive": (
+					params = (filterstring splitline[3] " \",")
+					systemDamageMod.DamageEffect_DriveActive = true
+					systemDamageMod.DamageEffect_Drive = params[1] as float
+				)
+				"set_damageeffect_steering": (
+					params = (filterstring splitline[3] " \",")
+					systemDamageMod.DamageEffect_SteeringActive = true
+					systemDamageMod.DamageEffect_Steering = params[1] as float
+				)
+				"set_damageeffect_brakes": (
+					params = (filterstring splitline[3] " \",")
+					systemDamageMod.DamageEffect_BrakesActive = true
+					systemDamageMod.DamageEffect_Brakes = params[1] as float
+				)
+				"set_wastedcontribution": (
+					params = (filterstring splitline[3] " \",")
+					systemDamageMod.WastedContributionActive = true
+					systemDamageMod.WastedContribution = params[1] as float
+				)
+				"add_wastedlinearcontribution": (
+					params = (filterstring splitline[3] " \",")
+					systemDamageMod.WastedLinearContributionActive = true
+					systemDamageMod.WastedLinearContributionStartDamage = params[1] as float
+					systemDamageMod.WastedLinearContributionPartialDamage = params[2] as float
+					systemDamageMod.WastedLinearContributionFullDamage = params[3] as float
+				)
+				"add_vulnerability": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.Vulnerability params[1]
+					append systemDamageMod.VulnerabilityValue (params[2] as float)
+				)
+				"add_crushablepart": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.PartObjectType "Crushable"
+					append systemDamageMod.PartObjectName params[1]
+					append systemDamageMod.PartValue1 (params[2] as float)
+					append systemDamageMod.PartValue2 (params[3] as float)
+
+				)
+				"add_solidpart": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.PartObjectType "Solid"
+					append systemDamageMod.PartObjectName params[1]
+					append systemDamageMod.PartValue1 (params[2] as float)
+					append systemDamageMod.PartValue2 (params[3] as float)
+
+				)
+				"add_complicatedwheel": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.PartObjectType "Wheel"
+					append systemDamageMod.PartObjectName params[1]
+					append systemDamageMod.PartValue1 (params[2] as float)
+					append systemDamageMod.PartValue2 0
+				)
+				"add_indexedcomplicatedwheel": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.PartObjectType "Indexed Wheel"
+					append systemDamageMod.PartObjectName params[1]
+					append systemDamageMod.PartValue1 (params[2] as float)
+					append systemDamageMod.PartValue2 0
+
+				)
+				"add_caterpillartrack": (
+					params = (filterstring splitline[3] " \",")
+					append systemDamageMod.PartObjectType "Tank Track"
+					append systemDamageMod.PartObjectName params[1]
+					append systemDamageMod.PartValue1 (params[2] as float)
+					append systemDamageMod.PartValue2 0
+				)
+				"set_trailer": (
+					params = (filterstring splitline[3] " \",")
+					if (toLower params[1]) then (
+						systemDamageMod.IsTrailer = true
+					)
+				)
+			)
+		)
+	)
+)
+fn LoadSystemDamageXML file rootmesh =
+(
+
+	dotnet.loadAssembly "system.xml"
+		xmlDoc=dotNetObject "system.xml.xmlDocument"
+		--clearListener()
+		--format "Properties\n"
+		--showProperties xmlDoc
+		--format "\nMethods\n"
+		--showMethods xmlDoc
+	--format "filename: %\n\n" file
+		xmlDoc.load (file)
+	select rootMesh
+	clearSelection()
+	unitBlocks = xmlDoc.GetElementsByTagName "UNIT"
+	for i = unitBlocks.count to 1 by -1 do (
+		unitTag = unitBlocks.item (i - 1)
+		unitName = "undefined"
+		for attr = 1 to unitTag.Attributes.count do (
+			attribute = unitTag.Attributes.item (attr - 1)
+			if (tolower attribute.name) == "name" then (
+				unitName = attribute.value
+			)
+		)
+		unitMod =  AddSystemDamageUnit rootMesh unitname:unitName
+		for c=1 to unitTag.childnodes.count do
+		(
+			child = unitTag.childnodes.item ( c-1)
+			
+			if child.nodetype == child.nodetype.cdata then
+			(
+				ParseSystemsDamageUnitCData child.value unitMod carRoot:carRoot
+				break
+			)
+			--format "childnod type: %\nchildnode data:%\n\n" child.nodetype child.value
+		)
+	
+	)
+)
 fn RecurseCarHierarchyToFindWheels obj =
 (
 	outputArray = #()

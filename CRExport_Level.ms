@@ -11,53 +11,54 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:Tr
 	(
 		curLayer = layerManager.getLayer i
 		layerName = curLayer.name
-		if (substring layerName 1 4) == "sys_" then continue
-		refLayer = ILayerManager.getLayerObject i
-		layerNodes = refs.dependents refLayer
-		
-		for x = 1 to layerNodes.count do
-		(
-			curNode = layerNodes[x]
-			nodeName = curNode as string
+		if (substring layerName 1 4) != "sys_" then (
+			refLayer = ILayerManager.getLayerObject i
+			layerNodes = refs.dependents refLayer
 			
-			if (classOf curNode) == CarmaHelper_AccessoryPlaceHolder then
+			for x = 1 to layerNodes.count do
 			(
-				if (curNode as string) == "CarmaHelper_AccessoryPlaceholder" then
-				(
-					continue
-				)
-				nodetext = " = {\n"
+				curNode = layerNodes[x]
+				nodeName = curNode as string
 				
-				if curNode.accessoryName == undefined or curNode.accessoryName == "" then curNode.accessoryName = curNode.name
-				nodetext  = nodetext+"\t\ttype = \""+curNode.accessoryType+"\",\n"
-				nodetext  = nodetext+"\t\tname = \""+curNode.accessoryName+"\",\n"
-				nodetext  = nodetext+"\t\tlayer = \""+layerName+"\",\n"
-				
-				nodetext = nodetext + "\t\ttransform = {\n"
-				tm = curNode.transform
-				if dot (normalize (cross tm.row3 tm.row1)) (normalize tm.row2) < 0.9 then tm.row1 = -tm.row1
-				--tm.row1 = normalize tm.row1
-				--tm.row2 = normalize tm.row2
-				--tm.row3 = normalize tm.row3
-				tm = matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
-				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row1.x as string)+",\n\t\t\t\t"+(tm.row1.y as string)+",\n\t\t\t\t"+(tm.row1.z as string)+"\n\t\t\t},\n"
-				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row2.x as string)+",\n\t\t\t\t"+(tm.row2.y as string)+",\n\t\t\t\t"+(tm.row2.z as string)+"\n\t\t\t},\n"
-				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row3.x as string)+",\n\t\t\t\t"+(tm.row3.y as string)+",\n\t\t\t\t"+(tm.row3.z as string)+"\n\t\t\t},\n"
-				nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row4.x as string)+",\n\t\t\t\t"+(tm.row4.y as string)+",\n\t\t\t\t"+(tm.row4.z as string)+"\n\t\t\t}\n"
-				
-				nodetext = nodetext + "\t\t},\n"
-				nodetext = nodetext + "\t\tcolour = {\n\t\t\t\t"+((curNode.accessoryColour.r as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.g as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.b as integer) as string)+"\n\t\t},\n"
-				if curNode.isPowerup then
+				if (classOf curNode) == CarmaHelper_AccessoryPlaceHolder then
 				(
-					nodetext = "\t"+maxFileNameFixed+"_powerup_"+(accessoryCount as string) + nodetext + "\n\t},\n"
-					powerupsScriptText = powerupsScriptText + nodeText
+					if (curNode as string) == "CarmaHelper_AccessoryPlaceholder" then
+					(
+						continue
+					)
+					nodetext = " = {\n"
+					
+					if curNode.accessoryName == undefined or curNode.accessoryName == "" then curNode.accessoryName = curNode.name
+					nodetext  = nodetext+"\t\ttype = \""+curNode.accessoryType+"\",\n"
+					nodetext  = nodetext+"\t\tname = \""+curNode.accessoryName+"\",\n"
+					nodetext  = nodetext+"\t\tlayer = \""+layerName+"\",\n"
+					
+					nodetext = nodetext + "\t\ttransform = {\n"
+					tm = curNode.transform
+					if dot (normalize (cross tm.row3 tm.row1)) (normalize tm.row2) < 0.9 then tm.row1 = -tm.row1
+					--tm.row1 = normalize tm.row1
+					--tm.row2 = normalize tm.row2
+					--tm.row3 = normalize tm.row3
+					tm = matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
+					nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row1.x as string)+",\n\t\t\t\t"+(tm.row1.y as string)+",\n\t\t\t\t"+(tm.row1.z as string)+"\n\t\t\t},\n"
+					nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row2.x as string)+",\n\t\t\t\t"+(tm.row2.y as string)+",\n\t\t\t\t"+(tm.row2.z as string)+"\n\t\t\t},\n"
+					nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row3.x as string)+",\n\t\t\t\t"+(tm.row3.y as string)+",\n\t\t\t\t"+(tm.row3.z as string)+"\n\t\t\t},\n"
+					nodetext = nodetext + "\t\t\t{\n\t\t\t\t"+(tm.row4.x as string)+",\n\t\t\t\t"+(tm.row4.y as string)+",\n\t\t\t\t"+(tm.row4.z as string)+"\n\t\t\t}\n"
+					
+					nodetext = nodetext + "\t\t},\n"
+					nodetext = nodetext + "\t\tcolour = {\n\t\t\t\t"+((curNode.accessoryColour.r as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.g as integer) as string)+",\n\t\t\t\t"+((curNode.accessoryColour.b as integer) as string)+"\n\t\t},\n"
+					if curNode.isPowerup then
+					(
+						nodetext = "\t"+maxFileNameFixed+"_powerup_"+(accessoryCount as string) + nodetext + "\n\t},\n"
+						powerupsScriptText = powerupsScriptText + nodeText
+					)
+					else
+					(
+						nodetext = "\t"+maxFileNameFixed+"_accessory_"+(accessoryCount as string) + nodetext + "\n\t},\n"
+						lolScriptText = lolScriptText + nodetext
+					)
+					accessoryCount = accessoryCount+1
 				)
-				else
-				(
-					nodetext = "\t"+maxFileNameFixed+"_accessory_"+(accessoryCount as string) + nodetext + "\n\t},\n"
-					lolScriptText = lolScriptText + nodetext
-				)
-				accessoryCount = accessoryCount+1
 			)
 		)
 		--format "curLayer: %\n refLayer: %\n\n" (showProperties curLayer) (showProperties refLayer)
@@ -236,7 +237,7 @@ fn ExportAccessoryModels accessoryFolder = (
 		isPowerup = false
 		objName = substring obj.name 2 obj.name.count
 		
-		if(substring objName 1 1) == "£" then
+		if(substring objName 1 1) == "Â£" then
 		(
 			objName = substring objName 4 objName.count
 		)

@@ -1203,3 +1203,15 @@ fn TestCNTOctree level:"MINES" SpawnBoxes:true SetActiveOctree:false Resave:fals
 	)
 	1
 )
+
+struct VFXAnchorData (
+	AnchorID,
+	LumpName,
+	Offset,
+	Rotation,
+	Scale
+)
+struct VFXAnchorGroupData (
+	GroupName,
+	Anchors
+)

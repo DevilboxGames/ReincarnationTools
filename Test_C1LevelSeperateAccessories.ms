@@ -48,7 +48,7 @@ fn RemoveGeometryInOtherMesh base target = (
 	format "\nBase: % (% faces) Target> % (% faces) % faces to remove\n" base.name numBaseFaces target.name numTargetFaces targetFacesToDelete.count
 )
 
-
+fn runAccStripTest = (
 Levels = #($Inca1, $Inca2, $Inca3)
 
 BaseLevel = $IncaBase
@@ -60,3 +60,4 @@ RemoveGeometryInOtherMesh levels[1] levels[2]
 --R8emoveGeometryInOtherMesh levels[2] levels[1]
 --RemoveGeometryInOtherMesh levels[3] levels[2]
 --RemoveGeometryInOtherMesh levels[3] levels[1]
+)

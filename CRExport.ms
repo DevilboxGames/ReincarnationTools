@@ -675,11 +675,16 @@ fn StripperShakeItBaby faceCount &indices =
 )
 
 fn ExportMTLMaterial mtlfilename mat = (
+
+		--Format "Exporting MTL to %\n" mtlfilename
 	if (custAttributes.get mat mtlmat_ca) != undefined then
 	(
 		mtl = MTLFile()
 		mtl.GetFromMaterial mat
 		mtl.Save mtlfilename
+	)
+	else (
+		Format "Error exporting MTL to %: CA doesn't exist!\n" mtlfilename
 	)
 )
 
@@ -785,10 +790,13 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 		)
 		if exportMats do
 		(
+			--format "Exporting mat %" mtlName
 			if funsizeExport then (
+				--format " as MTL\n"
 				ExportMTLMaterial (outputFolder+mtlName+".mtl") actualMat
 			)
 			else  (
+				--format " as MT2\n"
 				ExportMaterial outputFolder mtlName bitmapFileName baseMaterial:baseMat otherTextures:MaterialsToExport[i][3] diffuseAlias:diffAlias
 			)
 		)
@@ -917,6 +925,11 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	mdl_file = openfile mdl_name mode:"w"
 	close mdl_file
 	
+	select model
+	max modify mode
+	normalMod = Edit_Normals()
+	addModifier model normalMod
+
 	--if meshop.getNumMaps model > 2 and meshop.getNumMapVerts m 2 > 0 then meshop.buildMapFaces model 2 keep:true
 	m = snapshotasmesh model
 	if (getNumTVerts m) < 1 then (
@@ -1000,8 +1013,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		(
 			--format "Face % has matID % which is not in material\n" i faceMatID
 		)
-		
-		rNorms = meshop.getFaceRNormals m i
+		norm1 = normalMod.GetNormal (normalMod.GetNormalID i 1)
+		norm2 = normalMod.GetNormal (normalMod.GetNormalID i 2)
+		norm3 = normalMod.GetNormal (normalMod.GetNormalID i 3)
+		rNorms = #(norm1, norm2, norm3) --meshop.getFaceRNormals m i
 			if numAxisNegativeScale == 0 or numAxisNegativeScale == 2 then
 			(
 				
@@ -1212,6 +1227,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			)
 		)
 	)
+	deleteModifier model normalMod
 	--messageBox ("Finished TV Counting. NewVertsListCount = "+(newVertsList.count as string)+"\n faceNewVertIndscount = "+(faceNewVertInds.count as string)+"\nCount = "+(count as string)) title:"Finished TV Counting"
 	vertNormals =undefined
 	free vertNormals
@@ -1291,7 +1307,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 				faceMatID = mid[i]
 				
 				mtlconv[faceMatID] = 1
-				
+				--format "MID %: \t faceMatID: % \t rawMaterials[faceMatID]: %\t %\t usedMatPos: %\n" i faceMatID rawMaterials[faceMatID] matUsedBefore usedMatPos
 				if facesForFinalMatID[1] == undefined then facesForFinalMatID[1] = facesForMatID[faceMatID]
 				else facesForFinalMatID[1] = facesForFinalMatID[1] + facesForMatID[faceMatID]
 			)

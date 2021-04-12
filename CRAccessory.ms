@@ -218,7 +218,7 @@ AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a
 		dropdownlist dpdn_CollisionType items:CollisionShapeTypes default:1
 
 		on mainaccessoryshaperollout open do (
-			dpdn_CollisionType.value = finditem CollisionShapeTypes CollisionType
+			dpdn_CollisionType.selection = finditem CollisionShapeTypes CollisionType
 		)
 
 		on dpdn_CollisionType selected selectedIndex do (
@@ -230,24 +230,20 @@ AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a
 
 fn AddAccessoryShapeModifier obj = (
 
-	max modify mode
-	accessoryModifier = emptyModifier()
-	
-	accessoryModifier.name = "Accessory Shape"
-	addModifier obj accessoryModifier
-	custattributes.add accessoryModifier AccessoryShapeAttribute baseObject:false
+	accessoryModifier = obj.modifiers["Accessory Shape"]
+	if accessoryModifier == undefined then (
+		max modify mode
+		accessoryModifier = emptyModifier()
+		
+		accessoryModifier.name = "Accessory Shape"
+		addModifier obj accessoryModifier
+		custattributes.add accessoryModifier AccessoryShapeAttribute baseObject:false
+	)
 	accessoryModifier
 )
 
 AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e, 0x438e5c79) version:1
 (
-
-	fn AddCollisionShape obj= (
-		if obj.modifiers["Accessory Shape"] == undefined then (
-			AddAccessoryShapeModifier obj 
-		)
-		append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
-	)
 
 	parameters main rollout:mainaccessoryrollout (
 		StopSinkingIntoTheGround type:#boolean default:false ui:chk_StopSinking
@@ -258,6 +254,18 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 		CentreOfMassHelper type:#maxobject
 		CollisionShapes type:#maxObjectTab tabsizevariable:true
 		Joints type:#string ui:txt_Joints height:200
+	)
+
+	fn AddCollisionShape obj= (
+		if obj.modifiers["Accessory Shape"] == undefined then (
+			AddAccessoryShapeModifier obj 
+		)
+		existingShape = for oldshape in CollisionShapes where oldshape.node == obj collect oldshape
+
+		if(existingShape == undefined or existingShape.count == 0) then
+		(
+			append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
+		)
 	)
 	rollout mainaccessoryrollout "Accessory" (
 		checkbox chk_StopSinking "Stop Sinking Into Ground"
@@ -281,11 +289,14 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 )
 fn AddAccessoryTXTModifier obj = (
 
-	max modify mode
-	accessoryModifier = emptyModifier()
-	
-	accessoryModifier.name = "Accessory Settings"
-	addModifier obj accessoryModifier
-	custattributes.add accessoryModifier AccessoryTXTAttribute baseObject:false
+	accessoryModifier = obj.modifiers["Accessory Settings"]
+	if accessoryModifier == undefined then (
+		max modify mode
+		accessoryModifier = emptyModifier()
+		
+		accessoryModifier.name = "Accessory Settings"
+		addModifier obj accessoryModifier
+		custattributes.add accessoryModifier AccessoryTXTAttribute baseObject:false
+	)
 	accessoryModifier
 )

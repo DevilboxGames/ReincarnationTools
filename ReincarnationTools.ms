@@ -11,7 +11,7 @@ fileIn "CRStructs.ms"
 --fileIn "CRHelpsFunctions.ms"
 fileIn "CRSkeletalAnimation.ms"
 
-
+filein "CRRenderUIAssets.ms"
 
 filein "CRLights.ms"
 fileIn "CRHierarchyTools.ms"
@@ -19,6 +19,7 @@ fileIn "CRHierarchyTools.ms"
 fileIn "CRPlugins.ms"
 fileIn "CRCarTools.ms"
 fileIn "CRMaterialTools.ms"
+
 fileIn "CRAccessory.ms"
 fileIn "CRExport.ms"
 fileIn "CRExport_car.ms"
@@ -34,6 +35,7 @@ filein "CRLights.ms"
 fileIn "CRWheelTools.ms"
 fileIn "CRLevelTools.ms"
 
+fileIn "C1Mobile_Scripts.ms"
 fileIn "CRToolsUI.ms"
 
 /*

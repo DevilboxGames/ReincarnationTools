@@ -103,7 +103,62 @@ fn SetupTabs form labels:#() Layout:undefined =
 fileIn "CRToolsUI_ImportTabs.ms"
 fileIn "CRToolsUI_ExportTabs.ms"
 fileIn "CRToolsUI_Tools.ms"
+fn LoadFunsizeLaunchSettings currentScriptFolder = (
 
+	global FunsizeLaunchInfo
+
+	if FunsizeLaunchInfo == undefined then (
+		FunsizeLaunchInfo = FunsizePackAndLaunchDetails()
+	)
+	if hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" then (
+		FunsizeLaunchInfo.ADB = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ADB"
+		FunsizeLaunchInfo.DeviceIP = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "DeviceIP"
+		FunsizeLaunchInfo.GibbedPacker = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "GibbedPacker"
+		FunsizeLaunchInfo.ObbPacker = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ObbPacker"
+		FunsizeLaunchInfo.WorkingFolder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "WorkingFolder"
+		if FunsizeLaunchInfo.WorkingFolder[FunsizeLaunchInfo.WorkingFolder.Count] != "\\" then FunsizeLaunchInfo.WorkingFolder = FunsizeLaunchInfo.WorkingFolder +"\\"
+
+		FunsizeLaunchInfo.DataFolder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "DataFolder"
+		if FunsizeLaunchInfo.DataFolder[FunsizeLaunchInfo.DataFolder.Count] != "\\" then FunsizeLaunchInfo.DataFolder = FunsizeLaunchInfo.DataFolder +"\\"
+		
+		FunsizeLaunchInfo.ObbName = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ObbName"
+		FunsizeLaunchInfo.WadName = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "WadName"
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoLaunchGame") == "true" then (
+			FunsizeLaunchInfo.AutoLaunchGame = true
+		)
+		else (
+			FunsizeLaunchInfo.AutoLaunchGame = false
+		)
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoDeployObb") == "true" then (
+			FunsizeLaunchInfo.AutoDeployObb = true
+		)
+		else (
+			FunsizeLaunchInfo.AutoDeployObb = false
+		)
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoBuild") == "true" then (
+			FunsizeLaunchInfo.AutoBuild = true
+		)
+		else (
+			FunsizeLaunchInfo.AutoBuild = false
+		)
+	)
+	else (
+		FunsizeLaunchInfo.ADB = ""
+		FunsizeLaunchInfo.DeviceIP = ""
+		FunsizeLaunchInfo.GibbedPacker = ""
+		FunsizeLaunchInfo.ObbPacker = ""
+		FunsizeLaunchInfo.WorkingFolder = ""
+		FunsizeLaunchInfo.DataFolder = ""
+		FunsizeLaunchInfo.ObbName = "main.507.com.stainlessgames.carmageddon.obb"
+		FunsizeLaunchInfo.WadName = "Data_Android.wad"
+
+		FunsizeLaunchInfo.AutoLaunchGame = false
+		FunsizeLaunchInfo.AutoDeployObb = false
+		FunsizeLaunchInfo.AutoBuild = false
+		
+	)
+)
 fn ToolsStartup = 
 (
 	global CRToolsUI
@@ -136,6 +191,11 @@ fn ToolsStartup =
 		CarmaSettings.GibbedTools = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GibbedTools"
 		CarmaSettings.LOLDecoder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder"
 		CarmaSettings.MaxResolution = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Textures" "MaxResolution"
+		
+
+		LoadFunsizeLaunchSettings currentScriptFolder
+
+
 		if CarmaSettings.MaxResolution != undefined then CarmaSettings.MaxResolution = CarmaSettings.MaxResolution as Integer
 		else CarmaSettings.MaxResolution = 0
 		if CarmaSettings.MaxResolution < 64 do CarmaSettings.MaxResolution=128

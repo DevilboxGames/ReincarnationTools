@@ -153,7 +153,7 @@ fn CR_SetupCarToolsTab tabPage =
 fn SettingsButton_Pressed sender arg =
 (
 	parentDialog = windows.getChildHWND 0 "Carmageddon Reincarnation Tools"
-	createDialog carma_reincarnation_settings 300 350 parent:parentDialog[1]
+	createDialog carma_reincarnation_settings 300 790 parent:parentDialog[1] lockHeight:false
 )
 
 fn CR_SetupCommonToolsTab tabPage =

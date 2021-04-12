@@ -1,3 +1,53 @@
+fn CreateUnitCDataString unit indentation:1 = 
+(
+	whiteSpaceString = "\n"
+	for i = 1 to indentation do whiteSpaceString += "\t"
+
+	str = whiteSpaceString
+
+	for i = 1 to unit.PartObjectType.count do (
+		case unit.PartObjectType[i] of 
+		(
+			"Crushable": str += "CUnitParameters:Add_CrushablePart( \""+ unit.PartObjectName[i] +"\", "+(unit.PartValue1[i] as string)+",  "+(unit.PartValue2[i] as string)+" )"
+			"Solid": str += "CUnitParameters:Add_SolidPart( \""+ unit.PartObjectName[i] +"\", "+(unit.PartValue1[i] as string)+",  "+(unit.PartValue2[i] as string)+" )"
+			"Wheel":  str += "CUnitParameters:Add_ComplicatedWheel( \""+ unit.PartObjectName[i] +"\", "+(unit.PartValue1[i] as string)+" )"
+			"Indexed Wheel": str += "CUnitParameters:Add_IndexedComplicatedWheel( "+ unit.PartObjectName[i] +", "+(unit.PartValue1[i] as string)+" )"
+			"Tank Track":  str += "CUnitParameters:Add_CaterpillarTrack( "+ unit.PartObjectName[i] +", "+(unit.PartValue1[i] as string)+" ,)"
+		)
+		str += whiteSpaceString
+	)
+	for i = 1 to unit.Vulnerability.count do (
+		 str += "CUnitParameters:Add_Vulnerability( \""+ unit.Vulnerability[i] +"\", "+(unit.VulnerabilityValue[i] as string)+" )" + whiteSpaceString
+	)
+
+	if unit.DamageEffect_DriveActive then (
+		 str += "CUnitParameters:Set_DamageEffect_Drive( "+ (unit.DamageEffect_Drive as string) +")"+ whiteSpaceString
+	)
+
+	if unit.DamageEffect_SteeringActive then (
+		 str += "CUnitParameters:Set_DamageEffect_Steering( "+ (unit.DamageEffect_Steering as string) +")"+ whiteSpaceString
+	)
+
+	if unit.DamageEffect_BrakesActive then (
+		 str += "CUnitParameters:Set_DamageEffect_Brakes( "+ (unit.DamageEffect_Brakes as string) +")"+ whiteSpaceString
+	)
+	if unit.WastedContributionActive then (
+		 str += "CUnitParameters:Set_WastedContribution( "+ (unit.WastedContribution as string) +")"+ whiteSpaceString
+	)
+
+	if unit.WastedLinearContributionActive then (
+		 str += "CUnitParameters:Add_WastedLinearContribution( "+ (unit.WastedLinearContributionStartDamage as string) +", "+ (unit.WastedLinearContributionPartialDamage as string) +", "+ (unit.WastedLinearContributionFullDamage as string)+")"+ whiteSpaceString
+	)
+
+	if unit.IsTrailer then (
+		 str += "CUnitParameters:Set_Trailer( true )"+ whiteSpaceString
+	)
+
+	str += whiteSpaceString
+
+	str
+)
+
 fn CreateCharacteristicsCDataString obj indentation:1 =
 (
 	
@@ -77,8 +127,9 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 		if Sound_WhineVolume_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhineVolume("+(i as string)+", "+(charmod.Sound_WhineVolume_VolumeAtZero as string)+", "+(charmod.Sound_WhineVolume_SpeedAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_VolumeAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_SpeedAtMaxVolume as string)+", "+(charmod.Sound_WhineVolume_MaxVolume as string)+")"+whiteSpaceString
 		if Sound_WhinePitch_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhinePitch("+(i as string)+", "+(charmod.Sound_WhinePitch_PitchAtZero as string)+", "+(charmod.Sound_WhinePitch_MaxSpeed as string)+", "+(charmod.Sound_WhinePitch_PitchAtMaxSpeed as string)+")"+whiteSpaceString
 	)
-	return str
+	str
 )
+
 fn CreatePartCDataSection obj isRootNode:false indentation:1 =
 (
 	
@@ -636,9 +687,151 @@ fn ExportStructureXML xmlFilename obj =
 	)
 )
 
-fn ExportVFXAnchors filename carRoot = (
+fn FindVFXAnchorObjects obj = (
+	anchors = #()
+	if obj.modifiers["VFX Anchor"] != undefined then (
+		append anchors obj
+	)
+
+	for child in obj.children do (
+		anchors = anchors + (FindVFXAnchorObjects child)
+	)
+	anchors
 )
-fn ExportSystemsDamageXML filename carRoot = (
+fn ExportVFXAnchors filename carRoot = (
+	anchorsObjects = FindVFXAnchorObjects carRoot
+	anchorGroups = #()
+	anchorGroupNames = #()
+
+	for obj in anchorsObjects do (
+		for objmod in obj.modifiers do (
+			if objmod.name =="VFX Anchor" then (
+				helperObj = objmod.HelperObject.node
+				offset = ConvertToCRSpace (helperObj.position - obj.position)
+				rot = ConvertToCRSpace (helperObj.rotation as EulerAngles)
+				scale = ConvertToCRSpace helperObj.scale
+				scale.x = abs scale.x
+				scale.y = abs scale.y
+				scale.z = abs scale.z
+				anchorData = VFXAnchorData AnchorID:objmod.AnchorID LumpName:obj.name offset:offset rotation:rot scale:scale
+				groupIndex = finditem anchorGroupNames objmod.GroupName
+				if groupIndex < 1 then (
+					append anchorGroupNames objmod.GroupName
+					append anchorGroups (VFXAnchorGroupData GroupName:objmod.GroupName anchors:#(anchorData))
+				)
+				else (
+					append anchorGroups[groupIndex].anchors anchorData
+				)
+			)
+		)
+	)
+
+	vfxAnchorText = stringstream ""
+
+	format "module( ..., vfx_anchors_definition )\n\ntags = {\n" to:vfxAnchorText
+
+	for anchorGroup in anchorGroups do (
+		format "\t{\n\t\tid = \"%\",\n\n" anchorGroup.GroupName to:vfxAnchorText
+
+		for anchorObject in anchorGroup.anchors do (
+			format "\t\t{\n" to:vfxAnchorText
+			format "\t\t\tid = \"%\",\n" anchorObject.AnchorID to:vfxAnchorText
+			format "\t\t\toffset = {%, %, %},\n" anchorObject.offset.x anchorObject.offset.y anchorObject.offset.z to:vfxAnchorText
+			format "\t\t\tangle = {%, %, %},\n" anchorObject.rotation.x anchorObject.rotation.y anchorObject.rotation.z to:vfxAnchorText
+			format "\t\t\tscale = {%, %, %}\n" anchorObject.scale.x anchorObject.scale.y anchorObject.scale.z to:vfxAnchorText
+			format "\t\t},\n" to:vfxAnchorText
+		)
+
+		format "\t},\n" to:vfxAnchorText
+	)
+	format "}" to:vfxAnchorText
+
+
+
+	if filename != undefined then (
+
+		f = openfile filename mode:"w"
+		format "%" (vfxAnchorText as string) to:f
+		close f
+	)
+)
+fn FindDamageUnits obj = (
+	dmgUnits = #()
+
+	if isProperty obj #modifiers then (
+	for mod in obj.modifiers do (
+		if (isProperty mod #unitname) then (
+			append dmgUnits mod
+		)
+	) 
+	)
+	for child in obj.children do (
+		join dmgUnits (FindDamageUnits child)
+	)
+	dmgUnits 
+)
+fn ExportSystemsDamageXML xmlfilename carRoot = (
+
+	dotnet.loadAssembly "system.xml"
+	try
+	(
+		dmgUnits =FindDamageUnits carRoot
+		xmlsettings = (dotnetobject "system.xml.xmlwritersettings")
+		xmlsettings.indent = true
+		xmlsettings.IndentChars = "\t"
+		--xmlsettings.NewLineHandling = (dotnetclass "system.xml.NewLineHandling").Entitize
+		--xmlwriter = (dotnetclass "system.xml.xmlwriter").create xmlfilename xmlsettings
+		
+		xmlwriter = dotnetobject "system.xml.xmltextwriter" xmlfilename (dotnetclass "system.text.encoding").UTF8
+		--xmlwriter.Formatting = (dotnetclass "system.xml.formatting").Indented
+		--xmlwriter.Indentation = 4
+
+		--xmlDoc=dotNetObject "system.xml.xmlDocument"
+		--xmlRoot = xmlDoc.createelement "STRUCTURE"
+		--xmlDoc.AppendChild xmlRoot
+
+		xmlWriter.WriteStartDocument()
+		xmlWriter.WriteStartElement "STRUCTURE"
+		xmlWriter.WriteWhiteSpace "\n\t"
+			xmlWriter.WriteStartElement "SYSTEMS"
+			for unit in dmgUnits do (
+				xmlWriter.WriteWhiteSpace "\n\t\t"
+				xmlWriter.WriteStartElement "UNIT"
+				xmlWriter.WriteAttributeString "name" unit.unitname
+				xmlWriter.WriteCData (CreateUnitCDataString unit indendation:3)
+-- 				
+				xmlWriter.WriteWhiteSpace "\n\t\t"
+				xmlWriter.WriteEndElement()
+			)
+		xmlWriter.WriteWhiteSpace "\n\t"
+		xmlWriter.WriteEndElement()
+		xmlWriter.WriteWhiteSpace "\n"
+		xmlWriter.WriteEndDocument()
+
+		--xmlDecl = xmlDoc.CreateXmlDeclaration "1.0" "" ""
+		--xmlDoc.InsertBefore xmlDecl xmlRoot
+
+		--characteristicsNode = xmlDoc.createelement "CHARACTERISTICS"
+		--cdatastr = CreateCharacteristicsCDataString obj
+		--characteristicsCData = xmlDoc.createcdatasection cdatastr
+		--characteristicsNode.appendchild characteristicscdata
+		--xmlRoot.appendchild  characteristicsNode
+
+		--customZonesNode = xmlDoc.CreateElement "CUSTOM_ZONES" 
+		--xmlRoot.appendchild customZonesNode
+
+		--xmlRoot.Appendchild (RecurseStructure xmlDoc obj isRootNode:true)
+
+		--xmlDoc.WriteTo (xmlwriter)
+		xmlwriter.flush()
+		xmlwriter.close()
+	)
+	catch
+	(
+		format "Current exception: %\n" (getCurrentException())
+		if xmlwriter != undefined then xmlwriter.close()
+		throw()
+	)
 )
 
 fn ExportCarVehicleCFG filename cfgMod = (

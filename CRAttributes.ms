@@ -202,7 +202,7 @@ fn testeventhandler sender ev = (
 	$.name = "pressed the buttons"
 	format "Event handler triggered for %\n" sender.name
 )
-(
+
 	MtlMat_CA = attributes mtlmat_data
 	attribID:#(0x371d0fa1, 0x1de32116)
 	(
@@ -474,6 +474,8 @@ fn testeventhandler sender ev = (
 				)
 			)
 
+
+
 			fn SetLayerFlags = (
 				flags = 0
 				if(chk_NO_MIPMAP.checked) then (
@@ -611,7 +613,7 @@ refreshLayerList()
 			)
 		)
 	)
-)
+
 
 /*********************************
 ***** CNT ATTRIBUTES
@@ -5436,35 +5438,343 @@ CarWheelAttribute = attributes CarWheelAttrib
 	)
 )
 
+
 CarSystemDamageUnitAttribute = attributes CarSysDamageUnit attribID:#(0x1a22add2, 0x6414275c) version:1
 (
 	parameters main rollout:SysDamageAttribRollout
 	(
-		UnitName type:#string default:"Bodywork"
-		WastedLinearContribution type:#point3 default:[1.0, 0.5, 1.0]
-		WastedLinearContributionActive type:#boolean default:false
+		UnitName type:#string default:"bodywork" ui:txt_UnitName
+		WastedLinearContributionStartDamage type:#float default:1.0 ui:spn_WastedLinearContributionStartDamage
+		WastedLinearContributionPartialDamage type:#float default:0.4 ui:spn_WastedLinearContributionPartialDamage
+		WastedLinearContributionFullDamage type:#float default:0.8 ui:spn_WastedLinearContributionFullDamage
+		WastedLinearContributionActive type:#boolean default:false ui:chk_WastedLinearContributionActive
 		WastedContribution type:#float default:1.0
 		WastedContributionActive type:#boolean default:false
-		DamageEffect_Drive type:#float default:1.0
-		DamageEffect_DriveActive type:#boolean default:false
-		DamageEffect_Steering type:#float default:1.0
-		DamageEffect_SteeringActive type:#boolean default:false
-		DamageEffect_Brakes type:#float default:1.0
-		DamageEffect_BrakesActive type:#boolean default:false
-		Vulnerability type:#stringTab
-		ComplicatedWheelObject type:#maxObjectTab
-		ComplicatedWheelValue type:#floatTab
-		SolidPartObject type:#maxObjectTab
-		SolidPartValue type:#point3Tab
-		CrushablePartObject type:#maxObjectTab
-		CrushablePartValue type:#point3Tab
+		DamageEffect_Drive type:#float default:1.0 ui:spn_DamageEffect_Drive
+		DamageEffect_DriveActive type:#boolean default:false ui:chk_DamageEffect_DriveActive
+		DamageEffect_Steering type:#float default:1.0 ui:spn_DamageEffect_Steering
+		DamageEffect_SteeringActive type:#boolean default:false ui:chk_DamageEffect_SteeringActive
+		DamageEffect_Brakes type:#float default:1.0 ui:spn_DamageEffect_Brakes
+		DamageEffect_BrakesActive type:#boolean default:false ui:chk_DamageEffect_BrakesActive
+		Vulnerability type:#stringTab tabsizevariable:true
+		VulnerabilityValue type:#floatTab tabsizevariable:true
+		PartObjectName type:#stringTab tabsizevariable:true
+		PartObjectType type:#stringTab tabsizevariable:true
+		PartValue1 type:#floatTab tabsizevariable:true
+		PartValue2 type:#floatTab tabsizevariable:true
+		IsTrailer type:#boolean default:false ui:chk_IsTrailer
 	)
 	rollout SysDamageAttribRollout "System Damage Rollout"
 	(
-		
+		edittext txt_UnitName "Unit Name"
+		group "Wasted Contribution" (
+			checkbox chk_WastedContributionActive "Wasted Contribution" 
+			spinner spn_WastedContribution ""
+			checkbox chk_WastedLinearContributionActive "Wasted Linear Contribution"
+			label lbl_WastedLinearContributionStartDamage "Start Damage Point"
+			spinner spn_WastedLinearContributionStartDamage ""
+			label lbl_WastedLinearContributionPartialDamage "Partial Damage Amount"
+			spinner spn_WastedLinearContributionPartialDamage ""
+			label lbl_WastedLinearContributionFullDamage "Full Damage Amount"
+			spinner spn_WastedLinearContributionFullDamage ""
+
+		) 
+		group "Damage Effect" (
+			checkbox chk_DamageEffect_DriveActive "Drive" 
+			spinner spn_DamageEffect_Drive ""
+			checkbox chk_DamageEffect_SteeringActive "Steering" 
+			spinner spn_DamageEffect_Steering ""
+			checkbox chk_DamageEffect_BrakesActive "Brakes" 
+			spinner spn_DamageEffect_Brakes ""
+
+		) 
+		group "Unit Parts" (
+			checkbox chk_IsTrailer "Is a trailer?"
+			button btn_AddObj "Add"
+			dotNetControl lv_Objects "listview" height:100
+			button btn_RemoveObj "Delete Selected"
+			dropdownlist dpdn_PartType "Part Type" items:#("Crushable", "Solid", "Wheel", "Indexed Wheel", "Tank Track")
+			edittext txt_PartName "Part Name"
+			spinner spn_Value1 "Contribution"
+ 			spinner spn_Value2 "Displacement (m)" tooltip:"For crush parts: Average displacement of verts in meters\nFor solid parts: total disp of parts"
+
+		)
+		group "Vulnerability" (
+			button btn_AddVulnerability "Add"
+			dotNetControl lv_Vulnerabilities "listview" height:100
+			button btn_RemoveVulnerability "Delete Selected"
+			dropdownlist dpdn_VulnerabilityType "Vulnerability Type" items:#("overall","top","underside","rear","front","left_front","right_rear","right_side","right_front","random","left_rear","left_side")
+			spinner spn_VulnerabilityValue "Value"
+		)
+
+		on SysDamageAttribRollout open do (
+
+			if WastedContributionActive then (
+				spn_WastedContribution.enabled = true
+			)
+			else (
+				spn_WastedContribution.enabled = false
+			)
+
+			if WastedLinearContributionActive then (
+				spn_WastedLinearContributionPartialDamage.enabled = true
+				spn_WastedLinearContributionStartDamage.enabled = true
+				spn_WastedLinearContributionFullDamage.enabled = true
+			)
+			else (
+				spn_WastedLinearContributionPartialDamage.enabled = false
+				spn_WastedLinearContributionStartDamage.enabled = false
+				spn_WastedLinearContributionFullDamage.enabled = false
+			)
+			
+			lv_Objects.view = (dotnetclass "view").details
+			lv_Objects.multiselect = false
+			lv_Objects.fullrowselect = true
+			lv_Objects.columns.add "Type" width:50
+			lv_Objects.columns.add "Name" width:50
+			dpdn_PartType.enabled = false
+			txt_PartName.enabled = false
+			spn_Value1.enabled = false
+			spn_Value2.enabled = false
+
+			for i=1 to PartObjectName.count do (
+				lvitem = dotNetObject "listviewitem" PartObjectType[i]
+				lvitem.subitems.add (PartObjectName[i])
+				lv_Objects.items.add lvItem
+			)
+			lv_Vulnerabilities.view = (dotnetclass "view").details
+			lv_Vulnerabilities.multiselect = false
+			lv_Vulnerabilities.fullrowselect = true
+			lv_Vulnerabilities.columns.add "Type" width:50
+			lv_Vulnerabilities.columns.add "Value" width:50
+			dpdn_VulnerabilityType.enabled = false
+			spn_VulnerabilityValue.enabled = false
+
+			for i=1 to Vulnerability.count do (
+				lvitem2 = dotNetObject "listviewitem" Vulnerability[i]
+				vulnValue = VulnerabilityValue[i] as string
+				lvitem2.subitems.add vulnValue
+				lv_Vulnerabilities.items.add lvItem2
+			)
+		)
+		on chk_WastedContributionActive changed state do (
+			if state then (
+				spn_WastedContribution.enabled = true
+			)
+			else (
+				spn_WastedContribution.enabled = false
+			)
+		)
+		on chk_DamageEffect_DriveActive changed state do (
+			if state then (
+				spn_DamageEffect_Drive.enabled = true
+			)
+			else (
+				spn_DamageEffect_Drive.enabled = false
+			)
+		)
+		on chk_DamageEffect_SteeringActive changed state do (
+			if state then (
+				spn_DamageEffect_Steering.enabled = true
+			)
+			else (
+				spn_DamageEffect_Steering.enabled = false
+			)
+		)
+		on chk_DamageEffect_BrakesActive changed state do (
+			if state then (
+				spn_DamageEffect_Brakes.enabled = true
+			)
+			else (
+				spn_DamageEffect_Brakes.enabled = false
+			)
+		)
+		on chk_WastedLinearContributionActive changed state do (
+			if state then (
+				spn_WastedLinearContributionPartialDamage.enabled = true
+				spn_WastedLinearContributionStartDamage.enabled = true
+				spn_WastedLinearContributionFullDamage.enabled = true
+			)
+			else (
+				spn_WastedLinearContributionPartialDamage.enabled = false
+				spn_WastedLinearContributionStartDamage.enabled = false
+				spn_WastedLinearContributionFullDamage.enabled = false
+			)
+		)
+		on txt_UnitName changed value do (
+			format "%\n" (refs.dependents this)[1].name
+			(refs.dependents this)[1].name = value + " damage unit"
+		)
+		on lv_Objects selectedindexchanged ev do (
+			if lv_Objects.selectedindices.count > 0 then (
+				ind = lv_Objects.selectedindices.item[0]
+				objName = PartObjectName[ind + 1]
+				objType = PartObjectType[ind + 1]
+				objValue1 = PartValue1[ind + 1]
+				objValue2 = PartValue2[ind + 1]
+
+				dpdn_PartType.enabled = true
+				dpdn_PartType.selection = finditem dpdn_PartType.items objType
+
+				txt_PartName.enabled = true
+				txt_PartName.text = objName
+
+				spn_Value1.enabled = true
+				spn_Value1.value = objValue1
+				spn_Value2.enabled = false
+				spn_Value2.value = objValue2
+				if(objType == "Solid" or objType == "Crushable") then (
+					spn_Value2.enabled = true
+
+				)
+			)
+			else (
+				dpdn_PartType.enabled = false
+				txt_PartName.enabled = false
+				spn_Value1.enabled = false
+				spn_Value2.enabled = false
+			)
+		)
+		on lv_Vulnerabilities selectedindexchanged ev do (
+
+			if lv_Vulnerabilities.selectedindices.count > 0 then (
+				ind = lv_Vulnerabilities.selectedindices.item[0]
+				vulnType = Vulnerability[ind + 1]
+				vulnValue = VulnerabilityValue[ind + 1]
+				
+				dpdn_VulnerabilityType.enabled = true
+				dpdn_VulnerabilityType.selection = finditem dpdn_VulnerabilityType.items vulnType
+
+				spn_VulnerabilityValue.enabled = true
+				spn_VulnerabilityValue.value = vulnValue
+			)
+			else (
+				dpdn_VulnerabilityType.enabled = false
+				spn_VulnerabilityValue.enabled = false
+			)
+		)
+
+		on btn_AddObj pressed do (
+			append PartObjectName "obj"
+			append PartObjectType "Solid"
+			append PartValue1 1.0
+			append PartValue2 0.5
+
+			lvitem = dotNetObject "listviewitem" PartObjectType[PartObjectType.count]
+			lvitem.subitems.add (PartObjectName[PartObjectType.count])
+			lv_Objects.items.add lvItem
+
+			lv_Objects.SelectedItems.clear()
+			lvItem.selected = true
+		)
+		on btn_AddVulnerability pressed do (
+			append Vulnerability "front"
+			append VulnerabilityValue 1.0
+
+			lvitem = dotNetObject "listviewitem" Vulnerability[Vulnerability.count]
+			lvitem.subitems.add (VulnerabilityValue[Vulnerability.count])
+			lv_Vulnerabilities.items.add lvItem
+
+			lv_Vulnerabilities.SelectedItems.clear()
+			lvItem.selected = true
+		)
+		on btn_RemoveObj pressed do (
+			if lv_Objects.selectedindices.count > 0 then (
+				ind = lv_Objects.selectedindices.item[0] + 1
+				deleteitem PartObjectType ind
+				deleteitem PartObjectName ind
+				deleteitem PartValue1 ind
+				deleteitem PartValue2 ind
+				lv_Objects.items.removeat(lv_Objects.selectedindices.item[0])
+			)
+		)
+		on btn_RemoveVulnerability pressed do (
+			if lv_Vulnerabilities.selectedindices.count > 0 then (
+				ind = lv_Vulnerabilities.selectedindices.item[0] + 1
+				deleteitem Vulnerability ind
+				deleteitem VulnerabilityValue ind
+				lv_Vulnerabilities.items.removeat(lv_Vulnerabilities.selectedindices.item[0])
+			)
+		)
+		on dpdn_VulnerabilityType selected ind do (
+			if lv_Vulnerabilities.selectedindices.count > 0 then (
+				objind = lv_Vulnerabilities.selectedindices.item[0] + 1
+				Vulnerability[objind] = dpdn_VulnerabilityType.items[ind]
+				lv_Vulnerabilities.selecteditems.item[0].subitems.item[0].text = dpdn_VulnerabilityType.items[ind]
+			)
+		)
+		on dpdn_PartType selected ind do (
+			if lv_Objects.selectedindices.count > 0 then (
+				objind = lv_Objects.selectedindices.item[0] + 1
+				PartObjectType[objind] = dpdn_PartType.items[ind]
+				objType = dpdn_PartType.items[ind]
+				format "Selected part type %\n" objType
+				format "%\n" dpdn_PartType.items
+				if(objType == "Solid" or objType == "Crushable") then (
+					spn_Value2.enabled = true
+
+				)
+				else (
+					spn_Value2.enabled = false
+				)
+				lv_Objects.selecteditems.item[0].subitems.item[0].text = dpdn_PartType.items[ind]
+			)
+		)
+		on spn_VulnerabilityValue changed value do (
+			if lv_Vulnerabilities.selectedindices.count > 0 then (
+				objind = lv_Vulnerabilities.selectedindices.item[0] + 1
+				VulnerabilityValue[objind] = value
+				lv_Vulnerabilities.selecteditems.item[0].subitems.item[1].text = value as string
+			)
+		)
+		on txt_PartName changed value do (
+			if lv_Objects.selectedindices.count > 0 then (
+				objind = lv_Objects.selectedindices.item[0] + 1
+				PartObjectName[objind] = value
+				lv_Objects.selecteditems.item[0].subitems.item[1].text = value
+			)
+		)
+		on spn_Value1 changed value do (
+			if lv_Objects.selectedindices.count > 0 then (
+				objind = lv_Objects.selectedindices.item[0] + 1
+				PartValue1[objind] = value
+			)
+		)
+		on spn_Value2 changed value do (
+			if lv_Objects.selectedindices.count > 0 then (
+				objind = lv_Objects.selectedindices.item[0] + 1
+				PartValue2[objind] = value
+			)
+		)
 	)
 )
 
+VFXAnchorAttribute = attributes VFXAnchorCustAttribute attribid:#(0xca2f36c, 0x5847641) version:1
+(
+	parameters main rollout:VFXAnchorsParams
+	(
+		HelperObject type:#maxObject ui:pck_HelperObject
+		GroupName type:#string ui:txt_groupName
+		AnchorID type:#string ui:txt_anchorid
+
+	)
+	rollout VFXAnchorsParams "VFX Anchor"
+	(
+		edittext txt_groupName "VFX Group"
+		edittext txt_anchorid "Anchor ID"
+		pickbutton pck_HelperObject "Pick Object" filter:target_helper_filter autodisplay:true labelOnTop:true
+	button btn_SelectHelper "Select Helper Object"
+		on pck_HelperObject picked obj do
+		(
+			HelperObject = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+		)
+		on btn_SelectHelper pressed do (
+			if HelperObject != undefined && HelperObject.node != undefined then (
+				select HelperObject.node
+			)
+		)
+	)
+)
 
 PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x5a597737) version:1
 (

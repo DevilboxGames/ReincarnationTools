@@ -2,6 +2,18 @@ fn KeepMaxAlive =
 (
 	 if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 )
+fn InvLerp a b v = (
+	va = v - a
+	ba = b - a
+	t = va / ba
+	t
+)
+
+fn Lerp a b t = (
+	it = 1.0 - t
+	v = it * a + b * t
+	v
+)
 fn RenameDuplicateParts = (
 	for obj in objects do (
 		duplicateNames = 1
@@ -100,9 +112,13 @@ fn StopNullNodesRendering = (
 	)
 )
 
+fn ScatterObjectsOnMesh target objects count countIsPerArea:false = (
+	
+)
+
 fn computeConvexHull theNode maxVerts:64 pushAmt:0.0 cleanup:true = (
 	with redraw off (
-		local rb = MassFX_RBody()
+		/*local rb = MassFX_RBody()
 		select theNode
 		local cmdMode = getCommandPanelTaskMode()		-- store previous mode
 		setCommandPanelTaskMode #modify
@@ -119,7 +135,12 @@ fn computeConvexHull theNode maxVerts:64 pushAmt:0.0 cleanup:true = (
 		if cleanup then (
 			deleteModifier theNode 1
 			setCommandPanelTaskMode cmdMode		-- restore previous mode
-		)
+		)*/
+		hull = Editable_Mesh name:(theNode.name + "_hull")
+		hull.mesh = nvpx.CreateBoundingConvex theNode maxVerts pushAmt
+		hull.pivot = hull.center
+		hull.pos = theNode.center
+		hull.pivot = [0,0,0]
 	)
 	hull
 )
@@ -996,4 +1017,9 @@ fn SplitVertexNormals =
 fn IsObjectAPedBonesList obj =
 (
 	 (obj.modifiers["Ped Bones List"] != undefined)
+)
+
+fn SetMeshVertColoursToGrey obj = (
+	verts = obj.verts as bitarray
+	for v in verts do setVertColor obj v (color 127 127 127)
 )

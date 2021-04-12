@@ -842,7 +842,7 @@ fn LoadMATFile mln &progressValue imageExtension:".tif"=
 	fclose bf
 )
 
-fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true prefix:"" imp_scale69:true =
+fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true prefix:"" imp_scale69:true imp_onlyNonCars:false =
 (
 	
 		global smth
@@ -859,6 +859,7 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 		global mname 
 
 		global loadedObjects
+		if loadedObjects == undefined then loadedObjects = #()
 		firstMesh = undefined
 	bf=openbinfile fnm "rb"
 			head=freadhead bf
@@ -910,43 +911,46 @@ fn LoadDATFile fnm &progressValue &progressText imp_mat:true imp_smth:true imp_q
 							--format "% mid's = %\n\n" oname mid
 						)
 					)while chunk != 0
-					--Format "% has % verts and % faces\n" oname vlst.count flst.count
-					if vlst==undefined do vlst=#()
-					if flst==undefined do flst=#()
-					if tvlst==undefined do tvlst=#()
-					if mlst==undefined then mlst=#()
-					if mid==undefined or mid.count!=flst.count do
-					(
-						mid=for i=1 to flst.count collect 1
-					)
-					o=mesh vertices:vlst faces:flst materialids:mid name:(prefix+oname) tverts:tvlst
-					o.transform = matrix3 1
-					mmesh = o.mesh
 
-					for i = 1 to mid.count do (
-						setFaceMatID mmesh i mid[i]
-					)
-					setNumCPVVerts mmesh vlst.count
-					buildVCFaces mmesh
-					try 
-					(
-						buildTVFaces mmesh 
-						for i = 1 to mmesh.numfaces do (
-							setTVFace mmesh i (getFace mmesh i)
-							setVCFace mmesh i (getFace mmesh i)
-							setEdgeVis mmesh i 1 true
-							setEdgeVis mmesh i 2 true
-							setEdgeVis mmesh i 3 true
+					if oname[1] == "&" or imp_onlyNonCars == false then (
+ 					--Format "% has % verts and % faces\n" oname vlst.count flst.count
+						if vlst==undefined do vlst=#()
+						if flst==undefined do flst=#()
+						if tvlst==undefined do tvlst=#()
+						if mlst==undefined then mlst=#()
+						if mid==undefined or mid.count!=flst.count do
+						(
+							mid=for i=1 to flst.count collect 1
 						)
-					)
-					catch()
-					if imp_mat == true do setomaterial o mlst materials materialnames
-					if imp_smth == true do fsetsmoothgroups o smth
-					if imp_quad == true do fsetedgevis o edv
-					update o
-					append loadedObjects o
-					if firstMesh == undefined then (
-						firstMesh = o
+						o=mesh vertices:vlst faces:flst materialids:mid name:(prefix+oname) tverts:tvlst
+						o.transform = matrix3 1
+						mmesh = o.mesh
+
+						for i = 1 to mid.count do (
+							setFaceMatID mmesh i mid[i]
+						)
+						setNumCPVVerts mmesh vlst.count
+						buildVCFaces mmesh
+						try 
+						(
+							buildTVFaces mmesh 
+							for i = 1 to mmesh.numfaces do (
+								setTVFace mmesh i (getFace mmesh i)
+								setVCFace mmesh i (getFace mmesh i)
+								setEdgeVis mmesh i 1 true
+								setEdgeVis mmesh i 2 true
+								setEdgeVis mmesh i 3 true
+							)
+						)
+						catch()
+						if imp_mat == true do setomaterial o mlst materials materialnames
+						if imp_smth == true do fsetsmoothgroups o smth
+						if imp_quad == true do fsetedgevis o edv
+						update o
+						append loadedObjects o
+						if firstMesh == undefined then (
+							firstMesh = o
+						)
 					)
 					--if imp_act.checked == false do rotate o (angleaxis 90 [1,0,0])
 					vlst=undefined
@@ -972,6 +976,7 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 		global materials
 		global materialnames
 		global deletemodels
+		global accessoryModels
 		global tmtab 
 		
 		global aname
@@ -1088,11 +1093,18 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 								format "===============\n=====Fuck, mat % not found!\n" amat
 							)
 						)
-						m.name = prefix+aname
+						m.name = prefix+mname
 						--format "writing mesh actor: % - % / % - %\n" mname prefix aname m.pos
 						setUserProp m "datName" mname
 						if addp == true do append prnt m
-						append deletemodels model
+						if mname[1]!="&" then
+						(
+							append deletemodels model
+						)
+						else if mname[1]=="&" then
+						(
+							append accessoryModels m
+						)
 					)
 				)
 				if aname!=undefined and mname==undefined and aname!="" do --write group actors with names
@@ -1164,15 +1176,18 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 			keepprocessfocus()
 		)while chunk!=0 and binend bf==false
 		
-		for obj in objects do if isgrouphead obj == true do setGroupOpen obj false
-		
-		progressText = "status: updating bboxes"
-		for i=1 to objects.count do
-		(
-			obj = objects[i]
-			if isgrouphead obj == true do setgroupopen obj true
-			progressValue = 100.*(i)/objects.count
-			keepprocessfocus()
+		if imp_group then (
+			for obj in objects do if isgrouphead obj == true do setGroupOpen obj false
+		)
+		if imp_group then (
+			progressText = "status: updating bboxes"
+			for i=1 to objects.count do
+			(
+				obj = objects[i]
+				if isgrouphead obj == true do setgroupopen obj true
+				progressValue = 100.*(i)/objects.count
+				keepprocessfocus()
+			)
 		)
 	)
 	fclose bf
@@ -1184,20 +1199,23 @@ fn LoadACTFile acn &progressValue &progressText imp_hier:true imp_group:true imp
 	rootmesh
 )
 
-fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true imp_mat:true imp_quad:true imp_act:true imp_other_coord_sys: false prefix:"" imageExtension:".tif"=
+fn LoadC1TXT fnm &progValue &progText imp_onlyNonCars:false imp_hier:true imp_group:false imp_smth:true imp_mat:true imp_quad:true imp_act:true imp_other_coord_sys: false prefix:"" imageExtension:".tif" imp_onlyMainMeshes:false=
 (
-	global smth=#()
+		global smth=#()
 		global edv=#()
 		global materials=#()
 		global materialnames=#()
 		global deletemodels=#()
+		global accessorymodels=#()
 		global tmtab = #()
+		global loadedObjects = #()
 		
 		global aname = undefined
 		global atm = undefined
 		global abbox = undefined
 		global amat = undefined
 		global mname = undefined
+		
 		
 		rootmesh = undefined
 		if fnm != undefined then
@@ -1249,12 +1267,19 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 				for dat in dataFiles[3] do
 				(
 					datFilename = modelsPath + dat
-					LoadDATFile datFilename &progvalue &progtext imp_smth: imp_smth imp_mat:imp_mat imp_quad:imp_quad imp_other_coord_sys:imp_other_coord_sys prefix: prefix
+					LoadDATFile datFilename &progvalue &progtext imp_smth: imp_smth imp_mat:imp_mat imp_quad:imp_quad imp_other_coord_sys:imp_other_coord_sys prefix: prefix imp_onlyNonCars:imp_onlyNonCars
 				)
 				if imp_act then for act in dataFiles[4] do
 				(
 					actFilename = actorsPath + act
 					rootmesh = LoadACTFile actFilename &progvalue &progtext imp_hier:imp_hier imo_group:imp_group prefix: prefix
+				)
+				if imp_onlyMainMeshes then (
+					for obj in loadedObjects do (
+						if (isValidNode obj) and obj.parent == undefined and obj != rootmesh then(
+							delete obj
+						)
+					)
 				)
 		)
 		
@@ -1274,7 +1299,7 @@ fn LoadC1TXT fnm &progValue &progText imp_hier:true imp_group:true imp_smth:true
 		rootmesh
 )
 
-fn LoadAllC1TXTFiles dir textfiles:undefined=
+fn LoadAllC1TXTFiles dir imp_onlyNonCars:false imp_act:true textfiles:undefined=
 (
 	if textfiles == undefined then 
 		textfiles = getFiles (dir+"*.txt")
@@ -1293,7 +1318,7 @@ fn LoadAllC1TXTFiles dir textfiles:undefined=
 		--format "currentPos: % \t\tcurrentCol: %\t\t currentRow\n" (transMatrix currentPos) currentCol currentRow
 		in coordsys (transMatrix currentPos)
 		(
-			LoadC1TXT f &progValue &progText prefix:(getFilenameFile f) imageExtension:".png" imp_other_coord_sys:true
+			LoadC1TXT f &progValue &progText prefix:(getFilenameFile f) imp_act:imp_act imageExtension:".png" imp_onlyNonCars:imp_onlyNonCars imp_other_coord_sys:true
 		)
 		currentCol += 1
 		if currentCol >= numPerRow then
@@ -1304,6 +1329,25 @@ fn LoadAllC1TXTFiles dir textfiles:undefined=
 		)
 	)
 )
+
+fn LoadAllC1LevelTXTFiles dir imp_onlyNonCars:false imp_act:true textfiles:undefined=
+(
+	if textfiles == undefined then 
+		textfiles = getFiles (dir+"*.txt")
+	progValue = 0
+	progText = ""
+	for f in textFiles do
+	(
+		layerObject = LayerManager.getLayerFromName (getFilenameFile f)
+		if layerObject == undefined then
+		(
+			layerObject= LayerManager.newLayerFromName (getFilenameFile f)
+		)
+		layerObject.current = true
+		LoadC1TXT f &progValue &progText imp_act:imp_act imageExtension:".png" imp_onlyNonCars:imp_onlyNonCars imp_other_coord_sys:true
+		
+	)
+)
 fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true imp_hier:true imp_group:true imp_act:true prefix:"" imp_scale69:true= (
 
 		global smth=#()
@@ -1311,6 +1355,7 @@ fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_qua
 		global materials=#()
 		global materialnames=#()
 		global deletemodels=#()
+		global accessorymodels=#()
 		global tmtab = #()
 		global loadedObjects = #()
 		

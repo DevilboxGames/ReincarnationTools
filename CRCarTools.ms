@@ -11,6 +11,52 @@ fn SetAllCNTsToBakeScale obj =
 	for i=1 to obj.children.count do SetAllCNTsToBakeScale obj.children[i]
 )
 
+fn AddSystemDamageUnit obj unitname:"bodywork" =
+(
+	max modify mode
+	structPartModifier = emptyModifier()
+	
+	structPartModifier.name = unitname + " damage unit"
+	addModifier obj structPartModifier
+	custattributes.add structPartModifier CarSystemDamageUnitAttribute baseObject:false
+	structPartModifier.UnitName = unitname
+	structPartModifier
+)
+
+fn AddVFXAnchor obj groupname:"Exhaust" anchorid:undefined offset:[0,0,0] rot:[0,0,0] scale:[0,0,0] =
+(
+
+	newDummyName = obj.name+"_VFXHelper_"+groupname
+	newDummyPosition = offset*obj.transform
+	newDummy = point prefix:newDummyName position:newDummyPosition scale:scale rotation:((EulerAngles rot.x rot.y rot.z) as quat)					
+	newDummy.size = 1
+	--newDummy.axistripod = true
+	newDummy.cross = true
+
+	if anchorid == undefined then (
+		anchorid = obj.name+"_vfxanchor"
+	)
+
+	max modify mode
+	structPartModifier = emptyModifier()
+	
+	structPartModifier.name = "VFX Anchor"
+	addModifier obj structPartModifier
+	custattributes.add structPartModifier VFXAnchorAttribute baseObject:false
+	structPartModifier.GroupName = groupname
+	structPartModifier.AnchorID = anchorid
+	structPartModifier.HelperObject  = nodeTransformMonitor node:newDummy forwardTransformChangeMsgs:false
+	structPartModifier
+)
+
+fn AddStandardDamageUnits obj = 
+(
+	units = #("bodywork", "transmission", "steering", "fl_wheel", "fr_wheel", "rl_wheel", "rr_wheel")
+	for unit in units do (
+		AddSystemDamageUnit obj unitname:unit
+	)
+)
+
 fn AddHandlingSetupLUAModifier obj =
 (
 	max modify mode

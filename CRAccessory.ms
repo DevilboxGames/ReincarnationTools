@@ -424,9 +424,9 @@ fn AddAccessoryShapeModifier obj = (
 	)
 	accessoryModifier
 )
-AccessoruBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#(0x43628563, 0x36485726) version:1
+AccessoryBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#(0x43628563, 0x36485726) version:1
 (
-	paarameters main rollout:mainbreakablerollout (
+	parameters main rollout:mainbreakablerollout (
 		break_impulse type:#float default:100 ui:spn_break_impulse
 		replace type:#string ui:txt_replace
 		directional_replacements type:#stringtab tabsizevariable:true
@@ -435,10 +435,20 @@ AccessoruBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#
 		trigger_particles type:#boolean default:false ui:chk_trigger_particles
 		sound type:#string ui:txt_sound
 		random_rotation type:#point3 
-		detach_children type:#boolean ui:chk_detach_chilren
+		detach_children type:#boolean ui:chk_detach_children
 		destroy_children type:#boolean ui:chk_destroy_children
 	)
 	
+	rollout mainbreakablerollout "Breakable" (
+		spinner spn_break_impulse "Break Impulse" type:#float
+		spinner spn_explode_force "Explode Force" type:#float
+		edittext txt_sound "Sound"
+		checkbox chk_trigger_particles "Trigger Particles" 
+		checkbox chk_detach_children "Detach Children" 
+		checkbox chk_destroy_children "Destroy Children"
+		edittext txt_replace "Replacement"
+
+	)
 )
 AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0x2944a50e, 0x438ecc79) version:1
 (
@@ -450,7 +460,7 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 		inf_mi type:#boolean default:false ui:chk_inf_mi
 		inf_mass type:#boolean default:false ui:chk_inf_mass
 		drivable_on type:#boolean default:true ui:chk_drivable_on
-		part_of_world type:#boolean default:false ui:chk_part_of_worl
+		part_of_world type:#boolean default:false ui:chk_part_of_world
 		stop_sinking_into_ground type:#boolean default:false ui:chk_stop_sinking_into_ground
 		ignore_gravity type:#boolean default:false ui:chk_ignore_gravity
 		ignore_world type:#boolean default:false ui:chk_ignore_world
@@ -499,13 +509,12 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			spinner spn_MomentsZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
 			button btn_GuessMoments "Estimate Moments"
 			spinner spn_mass "Mass" type:#float range:[0,10000000,0]
+			spinner spn_sphere_rolling_resistance "Sphere Rolling Resistance" type:#float range:[0,1000000,0]
 			button btn_SelectCentreOfMassHelper "Select CoM Helper"
 
-
-			label lbl_Buoyancy "Buoyancy Relative To CoM"
-			spinner spn_BuoyancyX "X" across:1 width:110 type:#float range:[0,100000000,0]
-			spinner spn_BuoyancyY "Y" across:1 width:110 type:#float range:[0,100000000,0]
-			spinner spn_BuoyancyZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_BuoyancyX "X" width:110 type:#float range:[0,100000,0]
+			spinner spn_BuoyancyY "Y" width:110 type:#float range:[0,100000,0]
+			spinner spn_BuoyancyZ "Z" width:110 type:#float range:[0,100000,0]
 
 			spinner spn_substance "Substance Type" type:#integer range:[0,1000,0]
 		)

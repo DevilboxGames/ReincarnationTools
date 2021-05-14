@@ -238,7 +238,7 @@ fn ToolsStartup =
 			--parentDialogs = windows.getChildrenHWND #max
 			--PrintArrayInFull parentDialogs "Dialogs"
 			--parentDialog = windows.getChildHWND #max "Carmageddon Reincarnation Tools"
-			createDialog carma_reincarnation_settings 300 300 parent:CRToolsUI.handle
+			createDialog carma_reincarnation_settings 300 790 parent:CRToolsUI.handle
 		)
 )
 

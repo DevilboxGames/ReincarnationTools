@@ -1948,7 +1948,7 @@ fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mer
 	f = fopen cnt_name "r"
 	
 	if f == undefined then (
-		err = StringStream()
+		err = StringStream ""
 		format "Can't open CNT \"%\"! make sure the fucker exists" cnt_name to:err
 		throw (err as string)
 	)

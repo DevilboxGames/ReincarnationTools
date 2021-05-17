@@ -439,6 +439,7 @@ AccessoryBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#
 		destroy_children type:#boolean ui:chk_destroy_children
 	)
 	
+
 	rollout mainbreakablerollout "Breakable" (
 		spinner spn_break_impulse "Break Impulse" type:#float
 		spinner spn_explode_force "Explode Force" type:#float
@@ -446,7 +447,32 @@ AccessoryBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#
 		checkbox chk_trigger_particles "Trigger Particles" 
 		checkbox chk_detach_children "Detach Children" 
 		checkbox chk_destroy_children "Destroy Children"
-		edittext txt_replace "Replacement"
+		group "Replacements" (
+			edittext txt_replace "Replacement"
+			label lbl_DirectionalReplacements "Directional Replacements"
+			dotnetcontrol lv_DirectionReplacements "listview" height:150
+			button btn_AddReplacement "Add" across:2 
+			button btn_DeleteReplacement "Delete" 
+		)
+
+		fn RefreshReplacementsList = (
+			lv_DirectionReplacements.Items.clear()
+			for i =1 to directional_replacements.count do (
+				lvitem = dotNetObject "listviewitem" directional_replacements[i]
+			)
+		)
+
+		on mainbreakablerollout open do(
+
+			lv_DirectionReplacements.view  = (dotnetclass "view").details
+			lv_DirectionReplacements.fullrowselect= true
+			lv_DirectionReplacements.gridlines = true
+			lv_DirectionReplacements.multiselect =false
+			lv_DirectionReplacements.columns.add "Name" 140
+			lv_DirectionReplacements.columns.add "Axis" 40
+
+			RefreshReplacementsList()
+		)
 
 	)
 )
@@ -572,7 +598,7 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			lv_shapes.Items.clear()
 			for shape in collisionshapes do (
 				lvItem = dotnetobject "listviewitem" shape.name
-				lv_Layers.Items.add lvitem
+				lv_shapes.Items.add lvitem
 			)
 		)
 
@@ -588,7 +614,7 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			if lv_shapes.SelectedIndices.count > 0 then
 			(
 				selectedIndex = lv_shapes.SelectedIndices.Item[0]
-				deleteItem lv_shapes (selectedIndex+1)
+				deleteItem collisionshapes (selectedIndex+1)
 				refreshShapesList()
 			)
 		)

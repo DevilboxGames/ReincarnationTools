@@ -244,7 +244,7 @@ fn Funsize_ExportCarTXTFile filename carRoot = (
 
 	format "[LUMP]\n%\n\n" carRoot.name to:carTXT
 	format "[DRIVER_NAME]\n%\n\n" carModifier.DriverName to:carTXT
-	format "[SHRAPNEL]\n%,%,%\n\n" carModifier.ShrapnelR carModifier.ShrapnelG carModifier.ShrapnelB to:carTXT
+	format "[SHRAPNEL]\n%,%,%\n\n" carModifier.Shrapnel.r carModifier.Shrapnel.g carModifier.Shrapnel.b to:carTXT
 
 	if carModifier.EnginePosEnabled then
 	(

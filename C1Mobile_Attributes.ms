@@ -6,6 +6,7 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		DriverName type:#string ui:txt_DriverName
 		WastedName type:#string ui:txt_WastedName
 		CarDescription type:#string ui:txt_CarDescription
+		Shrapnel type:#color default:(color 128 128 128) ui:clr_Shrapnel
 		ShrapnelR type:#integer  min:0 max:255 default:128
 		ShrapnelG type:#integer  min:0 max:255 default:128
 		ShrapnelB type:#integer  min:0 max:255 default:128
@@ -18,7 +19,7 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		EngineNoises type:#string ui:txt_EngineNoises
 		Grooves type:#string ui:txt_Grooves
 		CollisionShapes type:#maxObjectTab tabsizevariable:true
-		CollisionShapeText type:#string ui:txt_CollisionShapeText
+		CollisionShapeText type:#string
 		DynamicsText type:#string ui:txt_DynamicsText
 
 		Defence type:#integer min:0 max: 10 default: 1 ui:spn_Defence
@@ -39,7 +40,7 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		edittext txt_CarDescription "Description"
 		edittext txt_DriverName "Driver Name"
 		edittext txt_WastedName "Wasted Message"
-		colorPicker clr_Shrapnel "Shrapnel" default:(color ShrapnelR ShrapnelG ShrapnelB)
+		colorPicker clr_Shrapnel "Shrapnel"
 		checkbox chk_enginePosEnabled "Engine Position"
 		spinner spn_EnginePosX "" across:3 type:#float default:EnginePos.x
 		spinner spn_EnginePosY "" across:3 type:#float default:EnginePos.y
@@ -55,8 +56,12 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		edittext txt_EngineNoises "Engine Noises" labelOnTop:true height:50
 		edittext txt_Grooves "Grooves" labelOnTop:true height:75
 		edittext txt_DynamicsText "Car Dynamics" labelOnTop:true height:75
-		edittext txt_CollisionShapeText "Collision Shape" labelOnTop:true height:75
-
+		group "Collision Shapes"(
+			dotnetcontrol lv_shapes "listview" height: 200
+			pickbutton pck_AddCollisionShape "Add" across:3
+			button btn_SelectCollisionShape "Select" across:3
+			button btn_DeleteCollisionShape "Delete"
+		)
 
 		group "Performance" (
 			spinner spn_Defence "Defence" range:[0,10,1] type:#integer
@@ -69,6 +74,74 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 			edittext txt_ShadowMask "Shadow Mask"
 			spinner spn_NaughtToSixty "0 to 60 times" range:[0,100,1] type:#float
 		)
+
+		fn refreshShapesList = (
+			if lv_shapes == null or lv_shapes.items == null then (
+
+				lv_shapes.view  = (dotnetclass "view").details
+				lv_shapes.fullrowselect= true
+				lv_shapes.gridlines = true
+				lv_shapes.multiselect =false
+				lv_shapes.columns.add "Name" 140
+			)
+			lv_shapes.Items.clear()
+			for shape in collisionshapes do (
+				lvItem = dotnetobject "listviewitem" shape.node.name
+				lv_shapes.Items.add lvitem
+			)
+		)
+		fn AddCollisionShape obj= (
+			
+			existingShape = for oldshape in CollisionShapes where oldshape.node == obj collect oldshape
+
+			if(existingShape == undefined or existingShape.count == 0) then
+			(
+				append CollisionShapes (NodeTransformMonitor node:obj forwardTransformChangeMsgs:false)
+			)
+		)
+
+		on pck_AddCollisionShape picked obj do (
+			AddCollisionShape obj
+			refreshShapesList()
+		)
+		on btn_SelectCollisionShape pressed do (
+			if lv_shapes.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_shapes.SelectedIndices.Item[0]
+				select CollisionShapes[selectedIndex+1].node
+				
+			)
+		)
+		on btn_DeleteCollisionShape pressed do (
+			if lv_shapes.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_shapes.SelectedIndices.Item[0]
+				deleteItem CollisionShapes (selectedIndex+1)
+				refreshShapesList()
+			)
+		)
+
+		on FunsizeCarDetailsRollout open do (
+			--clr_Shrapnel.color = (color ShrapnelR ShrapnelG ShrapnelB)
+			spn_EnginePosX.value = EnginePos.x
+			spn_EnginePosY.value = EnginePos.y
+			spn_EnginePosZ.value = EnginePos.z
+			spn_MaxBodyworkCrushX.value = MaxBodyworkCrush.x
+			spn_MaxBodyworkCrushY.value = MaxBodyworkCrush.y
+			spn_MaxBodyworkCrushZ.value = MaxBodyworkCrush.z
+			spn_GraphicalWheelLimitsX.value = GraphicalWheelLimits.x
+			spn_GraphicalWheelLimitsY.value = GraphicalWheelLimits.y
+			spn_GraphicalWheelLimitsZ.value = GraphicalWheelLimits.z
+
+
+			lv_shapes.view  = (dotnetclass "view").details
+			lv_shapes.fullrowselect= true
+			lv_shapes.gridlines = true
+			lv_shapes.multiselect =false
+			lv_shapes.columns.add "Name" 140
+			refreshShapesList()
+		)
+
 		on clr_Shrapnel change value do (
 			ShrapnelR = value.R
 			ShrapnelG = value.G

@@ -184,7 +184,7 @@ struct MTLFile (
 		PS2MipDistance	=	1.0
 		PS2MipValue	=	0
 		FlareSpec	=	0
-		SaveFlags	=	839124992
+		SaveFlags	=	838864128
 		EmissiveRed	=	0.0
 		EmissiveGreen	=	0.0
 		EmissiveBlue	=	0.0

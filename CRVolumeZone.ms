@@ -64,11 +64,11 @@ struct ZoneLua (
 						while inCorners abd not (eof f) do (
 							curline = trimLeft (trimRight (readline f))
 
-							if curline != "" and (findString curline "min") (
+							if curline != "" and (findString curline "min") != undefined (
 								splitLine = FilterString " ={},"
 								ShapeData.Min = [splitLine[2],splitLine[3],splitLine[4]]
 							)
-							else if curline != "" and (findString curline "max") (
+							else if curline != "" and (findString curline "max") != undefined (
 								splitLine = FilterString " ={},"
 								ShapeData.Max = [splitLine[2],splitLine[3],splitLine[4]]
 							)
@@ -80,21 +80,23 @@ struct ZoneLua (
 					"transform": (
 
 						inTransform = true
+						ShapeData.Transform = #()
 						while inTransform abd not (eof f) do (
 							curline = trimLeft (trimRight (readline f))
 
-							if curline != "" and (findString curline "min") (
+							if curline != "" and curline[1] == "{" and curline[curline.length-1]=="}" (
 								splitLine = FilterString " ={},"
-								ShapeData.Min = [splitLine[2],splitLine[3],splitLine[4]]
-							)
-							else if curline != "" and (findString curline "max") (
-								splitLine = FilterString " ={},"
-								ShapeData.Max = [splitLine[2],splitLine[3],splitLine[4]]
+								append ShapeData.Transform [splitLine[2],splitLine[3],splitLine[4]]
 							)
 							if curline[1] == "}" then (
 								inTransform = false
 							)
 						)
+					)
+					"ends":(
+						splitLine = FilterString " ={},"
+						ShapeData.Start = [splitLine[2],splitLine[3],splitLine[4]]
+						ShapeData.Start = [splitLine[5],splitLine[6],splitLine[7]]
 					)
 
 				)

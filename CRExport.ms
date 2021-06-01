@@ -1192,6 +1192,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		USERFace =  mdlUserFace PlaneD:planeD PlaneX:-planeNormal.x PlaneY:planeNormal.z PlaneZ:-planeNormal.y SmoothingGroup:smoothingGroup MaterialIndex:faceMatID v1Colour:v1Colour v2Colour:v2Colour v3Colour:v3Colour v1:VertInd1  v2:VertInd2  v3:VertInd3 v1NormX:rNorms[1].x v1NormY:rNorms[1].y v1NormZ:rNorms[1].z v2NormX:rNorms[2].x v2NormY:rNorms[2].y v2NormZ:rNorms[2].z v3NormX:rNorms[3].x v3NormY:rNorms[3].y v3NormZ:rNorms[3].z v1U:v1U v1V:v1V v1U2:v1U2 v1V2:v1V2 v2U:v2U v2V:v2V v2U2:v2U2 v2V2:v2V2 v3U:v3U v3V:v3V v3U2:v3U2 v3V2:v3V2
 		
 		append USERFaces USERFace
+
 		append mid faceMatID
 	)
 	if meshHasTextureVerts == false then tv_count = USERVerts.count
@@ -1306,6 +1307,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			(
 				faceMatID = mid[i]
 				
+				
 				mtlconv[faceMatID] = 1
 				--format "MID %: \t faceMatID: % \t rawMaterials[faceMatID]: %\t %\t usedMatPos: %\n" i faceMatID rawMaterials[faceMatID] matUsedBefore usedMatPos
 				if facesForFinalMatID[1] == undefined then facesForFinalMatID[1] = facesForMatID[faceMatID]
@@ -1338,6 +1340,9 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			if (finditem mtlconv i) != 0 then (
 				faceMatID = finditem mtlconv i
 				actualMat = rawMaterials[faceMatID]
+				if actualMat == undefined then (
+					actualMat = rawMaterials[rawMaterials.count]
+				)
 				
 				if (MaterialAlreadySetToExport mtl[i]) == false do append MaterialsToExport #(mtl[i], actualMat, #())
 			)

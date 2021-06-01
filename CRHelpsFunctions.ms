@@ -8,6 +8,20 @@ fn InvLerp a b v = (
 	t = va / ba
 	t
 )
+fn AddCustomModifier obj modifierName csutattrib allowMultiple:false = (
+
+	accessoryModifier = obj.modifiers[modifierName]
+	if accessoryModifier == undefined or allowMultiplier then (
+		max modify mode
+		accessoryModifier = emptyModifier()
+		
+		accessoryModifier.name = modifierName
+		addModifier obj accessoryModifier
+		custattributes.add accessoryModifier custattrib baseObject:false
+	)
+	accessoryModifier
+
+)
 
 fn Lerp a b t = (
 	it = 1.0 - t

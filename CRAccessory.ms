@@ -24,7 +24,58 @@ struct AccessoryShape
 
 	),
 	fn Write f = (
+			format "%\n" type to:f
 
+			if type == "Sphere" then
+			(
+				pos = ConvertToCRSpace points[1]
+				format "%,%,%\n" pos.x pos.y pos.z to:f
+				format "%\n" (radius as string) to:f
+			)
+			else if type == "AlignedCuboid" then
+			(
+				pos1 = ConvertToCRSpace points[1]
+				pos2 = ConvertToCRSpace points[2]
+				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
+			)
+			else if type == "TicTac" then
+			(
+				pos1 = ConvertToCRSpace points[1]
+				pos2 = ConvertToCRSpace points[2]
+				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
+				format "%\n" (radius as string) to:f
+			)
+			else if type == "Capsule" then
+			(
+				pos1 = ConvertToCRSpace points[1]
+				pos2 = ConvertToCRSpace points[2]
+				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
+				format "%\n" (radius as string) to:f
+			)
+			else if type == "Polyhedron" then
+			(
+				format "%\n" (points.count as string) to:f
+				for v in points do
+				(
+					pos1 = ConvertToCRSpace v
+					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				)
+			)
+			else if type == "RoundedPolyhedron" then
+			(
+				format "%\n" (radius as string) to:f
+				format "%\n" (points.count as string) to:f
+				for v in points do
+				(
+					pos1 = ConvertToCRSpace v
+					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				)
+			)
+				format "\n\n" to:f
+			append f  "form_collision_groups\n1\n\n"
 	)
 )
 struct AccessoryJoint_Weakness (
@@ -167,7 +218,7 @@ struct AccessoryJoint (
 			numConstraints =  curLine as integer
 			constraints = #()
 
-			for i=1 to numConstraints then (
+			for i=1 to numConstraints do (
 				constraint = AccessoryJoint_Constraint()
 				constraint.Read f
 				append constraints constraint

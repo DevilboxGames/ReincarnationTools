@@ -927,6 +927,11 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	
 	select model
 	max modify mode
+	editMeshMod = undefined
+	if classof model == editable_poly or classof model == PolyMeshObject then (
+		editMeshMod = Edit_Mesh()
+		addModifier model editMeshMod
+	)
 	normalMod = Edit_Normals()
 	addModifier model normalMod
 
@@ -1229,6 +1234,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		)
 	)
 	deleteModifier model normalMod
+	if editMeshMod != undefined then (
+		deleteModifier model editMeshMod
+		free editMeshMod
+	)
 	--messageBox ("Finished TV Counting. NewVertsListCount = "+(newVertsList.count as string)+"\n faceNewVertIndscount = "+(faceNewVertInds.count as string)+"\nCount = "+(count as string)) title:"Finished TV Counting"
 	vertNormals =undefined
 	free vertNormals
@@ -2313,6 +2322,8 @@ fn GatherMDLs nodes exportHierarchy =
 (
 	
 	global models
+
+	modelFilenames = #()
 	msg = ""
 	for model in nodes do
 	(
@@ -2323,10 +2334,11 @@ fn GatherMDLs nodes exportHierarchy =
 			isACNT = IsObjectACNT model
 		if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg")) then
 		(
-			if finditem models model == 0 do
+			if (finditem models model) == 0 and (finditem modelFilenames model.modifiers["CNT Hierarchy"].filename) == 0 do
 			(
 				--format "Found model \"%\" which is a %\n" model.name (classof model)
 				append models model
+				append modelFilenames model.modifiers["CNT Hierarchy"].filename
 			)
 			
 		)
@@ -2412,9 +2424,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 	for i=1 to models.count do
 	(
 		nodeToExport = models[i]
-		if count > 60 then i = models.count + 1
-		else (
-			count += 1
+		
 			if nodeToExport.modifiers["CNT Hierarchy"].NodeType == "LITg" then
 			(
 				ExportLight folder_name nodeToExport
@@ -2425,7 +2435,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
 			)
 			gc()
-		)
+		
 	)
 )
 

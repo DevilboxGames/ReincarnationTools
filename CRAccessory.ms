@@ -22,6 +22,42 @@ struct AccessoryShape
 	Part,
 	fn Read f = (
 
+		Type = (trimleft (trimright (readline f)))
+		case Type of (
+			"Sphere": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				radius = (readLine f) as float
+			)
+			"AlignedCuboid": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+			)
+			"TicTac": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				radius = (readLine f) as float
+			)
+			"Capsule": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				radius = (readLine f) as float
+			)
+			"Polyhedron": (
+				numPoints = (readline f) as integer
+				for i = 1 to numPoints do 
+				(
+					append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				)
+			)
+			"RoundedPolyhedron": (
+				radius = (readLine f) as float
+				numPoints = (readline f) as integer
+				for i = 1 to numPoints do 
+				(
+					append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				)
+			)
+		)
 	),
 	fn Write f = (
 			format "%\n" type to:f
@@ -121,7 +157,11 @@ struct AccessoryJoint_Constraint (
 		
 		curLine = tolower(trimleft (trimright (readline f)))
 		i_Unknown = curLine as integer
+		
+		curLine = tolower(trimleft (trimright (readline f)))
 		strength = curLine as float
+		
+		curLine = tolower(trimleft (trimright (readline f)))
 		f_Unknown1 = curLine as float
 
 		curLine = trimleft (trimright (readline f))
@@ -149,7 +189,16 @@ struct AccessoryJoint_Constraint (
 
 	),
 	fn Write f = (
-
+		format "%\n" i_Unknown to:f
+		format "%\n" strength to:f
+		format "%\n" f_Unknown to:f
+		format "%,%,%\n" minDirection.x minDirection.y minDirection.z to:f
+		format "%,%,%\n" minDirection.x minDirection.y minDirection.z to:f
+		format "%\n" maxDirection.x maxDirection.y maxDirection.z to:f
+		format "%\n" f_Unknown2 to:f
+		format "%\n" weakness to:f
+		format "%,%,%\n" p3_Unknown1.x p3_Unknown1.y p3_Unknown1.z to:f
+		format "%,%,%\n" p3_Unknown2.x p3_Unknown2.y p3_Unknown2.z to:f
 	)
 )
 struct AccessoryJoint (
@@ -240,7 +289,29 @@ struct AccessoryJoint (
 	
 	),
 	fn Write f = (
-		format "speed %\n" Speed to:f
+		format "<%>\n" type to:f
+		format "%\n" label to:f
+		format "%\n" flags to:f
+		format "%\n" f_Unknown1 to:f
+		format "%,%,%\n" joint_normal.x joint_normal.y joint_normal.z to:f
+		format "%,%,%\n" p3_Unknown1.x p3_Unknown1.y p3_Unknown1.z to:f
+		format "%,%,%\n" p3_Unknown2.x p3_Unknown2.y p3_Unknown2.z to:f
+		format "%,%,%\n" p3_Unknown3.x p3_Unknown3.y p3_Unknown3.z to:f
+		format "%,%,%\n" p3_Unknown4.x p3_Unknown4.y p3_Unknown4.z to:f
+		format "%,%,%\n" p3_Unknown5.x p3_Unknown5.y p3_Unknown5.z to:f
+		format "%\n" numConstraints to:f
+
+		for i=1 to numConstraints do (
+			constraint.Write f
+		)
+		if hasWeakness then (
+			format "weakness\n" to:f
+			weakness1.Write f
+			weakness2.Write f
+		)
+		else (
+			format "(no_weakness)\n" to:f
+		)
 	)
 )
 

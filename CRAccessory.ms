@@ -22,39 +22,39 @@ struct AccessoryShape
 	Part,
 	fn Read f = (
 
-		Type = (trimleft (trimright (readline f)))
+		Type = (ReadNonBlankLine f)
 		case Type of (
 			"Sphere": (
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				radius = (readLine f) as float
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				radius = (ReadNonBlankLine f) as float
 			)
 			"AlignedCuboid": (
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 			)
 			"TicTac": (
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				radius = (readLine f) as float
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				radius = (ReadNonBlankLine f) as float
 			)
 			"Capsule": (
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
-				radius = (readLine f) as float
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				radius = (ReadNonBlankLine f) as float
 			)
 			"Polyhedron": (
-				numPoints = (readline f) as integer
+				numPoints = (ReadNonBlankLine f) as integer
 				for i = 1 to numPoints do 
 				(
-					append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+					append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				)
 			)
 			"RoundedPolyhedron": (
-				radius = (readLine f) as float
-				numPoints = (readline f) as integer
+				radius = (ReadNonBlankLine f) as float
+				numPoints = (ReadNonBlankLine f) as integer
 				for i = 1 to numPoints do 
 				(
-					append points (ConvertFromCRSpace (StringAsPoint3 (readline f)))
+					append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				)
 			)
 		)
@@ -110,8 +110,9 @@ struct AccessoryShape
 					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
 				)
 			)
-				format "\n\n" to:f
-			append f  "form_collision_groups\n1\n\n"
+			
+			format "\n\n" to:f
+			format "form_collision_groups\n1\n\n" to:f
 	)
 )
 struct AccessoryJoint_Weakness (
@@ -123,13 +124,13 @@ struct AccessoryJoint_Weakness (
 		local keepLooping = true
 		local curPos = filePos f
 		
-		curLine = tolower(trimleft (trimright (readline f)))
+		curLine = tolower(ReadNonBlankLine f)
 		type = curLine
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		p3_Unknown = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		strength = splitLine[1]
 		if splitLine.count > 1 then (
@@ -138,7 +139,13 @@ struct AccessoryJoint_Weakness (
 
 	),
 	fn Write f = (
-
+		format "%\n" type to:f
+		format "%,%,%\n" p3_Unknown to:f
+		format "%" strength to:f
+		if twistStrength != undefined then (
+			format ",%" twistStrength to:f
+		)
+		format "\n\n" to:f
 	)
 )
 struct AccessoryJoint_Constraint (
@@ -155,35 +162,35 @@ struct AccessoryJoint_Constraint (
 		local keepLooping = true
 		local curPos = filePos f
 		
-		curLine = tolower(trimleft (trimright (readline f)))
+		curLine = tolower(ReadNonBlankLine f)
 		i_Unknown = curLine as integer
 		
-		curLine = tolower(trimleft (trimright (readline f)))
+		curLine = tolower(ReadNonBlankLine f)
 		strength = curLine as float
 		
-		curLine = tolower(trimleft (trimright (readline f)))
+		curLine = tolower(ReadNonBlankLine f)
 		f_Unknown1 = curLine as float
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		minDirection = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		maxDirection = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 		
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		f_Unknown2 = curLine as float
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		weakness = curLine
 
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		p3_Unknown1 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-		curLine = trimleft (trimright (readline f))
+		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
 		p3_Unknown2 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
@@ -226,44 +233,44 @@ struct AccessoryJoint (
 	fn Read f = (
 		local keepLooping = true
 		local curPos = filePos f
-		curLine = tolower(trimleft (trimright (readline f)))
+		curLine = tolower(ReadNonBlankLine f)
 		if curLine == "<world_joint>" then type = "world_joint"
 		else if curLine == "<child_joint>" then type="child_joint"
 		else if curLine[1] != "[" or curLine[1] != "<" then (
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			label = curLine
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			flags =  curLine as integer
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			f_Unknown1 = curLine as float
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			joint_normal = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			p3_Unknown1 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			p3_Unknown2 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			p3_Unknown3 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			p3_Unknown4 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			splitLine = filterstring curLine ", "
 			p3_Unknown5 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			numConstraints =  curLine as integer
 			constraints = #()
 
@@ -273,7 +280,7 @@ struct AccessoryJoint (
 				append constraints constraint
 			)
 
-			curLine = tolower (trimleft (trimright (readline f)))
+			curLine = tolower (ReadNonBlankLine f)
 			if curLine == "weakness" then (
 				hasWeakness = true
 				weakness1 = AccessoryJoint_Weakness()
@@ -322,7 +329,7 @@ struct AccessoryType_RotatingAccessory (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -348,7 +355,7 @@ struct AccessoryType_AngularDampedAccessory (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -382,7 +389,7 @@ struct AccessoryType_Checkpoint (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -436,7 +443,7 @@ struct AccessoryType_ManagedAccessory (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -472,7 +479,7 @@ struct AccessoryType_Powerup (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -513,7 +520,7 @@ struct AccessoryType_RigidBodyAnimation (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -570,7 +577,7 @@ struct AccessoryType_RigidBodyAnimation (
 		)
 	)
 )
-struct Accessory_StandardAppData (
+struct AccessoryType_StandardAppData (
 	CollisionAudioEvent,				--string
 	CollisionAudioMinTime,				--string
 	CollisionAudioLump,					--string
@@ -594,7 +601,7 @@ struct Accessory_StandardAppData (
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -627,20 +634,78 @@ struct Accessory_StandardAppData (
 		)
 	),
 	fn Write f = (
-
+		if CollisionAudioEvent != undefined then (
+			format "CollisionAudioEvent %\n" CollisionAudioEvent to:f
+		)
+		if CollisionAudioMinTime != undefined then (
+			format "CollisionAudioMinTime %\n" CollisionAudioMinTime to:f
+		)
+		if CollisionAudioEventScrape != undefined then (
+			format "CollisionAudioEventScrape %\n" CollisionAudioEventScrape to:f
+		)
+		if AccessoryAudio_Sound1 != undefined then (
+			format "AccessoryAudio_Sound1 %\n" AccessoryAudio_Sound1 to:f
+		)
+		if AccessoryAudio_Sound2 != undefined then (
+			format "AccessoryAudio_Sound2 %\n" AccessoryAudio_Sound2 to:f
+		)
+		if AccessoryAudio_Type != undefined then (
+			format "AccessoryAudio_Type %\n" AccessoryAudio_Type to:f
+		)
+		if AccessoryAudio_LumpName != undefined then (
+			format "AccessoryAudio_LumpName %\n" AccessoryAudio_LumpName to:f
+		)
+		if dont_target == true then (
+			format "dont_target\n" to:f
+		)
+		if disable_pinball == true then (
+			format "disable_pinball\n" to:f
+		)
+		if vehicle_vfx == true then (
+			format "vehicle_vfx\n" to:f
+		)
+		if force_target == true then (
+			format "force_target\n" to:f
+		)
+		if damage_magnifier != undefined then (
+			format "damage_magnifier %\n" damage_magnifier to:f
+		)
+		if damage_magnifier_X != undefined then (
+			format "damage_magnifier_X %\n" damage_magnifier_X to:f
+		)
+		if damage_magnifier_Y != undefined then (
+			format "damage_magnifier_Y %\n" damage_magnifier_Y to:f
+		)
+		if damage_magnifier_Z != undefined then (
+			format "damage_magnifier_Z %\n" damage_magnifier_Z to:f
+		)
+		if speed_sensitive_damage_magnifier != undefined then (
+			format "speed_sensitive_damage_magnifier %\n" speed_sensitive_damage_magnifier to:f
+		)
+		if recovery_exclusion_radius != undefined then (
+			format "recovery_exclusion_radius %\n" recovery_exclusion_radius to:f
+		)
+		if message_triggered != undefined then (
+			format "message_triggered %\n" message_triggered to:f
+		)
+		if special_flags != undefined then (
+			format "special_flags %\n" special_flags to:f
+		)
 	)
 	
 )
 struct CustomAccessoryBlock
 (
 	Type,
-	Data,
+	CustomData,
+	StandardData,
+
 	fn Read f = (
 
 		local keepLooping = true
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
-			curLine = trimleft (trimright (readline f))
+			curLine = ReadNonBlankLine f
 			if curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
 				keepLooping = false
@@ -648,41 +713,177 @@ struct CustomAccessoryBlock
 			else (
 				Type = curLine
 				case (tolower curLine) of (
-					"respawn_time": break_fuse = splitLine[2] as float
-					"type": management_policy = splitLine[2]
-					default: format "Unknown value for PowerupAccessory:\n\t\t%\n" curLine
+					"AngularDampedAccessory": (
+						CustomData = AccessoryType_AngularDampedAccessory()
+						CustomData.Read f
+					)
+					"RigidBodyAnimation": (
+						CustomData = AccessoryType_RigidBodyAnimation()
+						CustomData.Read f
+					)
+					"Checkpoint": (
+						CustomData = AccessoryType_Checkpoint()
+						CustomData.Read f
+					)
+					"RotatingAccessory": (
+						CustomData = AccessoryType_RotatingAccessory()
+						CustomData.Read f
+					)
+					"ManagedAccessory": (
+						CustomData = AccessoryType_ManagedAccessory()
+						CustomData.Read f
+					)
+					"Powerup": (
+						CustomData = AccessoryType_Powerup()
+						CustomData.Read f
+					)
+					"StandardAccessory": (
+					)
+					"ConveyorAccessory": (
+					)
+					"CopSpawn": (
+					)
+					"StartingGrid": (
+					)
+					"MultiplayerSpawn": (
+					)
+					"TrailerSpawn": (
+					)
+					"ExplodingAccessory": (
+					)
+					"Bicycle": (
+					)
+					"RockingAccessory": (
+						CustomData = AccessoryType_RigidBodyAnimation()
+						CustomData.Read f
+					)
+					default: format "Unknown custom accessory type:\n\t\t%\n" curLine
 				)
+
+				StandardData = AccessoryType_StandardAppData()
+				StandardData.Read f
 			)
 		)
 	),
 	fn Write f = (
-
+		format "%\n" Type to:f
+		if Data != undefined then (
+			Data.Write f
+		)
+		if StandardData != undefined then (
+			StandardData.Write f
+		)
 	)
 )
 
 struct AccessoryBreakableReplacement
 (
 	Axis, 							--string +x,-x,+y,-y,+z,-z
-	Replacement 					--string
+	Replacement, 					--string
+
+	fn Read f = (
+		breakableLine = ReadNonBlankLine f
+		splitLine = filterstring breakableLine " "
+		if splitLine.count == 3 then (
+			Axis = splitLine[2]
+			Replacement = splitLine[3]
+		)
+		else (
+			Axis = undefined
+			Replacement = splitLine[2]
+		)
+	),
+	fn Write f =(
+		if Axis == undefined then
+			format "replace % %\n" Axis Replacement to:f
+		else
+			format "replace %\n" Replacement to:f
+	)
 )
 
 struct AccessoryBreakableBlock
 (
-	Breakable,						--bool
+	Type,						--string
 	break_impulse,					--float
-	replace,						--string
-	directional_replacements = #(), --AccessoryBreakableReplacement[]
+	replacements = #(), --AccessoryBreakableReplacement[]
 	explode_force,					--float
 	trigger_particles,				--bool
 	sound,							--string
 	random_rotation,				--point2
 	detach_children,				--bool
-	destroy_children				--bool
+	destroy_children,				--bool
+	fn Read f = (
+
+		Type = ReadNonBlankLine f
+		local keepLooping = true
+
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine[1] == "[" or  curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			splitLine = filterstring curLine " ,"
+			case (tolower splitLine[1]) of (
+				"break_impulse": break_impulse = splitLine[2] as float
+				"explode_force": explode_force = splitLine[2] as float
+				"trigger_particles": trigger_particles = true
+				"detach_children": detach_children = true
+				"destroy_children": destroy_children = true
+				"sound": sound = splitLine[2]
+				"random_rotation": random_rotation = [splitLine[2] as float, splitLine[3] as float]
+				"replace": (
+					seek f curPos
+					replacement = AccessoryBreakableReplacement()
+					replace.Read f
+					append replacements replacement
+				)
+			)
+		)
+	),
+	fn Write f = (
+		format "%\n" Type to:f
+
+		if break_impulse != undefined then
+			format "break_impulse %\n" break_impulse to:f
+		if explode_force != undefined then
+			format "explode_force %\n" explode_force to:f
+		if trigger_particles == true then
+			format "trigger_particles\n" to:f
+		if detach_children == true then
+			format "detach_children\n" to:f
+		if destroy_children == true then
+			format "destroy_children\n" to:f
+		if sound != undefined then
+			format "sound %\n" sound to:f 
+		if random_rotation != undefined then
+			format "random_rotation %, %\n" random_rotation.x random_rotation.y to:f 
+		for replacement in replacements do (
+			replacement.Write f
+		)
+	)
 )
 struct AccessoryDynamicsShapeBlock
 (
 	label,							--string
-	shapes =#()
+	shapes =#(),
+
+	fn Read f = (
+		label = ReadNonBlankLine f
+		local numShapes = (ReadNonBlankLine f) as integer
+		for i = 1 to numShapes do (
+			local newShape = AccessoryShape()
+			newShape.Read f
+			append shapes newShape
+		)
+	),
+	fn Write f = (
+		format "%\n%\n" label shapes.count to:f
+		for i = 1 to shapes.count do (
+			shapes[i].Write f
+		)
+	)
 )
 
 struct AccessoryDynamicsBlock
@@ -699,32 +900,214 @@ struct AccessoryDynamicsBlock
 	stop_sinking_into_ground,		--bool
 	ignore_gravity,				 	--bool
 	ignore_world,				 	--bool
-	group,							--int
+	groupIndex,						--int
 	ignore_group,					--int[]
 	buoyant,						--bool
-	buoyancy_relative_to_com,		--float?
+	buoyancy,						--float
+	buoyancy_position,				--point3
+	buoyancy_relative_to_com,		--bool
 	sphere_rolling_resistance,		--float
 	substance,						--int
 	linear_acceleration,			--point3
-	regular_acceleration,			--point3
-	Shape							--AccessoryDynamicsShapeBlock
+	angular_acceleration,			--point3
+	Shape,							--AccessoryDynamicsShapeBlock[]
+	Joints = #(),
+	Breakable,
+
+	fn Read f = (
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine[1] == "[" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				case tolower curLine of (
+					"<lump_name>": lump_name = ReadNonBlankLine f
+					"<centre_of_mass>": centre_of_mass = (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+					"<moments>": moments = (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)) noflip:true)
+					"<linear_acceleration>": linear_acceleration  = (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+					"<angular_acceleration>": angular_acceleration  = (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+					"<mass>": mass  = (ReadNonBlankLine f) as float
+					"<solid>": solid = true
+					"<inf_mi>": inf_mi = true
+					"<inf_mass>": inf_mass = true
+					"<drivable_on>": drivable_on = true
+					"<part_of_world>": part_of_world = true
+					"<stop_sinking_into_ground>": stop_sinking_into_ground = true
+					"<ignore_gravity>": ignore_gravity = true
+					"<ignore_world>": ignore_world = true
+					"<buoyant>": (
+						buoyant = true
+						buoyancy = (ReadNonBlankLine f) as float
+						buoyancy_position = ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f))
+					)
+					"<buoyancy_relative_to_com>": buoyancy_relative_to_com  = (ReadNonBlankLine f) as float
+					"<sphere_rolling_resistance>": sphere_rolling_resistance  = (ReadNonBlankLine f) as float
+					"<group>": groupIndex  = (ReadNonBlankLine f) as integer
+					"<ignore_group>": (
+						if ignore_group == undefined then 
+							ignore_group = #()
+						
+						local keepLooping = true
+						local curPos2 = filePos f
+						do (
+							local groupId  = (ReadNonBlankLine f)
+							if(groupId[1] == "[" or groupId[1] == "<") then (
+								keepLooping = false
+								seek f curPos
+							)
+							else (
+								append ignore_group (groupId as integer)
+							)
+						) while keepLooping
+
+					)
+					"<substance>": sphere_rolling_resistance  = (ReadNonBlankLine f) as integer
+					(tolower curline == "<child_joint>" or tolower curline == "<world_joint>"): (
+						seek f curPos
+						local joint = AccessoryJoint()
+						joint.Read f
+						append Joints joint 
+					)
+					"<shape>": (
+						Shape = AccessoryDynamicsShapeBlock()
+						Shape.Read f
+					)
+					"<breakable>": (
+						Breakable = AccessoryBreakableBlock()
+						Breakable.Read f
+					)
+
+				)
+			)
+		)
+	),
+	fn Write f =(
+		if lump_name !=undefined then 
+			format "<lump_name>\n%\n" lump_name to:f
+		if centre_of_mass !=undefined then (
+			crSpaceCoM = ConvertToCRSpace centre_of_mass
+			format "<centre_of_mass>\n%,%,%\n" crSpaceCoM.x crSpaceCoM.y crSpaceCoM.z to:f
+		)
+		if moments !=undefined then (
+			crSpaceMI = ConvertToCRSpace moments noflip:true
+			format "<moments>\n%,%,%\n" crSpaceMI.x crSpaceMI.y crSpaceMI.z to:f
+		)
+		if linear_acceleration !=undefined then (
+			crSpacePoint3 = ConvertToCRSpace linear_acceleration
+			format "<linear_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
+		)
+		if angular_acceleration !=undefined then (
+			crSpacePoint3 = ConvertToCRSpace angular_acceleration
+			format "<angular_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
+		)
+		if mass !=undefined then 
+			format "<mass>\n%\n" mass to:f
+		if solid == true then 
+			format "<solid>\n" to:f
+		if inf_mi == true then 
+			format "<inf_mi>\n" to:f
+		if inf_mass == true then 
+			format "<inf_mass>\n" to:f
+		if drivable_on == true then 
+			format "<drivable_on>\n" to:f
+		if part_of_world == true then 
+			format "<part_of_world>\n" to:f
+		if stop_sinking_into_ground == true then 
+			format "<stop_sinking_into_ground>\n" to:f
+		if ignore_gravity == true then 
+			format "<ignore_gravity>\n" to:f
+		if ignore_world == true then 
+			format "<ignore_world>\n" to:f
+		if buoyant == true then (
+			format "<buoyant>\n%\n" buoyancy to:f
+			crSpacePoint3 = ConvertToCRSpace buoyancy_position
+			format "%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
+		)
+		if buoyancy_relative_to_com == true then 
+			format "<buoyancy_relative_to_com>\n" to:f
+		if sphere_rolling_resistance !=undefined then 
+			format "<sphere_rolling_resistance>\n%\n" sphere_rolling_resistance to:f
+		if groupIndex !=undefined then 
+			format "<group>\n%\n" groupIndex to:f
+		if ignore_group !=undefined and ignore_group.count > 0 then 
+			(
+				for groupId in ignore_group do (
+					format "<ignore_group>\n%\n" groupId to:f
+				)
+			)
+		if Shape != undefined then (
+			format "<shape>\n" to:f
+			Shape.Write f
+		)
+		if Joints != undefined and Joints.count > 0 then (
+			for joint in Joints do (
+				joint.Write f
+			)
+		)
+		if Breakable != undefined then (
+			format "<breakable>" to:f
+			Breakable.Write f
+		)
+	)
 )
 struct AccessoryFileLump
-(
-	Joints,								--string	
+(	
 	DynamicsBlocks = #(),
-	BreakableBlocks = #(),
-	Accessory_StandardAppData,
 	CustomAccessoryBlocks = #(),
-	--ManagedAccessory
-
-	--Powerup
-
-
-	--Rigidbody Animation
-	UseRBA,								--bool
 	Children = #(),
 
+	fn Read filename = (
+		f = openfile filename mode:"r"
+
+		do (
+			curLine = ReadNonBlankLine f
+			case toupper curLine of (
+				"[APP_DATA]": (
+					local keepLooping = true
+					do (
+						curPos = filePos f
+						nextLine = ReadNonBlankLine f
+						if nextLine[1] == "[" then (
+							seek f curPos
+							keepLooping = false
+						) 
+						else if tolower nextLine == "<customaccessorytype>" then (
+							block = CustomAccessoryBlock()
+							block.Read f
+							append CustomAccessoryBlocks block
+						)
+					) while keepLooping
+				)
+				"[DYNAMICS]": (
+					dynamicsBlock = AccessoryDynamicsBlock()
+					dynamicsBlock.Read f
+					append DynamicsBlocks dynamicsBlock
+				)
+			)
+		)
+		while not eof f
+	),
+	fn Write filename =(
+		f = openfile filename mode:"w"
+		if CustomAccessoryBlocks.count > 0 then (
+			format "[APP_DATA]\n\n" to:f
+			for block in CustomAccessoryBlocks do (
+				block.Write f
+			)
+		)
+		if DynamicsBlocks.count > 0 then (
+			format "[DYNAMICS]\n\n" to:f
+			for block in DynamicsBlocks do (
+				block.Write f
+			)
+		)
+	)
+
+/*
 	Shapes =#(),
 	fn CreateShape objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
 	(
@@ -873,7 +1256,7 @@ struct AccessoryFileLump
 		format "%" accText to:fp
 		close fp
 		
-	)
+	)*/
 )
 fn QuickGetAccessoryShape moveToOrigin:false forcePolyhedron:false =
 (

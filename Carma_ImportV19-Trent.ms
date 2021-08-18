@@ -1216,6 +1216,7 @@ fn LoadC1TXT fnm &progValue &progText imp_onlyNonCars:false imp_hier:true imp_gr
 		global amat = undefined
 		global mname = undefined
 		
+		local numMapSessionPaths = sessionPaths.count #map
 		
 		rootmesh = undefined
 		if fnm != undefined then
@@ -1283,6 +1284,9 @@ fn LoadC1TXT fnm &progValue &progText imp_onlyNonCars:false imp_hier:true imp_gr
 				)
 		)
 		
+			while numMapSessionPaths < (sessionPaths.count #map) do (
+				sessionPaths.delete #map (sessionPaths.count #map)
+			)
 		globalvars.remove "deletemodels"
 		globalvars.remove "smth"
 		globalvars.remove "edv"
@@ -1312,6 +1316,8 @@ fn LoadAllC1TXTFiles dir imp_onlyNonCars:false imp_act:true textfiles:undefined=
 	currentPos = [0,0,0]
 	currentCol = 0
 	currentRow = 0
+
+		
 	for f in textFiles do
 	(
 		currentPos = [colSpacing * currentCol, rowSpacing * currentRow, 0]
@@ -1365,6 +1371,7 @@ fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_qua
 		global amat = undefined
 		global mname = undefined
 		rootmesh = undefined
+		local numMapSessionPaths = sessionPaths.count #map
 		if fnm==undefined then (
 			fnm=getopenfilename types:"Data files(*.dat)|*.dat"
 		)
@@ -1453,6 +1460,10 @@ fn LoadC2Dat fnm &progressValue &progressText imp_mat:true imp_smth:true imp_qua
 			globalvars.remove "amat"
 			globalvars.remove "mname"
 			globalvars.remove "loadedObjects"
+
+			while numMapSessionPaths < (sessionPaths.count #map) do (
+				sessionPaths.delete #map (sessionPaths.count #map)
+			)
 		gc()
 		rootmesh
 )

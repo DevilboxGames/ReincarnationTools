@@ -235,13 +235,19 @@ fn quatdot q1 q2 =
 (
 	q1.w*q2.w + q1.x* q2.x + q1.y*q2.y + q1.z*q2.z
 )
-fn ConvertFromCRSpace pos =
+fn ConvertFromCRSpace pos noflip:false=
 (
-	 [-pos.x,-pos.z,pos.y]
+	if noflip then
+		[pos.x,pos.z,pos.y]
+	else
+		[-pos.x,-pos.z,pos.y]
 )
-fn ConvertToCRSpace pos =
+fn ConvertToCRSpace pos noflip:false =
 (
-	 [-pos.x,pos.z,-pos.y]
+	if noflip then
+		[pos.x,pos.z,pos.y]
+	else
+		[-pos.x,pos.z,-pos.y]
 )
 fn ConvertQuatFromCRSpace q =
 (
@@ -711,6 +717,14 @@ fn BatchCarStructuresButton_Pressed sender arg =
 /********************************************
 *** IMPORT EXPORT HELPERS
 ********************************************/
+
+fn ReadNonBlankLine f = (
+	curline = trimLeft (trimRight (readline f))
+	while (curline == undefined or curline == "") and not eof f do
+		curline = trimLeft (trimRight (readline f))
+
+	curline 
+) 
 
 fn writestring2 f string =
 (

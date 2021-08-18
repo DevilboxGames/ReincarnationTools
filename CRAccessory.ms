@@ -1057,7 +1057,7 @@ struct AccessoryDynamicsBlock
 struct AccessoryFileLump
 (	
 	DynamicsBlocks = #(),
-	CustomAccessoryBlocks = #(),
+	CustomBlocks = #(),
 	Children = #(),
 
 	fn Read filename = (
@@ -1076,9 +1076,9 @@ struct AccessoryFileLump
 							keepLooping = false
 						) 
 						else if tolower nextLine == "<customaccessorytype>" then (
-							block = CustomAccessoryBlock()
-							block.Read f
-							append CustomAccessoryBlocks block
+							customblock = CustomAccessoryBlock()
+							customblock.Read f
+							append CustomBlocks customblock
 						)
 					) while keepLooping
 				)
@@ -1093,9 +1093,9 @@ struct AccessoryFileLump
 	),
 	fn Write filename =(
 		f = openfile filename mode:"w"
-		if CustomAccessoryBlocks.count > 0 then (
+		if CustomBlocks.count > 0 then (
 			format "[APP_DATA]\n\n" to:f
-			for block in CustomAccessoryBlocks do (
+			for block in CustomBlocks do (
 				block.Write f
 			)
 		)

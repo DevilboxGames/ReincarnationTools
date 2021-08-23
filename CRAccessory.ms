@@ -20,6 +20,7 @@ struct AccessoryShape
 	Points = #(),
 	Radius,
 	Part,
+	CollisionGroups,
 	fn Read f = (
 
 		Type = (ReadNonBlankLine f)
@@ -57,6 +58,15 @@ struct AccessoryShape
 					append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				)
 			)
+		)
+		local curPos = filepos f
+		local formCollisionsGroupsLabel = ReadNonBlankLine f
+		if toLower formCollisionsGroupsLabel == "form_collision_groups" then (
+			CollisionGroups = (ReadNonBlankLine f) as integer
+		) 
+		else (
+			seek f curPos
+			format "!!!!!!!WARNING: Expected \"form_collision_groups\" and got %. I DON'T KNOW WHAT TO DO!!!!!" formCollisionsGroupsLabel
 		)
 	),
 	fn Write f = (
@@ -112,7 +122,7 @@ struct AccessoryShape
 			)
 			
 			format "\n\n" to:f
-			format "form_collision_groups\n1\n\n" to:f
+			format "form_collision_groups\n%\n\n" CollisionGroups to:f
 	)
 )
 struct AccessoryJoint_Weakness (
@@ -225,6 +235,7 @@ struct AccessoryJoint (
 	p3_Unknown3,					-- point3
 	p3_Unknown4,					-- point3
 	p3_Unknown5,					-- point3
+	p3_Unknown6,					-- point3
 	numConstraints,					-- int
 	constraints, 					-- AccessoryJoint_Constraint
 	hasWeakness, 					-- bool outputs: (no_weakness) or weakness
@@ -233,67 +244,77 @@ struct AccessoryJoint (
 	fn Read f = (
 		local keepLooping = true
 		local curPos = filePos f
-		curLine = tolower(ReadNonBlankLine f)
-		if curLine == "<world_joint>" then type = "world_joint"
-		else if curLine == "<child_joint>" then type="child_joint"
-		else if curLine[1] != "[" or curLine[1] != "<" then (
-			curLine = ReadNonBlankLine f
-			label = curLine
-
-			curLine = ReadNonBlankLine f
-			flags =  curLine as integer
-
-			curLine = ReadNonBlankLine f
-			f_Unknown1 = curLine as float
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			joint_normal = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			p3_Unknown1 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			p3_Unknown2 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			p3_Unknown3 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			p3_Unknown4 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			splitLine = filterstring curLine ", "
-			p3_Unknown5 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-			curLine = ReadNonBlankLine f
-			numConstraints =  curLine as integer
-			constraints = #()
-
-			for i=1 to numConstraints do (
-				constraint = AccessoryJoint_Constraint()
-				constraint.Read f
-				append constraints constraint
+		do (
+			curLine = tolower(ReadNonBlankLine f)
+			if curLine == "<world_joint>" then type = "world_joint"
+			else if curLine == "<child_joint>" then type="child_joint"
+			else if curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keeplooping = false
 			)
+			else if curLine[1] != "[" and curLine[1] != "<" then (
+				label = curLine
 
-			curLine = tolower (ReadNonBlankLine f)
-			if curLine == "weakness" then (
-				hasWeakness = true
-				weakness1 = AccessoryJoint_Weakness()
-				weakness1.Read f
-				weakness2 = AccessoryJoint_Weakness()
-				weakness2.Read f
+				curLine = ReadNonBlankLine f
+				flags =  curLine as integer
 
+				curLine = ReadNonBlankLine f
+				f_Unknown1 = curLine as float
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				position = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				joint_normal = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown1 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown2 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown3 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown4 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown5 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				splitLine = filterstring curLine ", "
+				p3_Unknown6 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+
+				curLine = ReadNonBlankLine f
+				numConstraints =  curLine as integer
+				constraints = #()
+
+				for i=1 to numConstraints do (
+					constraint = AccessoryJoint_Constraint()
+					constraint.Read f
+					append constraints constraint
+				)
+
+				curLine = tolower (ReadNonBlankLine f)
+				if curLine == "weakness" then (
+					hasWeakness = true
+					weakness1 = AccessoryJoint_Weakness()
+					weakness1.Read f
+					weakness2 = AccessoryJoint_Weakness()
+					weakness2.Read f
+
+				)
+				keepLooping = false
 			)
-		)
-		else (
-			seek f curPos
-		)
-	
+		) while keepLooping
 	),
 	fn Write f = (
 		format "<%>\n" type to:f
@@ -322,264 +343,11 @@ struct AccessoryJoint (
 	)
 )
 
-struct AccessoryType_RotatingAccessory (
-	Speed,								--float
-
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				if (tolower splitLine[1]) == "speed" then (
-					Speed = splieLine[2] as float
-				)
-				else (
-					format "Unknown value for RotatingAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-	),
-	fn Write f = (
-		format "speed %\n" Speed to:f
-	)
-)
-struct AccessoryType_AngularDampedAccessory (
-	Damper,								--float
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				if (tolower splitLine[1]) == "damper" then (
-					Damper = splieLine[2] as float
-				)
-				else (
-					format "Unknown value for AngularDampedAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-
-	),
-	fn Write f = (
-		format "damper %\n" Damper to:f
-	)
-)
-
-struct AccessoryType_Checkpoint (
-	radius,								--float
-	top,								--float
-	bottom,								--Float
-	left,								--float
-	right,								--float
-	deactivated,						--String
-	next,								--String
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				case (tolower splitLine[1]) of (
-					"radius": radius = splitLine[2] as float
-					"top": top = splitLine[2] as float
-					"bottom": bottom = splitLine[2] as float
-					"left": left = splitLine[2] as float
-					"right": right = splitLine[2] as float
-					"deactivated": deactivated = splitLine[2]
-					"next": next = splitLine[2]
-					default: format "Unknown value for CheckpointAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-	),
-	fn Write f = (
-		if radius > 0 then (
-			format "radius %\n" radius to:f
-		)
-		if top != 0 then (
-			format "top %\n" top to:f
-		)
-		if bottom != 0 then (
-			format "bottom %\n" bottom to:f
-		)
-		if left != 0 then (
-			format "left %\n" left to:f
-		)
-		if right != 0 then (
-			format "right %\n" right to:f
-		)
-		if deactivated != undefined and deactivated != "" then (
-			format "deactivated %\n" deactivated to:f
-		)
-		if next != undefined and next != "" then (
-			format "next %\n" next to:f
-		)
-	)
-
-)
-
-struct AccessoryType_ManagedAccessory (
-	break_fuse,							--Float
-	management_policy,					--String
-	trigger_particles,					--String
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				case (tolower splitLine[1]) of (
-					"break_fuse": break_fuse = splitLine[2] as float
-					"management_policy": management_policy = splitLine[2]
-					"trigger_particles": trigger_particles = true
-					default: format "Unknown value for ManagedAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-	),
-	fn Write f = (
-		if break_fuse > 0 then (
-			format "break_fuse %\n" break_fuse to:f
-		)
-		if management_policy != undefined and management_policy != "" then (
-			format "management_policy %\n" management_policy to:f
-		)
-		if trigger_particles == true then (
-			format "trigger_particles\n" to:f
-		)
-	)
-)
-
-struct AccessoryType_Powerup (
-	type,								--String
-	respawn_time,						--Float
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				case (tolower splitLine[1]) of (
-					"respawn_time": break_fuse = splitLine[2] as float
-					"type": management_policy = splitLine[2]
-					default: format "Unknown value for PowerupAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-	),
-	fn Write f = (
-		if type != undefined and type != "" then (
-			format "type %\n" type to:f
-		)
-		if respawn_time > 0 then (
-			format "respawn_time %\n" respawn_time to:f
-		)
-	)
-)
-
-struct AccessoryType_RigidBodyAnimation (
-	anim,								--string
-	looping,							--bool
-	hit_to_trigger,						--bool
-	time_offset,						--float
-	max_acceleration,					--float
-	max_angular_acceleration,			--float
-	max_force,							--float
-	max_force_linear,					--float
-	break_factor,						--float
-	stop_factor,						--float
-	message_triggered,					--string
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
-			local curPos = filePos f
-			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
-				seek f curPos
-				keepLooping = false
-			)
-			else (
-				local splitLine = filterstring curLine " \t"
-				case (tolower splitLine[1]) of (
-					"anim": anim = splitLine[2]
-					"looping": looping = true
-					"hit_to_trigger": hit_to_trigger = true
-					"max_acceleration": max_acceleration = splitLine[2] as float
-					"max_angular_acceleration": max_angular_acceleration = splitLine[2] as float
-					"max_force": max_force = splitLine[2] as float
-					"max_force_linear": max_force_linear = splitLine[2] as float
-					"break_factor": break_factor = splitLine[2] as float
-					"stop_factor": stop_factor = splitLine[2] as float
-					"message_triggered": message_triggered = splitLine[2]
-					default: format "Unknown value for RigidBodyAnimationAccessory:\n\t\t%\n" curLine
-				)
-			)
-		)
-
-	),
-	fn Write f = (
-		if anim != undefined and anim != "" then(
-			format "anim %\n" anim to:f
-		)
-		if looping == true then(
-			format "looping\n" to:f
-		)
-		if hit_to_trigger == true then(
-			format "hit_to_trigger\n" to:f
-		)
-		if max_acceleration > 0 then(
-			format "max_acceleration %\n" max_acceleration to:f
-		)
-		if max_angular_acceleration > 0 then(
-			format "max_angular_acceleration %\n" max_angular_acceleration to:f
-		)
-		if max_force > 0 then(
-			format "max_force %\n" max_force to:f
-		)
-		if max_force_linear > 0 then(
-			format "max_force_linear %\n" max_force_linear to:f
-		)
-		if break_factor > 0 then(
-			format "break_factor %\n" break_factor to:f
-		)
-		if stop_factor > 0 then(
-			format "stop_factor %\n" stop_factor to:f
-		)
-		if message_triggered != undefined and message_triggered != "" then(
-			format "message_triggered %\n" message_triggered to:f
-		)
-	)
-)
 struct AccessoryType_StandardAppData (
 	CollisionAudioEvent,				--string
-	CollisionAudioMinTime,				--string
+	CollisionAudioEventHeavy,				--string
+	CollisionAudioMinTime,				--float
+	CollisionAudioHeavyImpactMagnitude, --float
 	CollisionAudioLump,					--string
 	CollisionAudioEventScrape,			--string
 	damage_magnifier,					--float
@@ -590,55 +358,78 @@ struct AccessoryType_StandardAppData (
 	dont_target,						--bool
 	disable_pinball,					--bool
 	vehicle_vfx,						--bool
+	weapon,								--bool
 	AccessoryAudio_Sound1,				--String
 	AccessoryAudio_Sound2,				--String
-	AccessoryAudio_Type,					--String
-	AccessoryAudio_LumpName,				--String
+	AccessoryAudio_Type,				--String
+	AccessoryAudio_LumpName,			--String
 	force_target,						--bool
 	recovery_exclusion_radius,			--float
 	special_flags,						--int
-	fn Read f = (
-		local keepLooping = true
-		while not (eof f) and keepLooping do (
+	fn ProcessLine f = (
 			local curPos = filePos f
 			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
+			local parsed = true
+
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" then (
 				seek f curPos
-				keepLooping = false
+				parsed= false
 			)
 			else (
 				local splitLine = filterstring curLine " \t"
+				
 				case (tolower splitLine[1]) of (
-					"CollisionAudioEvent": CollisionAudioEvent = splitLine[2]
-					"CollisionAudioMinTime": CollisionAudioMinTime = splitLine[2]
-					"CollisionAudioEventScrape": CollisionAudioEventScrape = splitLine[2]
-					"AccessoryAudio_Sound1": AccessoryAudio_Sound1 = splitLine[2]
-					"AccessoryAudio_Sound2": AccessoryAudio_Sound2 = splitLine[2]
-					"AccessoryAudio_Type": AccessoryAudio_Type = splitLine[2]
-					"AccessoryAudio_LumpName": AccessoryAudio_LumpName = splitLine[2]
+					"collisionaudioevent": CollisionAudioEvent = splitLine[2]
+					"collisionaudioeventheavy": CollisionAudioEventheavy = splitLine[2]
+					"collisionaudioheavyimpactmagnitude": CollisionAudioHeavyImpactMagnitude = splitLine[2] as float
+					"collisionaudiomintime": CollisionAudioMinTime = splitLine[2] as float
+					"collisionaudiolump": CollisionAudioLump = splitLine[2]
+					"collisionaudioeventscrape": CollisionAudioEventScrape = splitLine[2]
+					"accessoryaudio": (
+						AccessoryAudio_Sound1 = splitLine[2]
+						AccessoryAudio_Sound2 = splitLine[3]
+						AccessoryAudio_Type = splitLine[4]
+						AccessoryAudio_LumpName = splitLine[5]
+					)
 					"dont_target": dont_target = true
 					"disable_pinball": disable_pinball = true
 					"vehicle_vfx": vehicle_vfx = true
+					"weapon": weapon = true
 					"force_target": force_target = true
 					"damage_magnifier": damage_magnifier = splitLine[2] as float
-					"damage_magnifier_X": damage_magnifier_X = splitLine[2] as float
-					"damage_magnifier_Y": damage_magnifier_Y = splitLine[2] as float
-					"damage_magnifier_Z": damage_magnifier_Z = splitLine[2] as float
+					"damage_magnifier_x": damage_magnifier_X = splitLine[2] as float
+					"damage_magnifier_y": damage_magnifier_Y = splitLine[2] as float
+					"damage_magnifier_z": damage_magnifier_Z = splitLine[2] as float
 					"speed_sensitive_damage_magnifier": speed_sensitive_damage_magnifier = splitLine[2] as float
 					"recovery_exclusion_radius": recovery_exclusion_radius = splitLine[2] as float
 					"message_triggered": message_triggered = splitLine[2]
 					"special_flags": special_flags = splitLine[2] as integer
-					default: format "Unknown value for StandardAccessory:\n\t\t%\n" curLine
+					default: format "Unknown value for StandardAccessory in %:\n\t\t%\n" f curLine
 				)
 			)
+			parsed
+	),
+	fn Read f = (
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			keepLooping = ProcessLine f
 		)
 	),
 	fn Write f = (
 		if CollisionAudioEvent != undefined then (
 			format "CollisionAudioEvent %\n" CollisionAudioEvent to:f
 		)
+		if CollisionAudioEventHeavy != undefined then (
+			format "CollisionAudioEventHeavy %\n" CollisionAudioEventHeavy to:f
+		)
+		if CollisionAudioHeavyImpactMagnitude != undefined then (
+			format "CollisionAudioHeavyImpactMagnitude %\n" CollisionAudioHeavyImpactMagnitude to:f
+		)
 		if CollisionAudioMinTime != undefined then (
 			format "CollisionAudioMinTime %\n" CollisionAudioMinTime to:f
+		)
+		if CollisionAudioLump != undefined then (
+			format "CollisionAudioLump %\n" CollisionAudioLump to:f
 		)
 		if CollisionAudioEventScrape != undefined then (
 			format "CollisionAudioEventScrape %\n" CollisionAudioEventScrape to:f
@@ -694,6 +485,310 @@ struct AccessoryType_StandardAppData (
 	)
 	
 )
+struct AccessoryType_RotatingAccessory (
+	StandardData,						-- AccessoryType_StandardAppData
+	Speed,								--float
+
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+
+			if curLine == undefined or curLine == "" or  curline == "" or curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				if (tolower splitLine[1]) == "speed" then (
+					Speed = splitLine[2] as float
+				)
+				else (
+					seek f curPos
+					if (StandardData.ProcessLine f) == false then (
+						format "Unknown value for RotatingAccessory in %:\n\t\t%\n" f curLine
+					)
+				)
+			)
+		)
+	),
+	fn Write f = (
+		format "speed %\n" Speed to:f
+	)
+)
+struct AccessoryType_AngularDampedAccessory (
+	StandardData,						-- AccessoryType_StandardAppData
+	Damper,								--float
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				if (tolower splitLine[1]) == "damper" then (
+					Damper = splitLine[2] as float
+				)
+				else (
+					seek f curPos
+					if (StandardData.ProcessLine f) == false then (
+						format "Unknown value for AngularDampedAccessoryin %:\n\t\t%\n" f curLine
+					)
+				)
+			)
+		)
+
+	),
+	fn Write f = (
+		format "damper %\n" Damper to:f
+	)
+)
+
+struct AccessoryType_Checkpoint (
+	StandardData,						-- AccessoryType_StandardAppData
+	radius,								--float
+	top,								--float
+	bottom,								--Float
+	left,								--float
+	right,								--float
+	deactivated,						--String
+	next,								--String
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine == undefined or curLine == "" or  curLine[1] == "[" or curLine[1] == "<" or eof f then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				if splitLine.count > 0 then (
+					case (tolower splitLine[1]) of (
+						"radius": radius = splitLine[2] as float
+						"top": top = splitLine[2] as float
+						"bottom": bottom = splitLine[2] as float
+						"left": left = splitLine[2] as float
+						"right": right = splitLine[2] as float
+						"deactivated": deactivated = splitLine[2]
+						"next": next = splitLine[2]
+						default: (
+							seek f curPos
+							if (StandardData.ProcessLine f) == false then (
+								format "Unknown value for CheckpointAccessory in %:\n\t\t%\n" f curLine
+							)
+						)
+					)
+				)
+
+			)
+		)
+	),
+	fn Write f = (
+		if radius > 0 then (
+			format "radius %\n" radius to:f
+		)
+		if top != 0 then (
+			format "top %\n" top to:f
+		)
+		if bottom != 0 then (
+			format "bottom %\n" bottom to:f
+		)
+		if left != 0 then (
+			format "left %\n" left to:f
+		)
+		if right != 0 then (
+			format "right %\n" right to:f
+		)
+		if deactivated != undefined and deactivated != "" then (
+			format "deactivated %\n" deactivated to:f
+		)
+		if next != undefined and next != "" then (
+			format "next %\n" next to:f
+		)
+	)
+
+)
+
+struct AccessoryType_ManagedAccessory (
+	StandardData,						-- AccessoryType_StandardAppData
+	break_fuse,							--Float
+	management_policy,					--String
+	trigger_particles,					--String
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				case (tolower splitLine[1]) of (
+					"break_fuse": break_fuse = splitLine[2] as float
+					"management_policy": management_policy = splitLine[2]
+					"trigger_particles": trigger_particles = true
+					default: (
+						seek f curPos
+						if (StandardData.ProcessLine f) == false then (
+							format "Unknown value for ManagedAccessory in %:\n\t\t%\n" f curLine
+						)
+					)
+				)
+			)
+		)
+	),
+	fn Write f = (
+		if break_fuse > 0 then (
+			format "break_fuse %\n" break_fuse to:f
+		)
+		if management_policy != undefined and management_policy != "" then (
+			format "management_policy %\n" management_policy to:f
+		)
+		if trigger_particles == true then (
+			format "trigger_particles\n" to:f
+		)
+	)
+)
+
+struct AccessoryType_Powerup (
+	StandardData,						-- AccessoryType_StandardAppData
+	type,								--String
+	respawn_time,						--Float
+	simple_rotate,						--Float
+	respawn_if_not_collected_by_human_player,
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				case (tolower splitLine[1]) of (
+					"respawn_time": respawn_time = splitLine[2] as float
+					"simple_rotate": simple_rotate = splitLine[2] as float
+					"type": type = splitLine[2]
+					"respawn_if_not_collected_by_human_player": respawn_if_not_collected_by_human_player = splitLine[2]
+					default: (
+						seek f curPos
+						if (StandardData.ProcessLine f) == false then (
+							format "Unknown value for PowerupAccessory in %:\n\t\t%\n" f curLine
+						)
+					)
+				)
+			)
+		)
+	),
+	fn Write f = (
+		if type != undefined and type != "" then (
+			format "type %\n" type to:f
+		)
+		if respawn_time > 0 then (
+			format "respawn_time %\n" respawn_time to:f
+		)
+		if respawn_if_not_collected_by_human_player > 0 then (
+			format "respawn_if_not_collected_by_human_player %\n" respawn_if_not_collected_by_human_player to:f
+		)
+	)
+)
+
+struct AccessoryType_RigidBodyAnimation (
+	StandardData,						-- AccessoryType_StandardAppData
+	anim,								--string
+	looping,							--bool
+	hit_to_trigger,						--bool
+	time_offset,						--float
+	max_acceleration,					--float
+	max_angular_acceleration,			--float
+	max_force,							--float
+	max_force_linear,					--float
+	break_factor,						--float
+	stop_factor,						--float
+	message_triggered,					--string
+	fn Read f = (
+		StandardData = AccessoryType_StandardAppData()
+		local keepLooping = true
+		while not (eof f) and keepLooping do (
+			local curPos = filePos f
+			curLine = ReadNonBlankLine f
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" then (
+				seek f curPos
+				keepLooping = false
+			)
+			else (
+				local splitLine = filterstring curLine " \t"
+				case (tolower splitLine[1]) of (
+					"anim": anim = splitLine[2]
+					"looping": looping = true
+					"hit_to_trigger": hit_to_trigger = true
+					"max_acceleration": max_acceleration = splitLine[2] as float
+					"max_angular_acceleration": max_angular_acceleration = splitLine[2] as float
+					"max_force": max_force = splitLine[2] as float
+					"max_force_linear": max_force_linear = splitLine[2] as float
+					"break_factor": break_factor = splitLine[2] as float
+					"stop_factor": stop_factor = splitLine[2] as float
+					"message_triggered": message_triggered = splitLine[2]
+					default: (
+						seek f curPos
+						if (StandardData.ProcessLine f) == false then (
+							format "Unknown value for RigidBodyAnimationAccessory in %:\n\t\t%\n" f curLine
+						)
+					)
+				)
+			)
+		)
+
+	),
+	fn Write f = (
+		if anim != undefined and anim != "" then(
+			format "anim %\n" anim to:f
+		)
+		if looping == true then(
+			format "looping\n" to:f
+		)
+		if hit_to_trigger == true then(
+			format "hit_to_trigger\n" to:f
+		)
+		if max_acceleration > 0 then(
+			format "max_acceleration %\n" max_acceleration to:f
+		)
+		if max_angular_acceleration > 0 then(
+			format "max_angular_acceleration %\n" max_angular_acceleration to:f
+		)
+		if max_force > 0 then(
+			format "max_force %\n" max_force to:f
+		)
+		if max_force_linear > 0 then(
+			format "max_force_linear %\n" max_force_linear to:f
+		)
+		if break_factor > 0 then(
+			format "break_factor %\n" break_factor to:f
+		)
+		if stop_factor > 0 then(
+			format "stop_factor %\n" stop_factor to:f
+		)
+		if message_triggered != undefined and message_triggered != "" then(
+			format "message_triggered %\n" message_triggered to:f
+		)
+	)
+)
 struct CustomAccessoryBlock
 (
 	Type,
@@ -703,65 +798,83 @@ struct CustomAccessoryBlock
 	fn Read f = (
 
 		local keepLooping = true
+		local startOfBlock = filePos f
+
 		while not (eof f) and keepLooping do (
 			local curPos = filePos f
 			curLine = ReadNonBlankLine f
-			if curLine[1] == "[" or curLine[1] == "<" then (
+			if curLine == undefined or curLine == "" or curLine[1] == "[" or curLine[1] == "<" or curLine == "" then (
 				seek f curPos
 				keepLooping = false
 			)
 			else (
 				Type = curLine
 				case (tolower curLine) of (
-					"AngularDampedAccessory": (
+					"angulardampedaccessory": (
 						CustomData = AccessoryType_AngularDampedAccessory()
 						CustomData.Read f
 					)
-					"RigidBodyAnimation": (
+					"rigidbodyanimation": (
 						CustomData = AccessoryType_RigidBodyAnimation()
 						CustomData.Read f
 					)
-					"Checkpoint": (
+					"checkpoint": (
 						CustomData = AccessoryType_Checkpoint()
 						CustomData.Read f
 					)
-					"RotatingAccessory": (
+					"rotatingaccessory": (
 						CustomData = AccessoryType_RotatingAccessory()
 						CustomData.Read f
 					)
-					"ManagedAccessory": (
+					"managedaccessory": (
 						CustomData = AccessoryType_ManagedAccessory()
 						CustomData.Read f
 					)
-					"Powerup": (
+					"powerup": (
 						CustomData = AccessoryType_Powerup()
 						CustomData.Read f
 					)
-					"StandardAccessory": (
+					"standardaccessory": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"ConveyorAccessory": (
+					"conveyoraccessory": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"CopSpawn": (
+					"copspawn": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"StartingGrid": (
+					"startinggrid": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"MultiplayerSpawn": (
+					"multiplayerspawn": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"TrailerSpawn": (
+					"trailerspawn": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"ExplodingAccessory": (
+					"explodingaccessory": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"Bicycle": (
+					"bicycle": (
+						CustomData = AccessoryType_StandardAppData()
+						CustomData.Read f
 					)
-					"RockingAccessory": (
+					"rockingaccessory": (
 						CustomData = AccessoryType_RigidBodyAnimation()
 						CustomData.Read f
 					)
-					default: format "Unknown custom accessory type:\n\t\t%\n" curLine
+					default: format "Unknown custom accessory type in %:\n\t\t%\n" f curLine
 				)
-
-				StandardData = AccessoryType_StandardAppData()
-				StandardData.Read f
+				--seek f startOfBlock
+				--StandardData = AccessoryType_StandardAppData()
+				--StandardData.Read f
 			)
 		)
 	),
@@ -825,22 +938,24 @@ struct AccessoryBreakableBlock
 				keepLooping = false
 			)
 			splitLine = filterstring curLine " ,"
-			case (tolower splitLine[1]) of (
-				"break_impulse": break_impulse = splitLine[2] as float
-				"explode_force": explode_force = splitLine[2] as float
-				"trigger_particles": trigger_particles = true
-				"detach_children": detach_children = true
-				"destroy_children": destroy_children = true
-				"sound": sound = splitLine[2]
-				"random_rotation": random_rotation = [splitLine[2] as float, splitLine[3] as float]
-				"replace": (
-					seek f curPos
-					replacement = AccessoryBreakableReplacement()
-					replace.Read f
-					append replacements replacement
+			if splitLine.count > 0 then (
+				case (tolower splitLine[1]) of (
+					"break_impulse": break_impulse = splitLine[2] as float
+					"explode_force": explode_force = splitLine[2] as float
+					"trigger_particles": trigger_particles = true
+					"detach_children": detach_children = true
+					"destroy_children": destroy_children = true
+					"sound": sound = splitLine[2]
+					"random_rotation": random_rotation = [splitLine[2] as float, splitLine[3] as float]
+					"replace": (
+						seek f curPos
+						replacement = AccessoryBreakableReplacement()
+						replacement.Read f
+						append replacements replacement
+					)
 				)
 			)
-		)
+		) 
 	),
 	fn Write f = (
 		format "%\n" Type to:f
@@ -871,11 +986,26 @@ struct AccessoryDynamicsShapeBlock
 
 	fn Read f = (
 		label = ReadNonBlankLine f
-		local numShapes = (ReadNonBlankLine f) as integer
-		for i = 1 to numShapes do (
-			local newShape = AccessoryShape()
-			newShape.Read f
-			append shapes newShape
+		if tolower label == "(no_shape)" then (
+			numShapes = 0
+		)
+		else (
+			local numShapes = (ReadNonBlankLine f) as integer
+			for i = 1 to numShapes do (
+				local newShape = AccessoryShape()
+				newShape.Read f
+				append shapes newShape
+			)
+
+			keepLooping = true
+			do (
+				curPos = filepos f
+				curLine = ReadNonBlankLine f
+				if curline == undefined or curline == "" or curLine[1] == "[" or curLine[1] == "<" then (
+					seek f curPos
+					keeplooping = false
+				)
+			) while keepLooping
 		)
 	),
 	fn Write f = (
@@ -944,7 +1074,7 @@ struct AccessoryDynamicsBlock
 						buoyancy = (ReadNonBlankLine f) as float
 						buoyancy_position = ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f))
 					)
-					"<buoyancy_relative_to_com>": buoyancy_relative_to_com  = (ReadNonBlankLine f) as float
+					"<buoyancy_relative_to_com>": buoyancy_relative_to_com  = true
 					"<sphere_rolling_resistance>": sphere_rolling_resistance  = (ReadNonBlankLine f) as float
 					"<group>": groupIndex  = (ReadNonBlankLine f) as integer
 					"<ignore_group>": (
@@ -955,7 +1085,7 @@ struct AccessoryDynamicsBlock
 						local curPos2 = filePos f
 						do (
 							local groupId  = (ReadNonBlankLine f)
-							if(groupId[1] == "[" or groupId[1] == "<") then (
+							if(eof f  or groupdId == undefined or groupId[1] == "[" or groupId[1] == "<") then (
 								keepLooping = false
 								seek f curPos
 							)
@@ -966,7 +1096,13 @@ struct AccessoryDynamicsBlock
 
 					)
 					"<substance>": sphere_rolling_resistance  = (ReadNonBlankLine f) as integer
-					(tolower curline == "<child_joint>" or tolower curline == "<world_joint>"): (
+					"<child_joint>": (
+						seek f curPos
+						local joint = AccessoryJoint()
+						joint.Read f
+						append Joints joint 
+					)
+					"<world_joint>": (
 						seek f curPos
 						local joint = AccessoryJoint()
 						joint.Read f
@@ -980,7 +1116,8 @@ struct AccessoryDynamicsBlock
 						Breakable = AccessoryBreakableBlock()
 						Breakable.Read f
 					)
-
+					"": ()
+					default: format "\tUnknown dynamics subblock % in %\n" curLine f
 				)
 			)
 		)
@@ -1062,34 +1199,36 @@ struct AccessoryFileLump
 
 	fn Read filename = (
 		f = openfile filename mode:"r"
-
-		do (
-			curLine = ReadNonBlankLine f
-			case toupper curLine of (
-				"[APP_DATA]": (
-					local keepLooping = true
-					do (
-						curPos = filePos f
-						nextLine = ReadNonBlankLine f
-						if nextLine[1] == "[" then (
-							seek f curPos
-							keepLooping = false
-						) 
-						else if tolower nextLine == "<customaccessorytype>" then (
-							customblock = CustomAccessoryBlock()
-							customblock.Read f
-							append CustomBlocks customblock
-						)
-					) while keepLooping
-				)
-				"[DYNAMICS]": (
-					dynamicsBlock = AccessoryDynamicsBlock()
-					dynamicsBlock.Read f
-					append DynamicsBlocks dynamicsBlock
+		if f != undefined then (
+			do (
+				curLine = ReadNonBlankLine f
+				case toupper curLine of (
+					"[APP_DATA]": (
+						local keepLooping = true
+						do (
+							curPos = filePos f
+							nextLine = ReadNonBlankLine f
+							if nextLine.count < 1 or  nextLine[1] == "[" then (
+								seek f curPos
+								keepLooping = false
+							) 
+							else if tolower nextLine == "<customaccessorytype>" then (
+								customblock = CustomAccessoryBlock()
+								customblock.Read f
+								append CustomBlocks customblock
+							)
+						) while keepLooping and not eof f
+					)
+					"[DYNAMICS]": (
+						dynamicsBlock = AccessoryDynamicsBlock()
+						dynamicsBlock.Read f
+						append DynamicsBlocks dynamicsBlock
+					)
 				)
 			)
+			while not eof f
 		)
-		while not eof f
+		fclose f 
 	),
 	fn Write filename =(
 		f = openfile filename mode:"w"
@@ -1433,7 +1572,7 @@ AccessoryJointConstraintAttribute = attributes AccesoryJointConstraintCustAttrib
 					dpdn_weakness.selected = 2
 				default: (
 					dpdn_weakness.selected = 1
-					format "Unknown constraint weakness type %\n" weakness
+					format "Unknown constraint weakness type % in %\n" weakness f
 				)
 			)
 		)

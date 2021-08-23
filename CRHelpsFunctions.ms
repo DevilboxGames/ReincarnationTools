@@ -719,10 +719,11 @@ fn BatchCarStructuresButton_Pressed sender arg =
 ********************************************/
 
 fn ReadNonBlankLine f = (
+	if not eof f then (
 	curline = trimLeft (trimRight (readline f))
 	while (curline == undefined or curline == "") and not eof f do
 		curline = trimLeft (trimRight (readline f))
-
+	)
 	curline 
 ) 
 

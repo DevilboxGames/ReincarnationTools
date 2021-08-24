@@ -2617,6 +2617,30 @@ fn ExportCNTModel f model =
 			)
 			
 		)
+		else if nodeType == "VFXI" then
+		(
+			writestring2 f "VFXI"
+			
+			writelong f model_file_name_length #unsigned
+			writestring2 f model_file_name
+			for j = 1 to model_file_name_padding do
+			(
+				writebyte f 0 #unsigned
+			)
+			
+		)
+		else if nodeType == "shrb" then
+		(
+			writestring2 f "shrb"
+			
+			writelong f model_file_name_length #unsigned
+			writestring2 f model_file_name
+			for j = 1 to model_file_name_padding do
+			(
+				writebyte f 0 #unsigned
+			)
+			
+		)
 		else 
 		(
 			writestring2 f "NULL"

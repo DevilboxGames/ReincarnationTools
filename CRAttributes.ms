@@ -619,7 +619,7 @@ refreshLayerList()
 ***** CNT ATTRIBUTES
 *********************************/
 
-CNTTypes = #("MODL","NULL","LITg","SKIN","EMT2","VFXI")
+CNTTypes = #("MODL","NULL","LITg","SKIN","shrb","VFXI")
 CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) version:1
 (
 	parameters main rollout:CNTAttributeParams
@@ -3669,22 +3669,35 @@ StructureRotatePointToPointAttribute = attributes StructureRotatePointToPoint_De
 		on pck_PointOnThisObject picked obj do
 		(
 			PointOnThisObject = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			pck_PointOnThisObject.object = obj
 		)
 		on pck_OtherObject picked obj do
 		(
 			OtherObject = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			pck_OtherObject.object = obj
 		)
 		on pck_PointOnOtherObject picked obj do
 		(
 			PointOnOtherObject = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			pck_PointOnOtherObject.object = obj
 		)
 		on pck_LineTargetObject picked obj do
 		(
 			LineTargetObject = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			pck_LineTargetObject.object = obj
 		)
 		on dpdn_TypeOfPointToPoint selected selectedIndex do
 		(
 			TypeOfPointToPoint=StructurePointToPointValues[selectedIndex]
+
+			if selectedIndex == 2 then
+			(
+				pck_LineTargetObject.enabled = true
+			)
+			else
+			(
+				pck_LineTargetObject.enabled = false
+			)
 		)
 		fn InitFields =
 		(
@@ -4031,7 +4044,7 @@ StructureWeldAttribute = attributes StructureWeld_Def attribID: #(0x102e05ef, 0x
 		(
 			if WeldPartner != undefined then ( undo "Select Weld Partner" on ( select WeldPartner.node ) )
 		)
-		on but_CleaWeldPartner pressed do
+		on but_ClearWeldPartner pressed do
 		(
 			WeldPartner = undefined
 			objpick_WeldPartner.object = undefined
@@ -4481,7 +4494,7 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 			
 			lv_DriverBox.Items.add (( spn_colour_r.value as string)+", "+( spn_colour_g.value as string)+", "+( spn_colour_b.value as string)+", "+( spn_colour_a.value as string))
 		)
-		on but_RemoverDriverBox pressed do
+		on but_RemoveDriverBox pressed do
 		(
 			if lv_DriverBox.SelectedIndices.count > 0 then 
 			(
@@ -4949,7 +4962,7 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 					if pickbut_CrushDamageEmitterTarget==undefined then format "pickbut_CrushDamageEmitterTarget is undefined\n"
 					if pickbut_CrushDamageEmitterTarget.object ==undefined then format "pickbut_CrushDamageEmitterTarget.object is undefined\n"
 					CrushDamageEmitterPosition[i] =  (nodeTransformMonitor node:pickbut_CrushDamageEmitterTarget.object forwardTransformChangeMsgs:false)
-					crushDamageEmitterListItems[i+1] = ((CrushDamageEmitterLevel[i] as string)+": "+(CrushDamageEmitterName[i] as string)+" -> "+(CrushDamageEmitterPosition[i].name as string))
+					crushDamageEmitterListItems[i+1] = ((CrushDamageEmitterLevel[i] as string)+": "+(CrushDamageEmitterName[i] as string)+" -> "+(CrushDamageEmitterPosition[i].node.name as string))
 				)
 				dpdn_CrushDamageEmitterLevel.items  = crushDamageEmitterListItems
 				dpdn_CrushDamageEmitterLevel.selection = i+1

@@ -208,10 +208,9 @@ struct AccessoryJoint_Constraint (
 	fn Write f = (
 		format "%\n" i_Unknown to:f
 		format "%\n" strength to:f
-		format "%\n" f_Unknown to:f
+		format "%\n" f_Unknown1 to:f
 		format "%,%,%\n" minDirection.x minDirection.y minDirection.z to:f
-		format "%,%,%\n" minDirection.x minDirection.y minDirection.z to:f
-		format "%\n" maxDirection.x maxDirection.y maxDirection.z to:f
+		format "%,%,%\n" maxDirection.x maxDirection.y maxDirection.z to:f
 		format "%\n" f_Unknown2 to:f
 		format "%\n" weakness to:f
 		format "%,%,%\n" p3_Unknown1.x p3_Unknown1.y p3_Unknown1.z to:f
@@ -321,6 +320,7 @@ struct AccessoryJoint (
 		format "%\n" label to:f
 		format "%\n" flags to:f
 		format "%\n" f_Unknown1 to:f
+		format "%,%,%\n" position.x position.y position.z to:f
 		format "%,%,%\n" joint_normal.x joint_normal.y joint_normal.z to:f
 		format "%,%,%\n" p3_Unknown1.x p3_Unknown1.y p3_Unknown1.z to:f
 		format "%,%,%\n" p3_Unknown2.x p3_Unknown2.y p3_Unknown2.z to:f
@@ -435,16 +435,10 @@ struct AccessoryType_StandardAppData (
 			format "CollisionAudioEventScrape %\n" CollisionAudioEventScrape to:f
 		)
 		if AccessoryAudio_Sound1 != undefined then (
-			format "AccessoryAudio_Sound1 %\n" AccessoryAudio_Sound1 to:f
+			format "AccessoryAudio % % % %\n"  AccessoryAudio_Sound1 AccessoryAudio_Sound2 AccessoryAudio_Type AccessoryAudio_LumpName to:f
 		)
 		if AccessoryAudio_Sound2 != undefined then (
 			format "AccessoryAudio_Sound2 %\n" AccessoryAudio_Sound2 to:f
-		)
-		if AccessoryAudio_Type != undefined then (
-			format "AccessoryAudio_Type %\n" AccessoryAudio_Type to:f
-		)
-		if AccessoryAudio_LumpName != undefined then (
-			format "AccessoryAudio_LumpName %\n" AccessoryAudio_LumpName to:f
 		)
 		if dont_target == true then (
 			format "dont_target\n" to:f
@@ -457,6 +451,9 @@ struct AccessoryType_StandardAppData (
 		)
 		if force_target == true then (
 			format "force_target\n" to:f
+		)
+		if weapon == true then (
+			format "weapon\n" to:f
 		)
 		if damage_magnifier != undefined then (
 			format "damage_magnifier %\n" damage_magnifier to:f
@@ -516,6 +513,7 @@ struct AccessoryType_RotatingAccessory (
 	),
 	fn Write f = (
 		format "speed %\n" Speed to:f
+		if StandardData != undefined then StandardData.Write()
 	)
 )
 struct AccessoryType_AngularDampedAccessory (
@@ -548,6 +546,7 @@ struct AccessoryType_AngularDampedAccessory (
 	),
 	fn Write f = (
 		format "damper %\n" Damper to:f
+		if StandardData != undefined then StandardData.Write()
 	)
 )
 
@@ -615,6 +614,7 @@ struct AccessoryType_Checkpoint (
 		if next != undefined and next != "" then (
 			format "next %\n" next to:f
 		)
+		if StandardData != undefined then StandardData.Write()
 	)
 
 )
@@ -660,6 +660,7 @@ struct AccessoryType_ManagedAccessory (
 		if trigger_particles == true then (
 			format "trigger_particles\n" to:f
 		)
+		if StandardData != undefined then StandardData.Write()
 	)
 )
 
@@ -703,9 +704,13 @@ struct AccessoryType_Powerup (
 		if respawn_time > 0 then (
 			format "respawn_time %\n" respawn_time to:f
 		)
+		if simple_rotate > 0 then (
+			format "simple_rotate %\n" simple_rotate to:f
+		)
 		if respawn_if_not_collected_by_human_player > 0 then (
 			format "respawn_if_not_collected_by_human_player %\n" respawn_if_not_collected_by_human_player to:f
 		)
+		if StandardData != undefined then StandardData.Write()
 	)
 )
 
@@ -787,13 +792,13 @@ struct AccessoryType_RigidBodyAnimation (
 		if message_triggered != undefined and message_triggered != "" then(
 			format "message_triggered %\n" message_triggered to:f
 		)
+		if StandardData != undefined then StandardData.Write()
 	)
 )
 struct CustomAccessoryBlock
 (
 	Type,
 	CustomData,
-	StandardData,
 
 	fn Read f = (
 
@@ -882,9 +887,6 @@ struct CustomAccessoryBlock
 		format "%\n" Type to:f
 		if Data != undefined then (
 			Data.Write f
-		)
-		if StandardData != undefined then (
-			StandardData.Write f
 		)
 	)
 )
@@ -1012,6 +1014,71 @@ struct AccessoryDynamicsShapeBlock
 		format "%\n%\n" label shapes.count to:f
 		for i = 1 to shapes.count do (
 			shapes[i].Write f
+		)
+	), 
+	fn CreateShape objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
+	(
+		for obj in objects do
+		(
+			oldVis = obj.isHidden
+			obj.isHidden = false
+			oldPos = obj.pos
+			if moveToOrigin then (
+				obj.pos = [0,0,0]
+			)
+			oldRot = obj.rotation
+			objType = classof obj
+
+			isAxisAligned = (
+				normXAxis = normalize obj.Transform.row1
+				normXAxis.x == 1 or normXAxis.y == 1 or normXAxis.z == 1
+			)
+			isScaled = obj.scale.x != 1 or obj.scale.y != 1 or obj.scale.z != 1
+			isUniformScaled = obj.scale.x == obj.scale.y and obj.scale.x == obj.scale.z
+			format "%\nisAxisAligned: %\nisScaled: %\nisUniformScaled: %\n" objType isAxisAligned isScaled isUniformScaled
+			if forcePolyhedron == false and (objType == Sphere or objType == GeoSphere) and isUniformScaled then
+			(
+				accShape = AccessoryShape Type:"Sphere"
+				append accShape.Points obj.position
+				accShape.Radius = obj.radius * obj.scale.x
+			)
+			else if forcePolyhedron == false and (objType == Box) and isAxisAligned then
+			(
+				accShape = AccessoryShape Type:"AlignedCuboid"
+				append accShape.Points obj.min
+				append accShape.Points obj.max
+			)
+			else if forcePolyhedron == false and objType == Capsule and isUniformScaled then
+			(
+				accShape = AccessoryShape Type:"TicTac"
+				ticTacRadius = obj.scale.x * obj.radius
+				ticTacHeight = obj.scale.x * obj.height
+				if (obj.heighttype == 0) then ticTacHeight = ticTacHeight - ticTacRadius
+				startPos = obj.position + obj.Transform.row3 * ticTacRadius
+				endPos = startPos + obj.Transform.row3 * ticTacHeight
+				append accShape.points startPos
+				append accShape.points endPos
+				accShape.radius = ticTacRadius
+			)
+			else
+			(
+				msh = snapshotasmesh obj
+				accShape = AccessoryShape Type:"Polyhedron"
+				if roundedPolyhedronAmount != unsupplied then (
+					accShape.type = "RoundedPolyhedron"
+					accShape.Radius = RoundedPolyhedronAmount
+				)
+				numShapeVerts = getNumVerts msh
+				for v=1 to numShapeVerts do
+				(
+					pos = getVert msh v
+					appendifunique accShape.points pos
+				)
+			)
+			append Shapes accShape
+			obj.pos = oldPos
+			obj.rotation = oldRot
+			obj.isHidden = oldVis
 		)
 	)
 )
@@ -1448,9 +1515,11 @@ AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a
 (
 	parameters main rollout:mainaccessoryshaperollout (
 		CollisionType type:#string default:"Polyhedron"
+		Radius type:#float default:0 ui:spn_radius
 	)
 	rollout mainaccessoryshaperollout "Accessory" (
 		dropdownlist dpdn_CollisionType items:CollisionShapeTypes default:1
+		spinner spn_radius type:#float range:[0,1000,0]
 
 		on mainaccessoryshaperollout open do (
 			dpdn_CollisionType.selection = finditem CollisionShapeTypes CollisionType

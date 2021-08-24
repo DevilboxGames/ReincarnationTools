@@ -551,13 +551,14 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			)
 			for child in obj.children do
 			(
+				childIsModl = childmesh !=undefined and childmesh.modifiers != undefined and IsObjectACNT childmesh and childmesh.modifiers["CNT Hierarchy"].NodeType=="MODL" 
 				childMesh = combineWheelMeshes child
 				
 				if outMesh == undefined then 
 				(
 					outMesh = childmesh
 				)
-				else if childmesh !=undefined and childmesh.modifiers != undefined and IsObjectACNT childmesh and childmesh.modifiers["CNT Hierarchy"].NodeType=="MODL" then
+				else if childmesh !=undefined then --and childmesh.modifiers != undefined and IsObjectACNT childmesh and childmesh.modifiers["CNT Hierarchy"].NodeType=="MODL" then
 				(
 					/*oldMeshNumVerts = getNumVerts outMesh
 					numVerts = getNumVerts childMesh

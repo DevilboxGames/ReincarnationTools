@@ -4950,7 +4950,7 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 					append CrushDamageEmitterName txt_CrushDamageEmitterName.text
 					append CrushDamageEmitterPosition (nodeTransformMonitor node:pickbut_CrushDamageEmitterTarget.object forwardTransformChangeMsgs:false)
 					i = CrushDamageEmitterLevel.count
-					append crushDamageEmitterListItems ((CrushDamageEmitterLevel[i] as string)+": "+(CrushDamageEmitterName[i] as string)+" -> "+(CrushDamageEmitterPosition[i].name as string))
+					append crushDamageEmitterListItems ((CrushDamageEmitterLevel[i] as string)+": "+(CrushDamageEmitterName[i] as string)+" -> "+(CrushDamageEmitterPosition[i].node.name as string))
 					--dpdn_CrushDamageMaterialLevel.selection = dpdn_CrushDamageMaterialLevel.items.count
 				)
 				else

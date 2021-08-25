@@ -3356,6 +3356,7 @@ StructureWishboneHub = attributes StructureWishboneHubt_Def attribID:#(0xf8ff3af
 		on pck_Wheel picked obj do
 		(
 			WheelPoint = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+			pck_Wheel.object = obj
 		)
 		on dpdn_HubType selected selectedIndex do
 		(

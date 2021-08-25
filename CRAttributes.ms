@@ -69,9 +69,7 @@ fn target_helper_filter obj = ( IsObjectACNT obj == true or (classof obj) == Poi
 	
 fn target_cnt_filter obj = (IsObjectACNT obj == true )
 	
-fn pickJointFilter obj = (
-	classof obj == CarmaHelper_JointHelper
-)
+fn pickJointFilter obj = ( classof obj == CarmaHelper_JointHelper)
 
 MTLSaveFlags = #("USE_LUMP_COLOUR",	--States to use the colour value in the lump as the materials diffuse.
 "FORCE_ALPHA_BLEND",	--This forces the material to be rendered as an alpha mesh. Even if alpha is 1.0f

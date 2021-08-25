@@ -2093,12 +2093,14 @@ fn ParseStructureJointNode xmlNode obj WeldModifier =
 							splitArguments = filterstring splitline[3] ", \""
 							JointObj.JointAxis = ConvertFromCRSpace [splitArguments[1] as float, splitArguments[2] as float, splitArguments[3] as float]
 							JointObj.AxisIsSet = true
+							JointObj.SetTransformFromAxisAndNormal()
 						)
 						"set_jointnormal":
 						(
 							splitArguments = filterstring splitline[3] ", \""
 							JointObj.JointNormal = ConvertFromCRSpace [splitArguments[1] as float, splitArguments[2] as float, splitArguments[3] as float]
 							JointObj.UseNormal = true
+							JointObj.SetTransformFromAxisAndNormal()
 						)
 						"set_weakness":
 						(

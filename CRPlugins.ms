@@ -29,7 +29,7 @@ plugin simpleObject CarmaHelper_JointHelper
 		
 		AxisIsSet type:#boolean default:false
 		JointAxis type:#point3 animatable:false default:[1,0,0]
-		JointNormal type:#point3 animtable:false default:[0,0,1]
+		JointNormal type:#point3 animatable:false default:[0,0,1]
 		
 		Weakness type:#float animatable:false ui:spn_Weakness
 		
@@ -178,6 +178,55 @@ plugin simpleObject CarmaHelper_JointHelper
 		spinner spn_Limit1Start "Limit 1 Start Position" fieldwidth:40 range:[-360,360,0] labelOnTop:true
 		spinner spn_Limit2Start "Limit 2 Start Position" fieldwidth:40 range:[-360,360,0] labelOnTop:true
 		spinner spn_TwistStart "Twist Start Position" fieldwidth:40 range:[-360,360,0] labelOnTop:true
+	)
+	fn SetTransformFromAxisAndNormal = (
+			trans = thisNode.transform
+			transRow1 = JointAxis
+			--format "transRow1 = %\n" transRow1
+			if UseNormal then
+			(
+				transRow2 = cross  JointNormal JointAxis
+				--format "transRow2 = %\n" transRow2
+				transRow3 = JointNormal
+				--format "transRow3 = %\n" transRow3
+			)
+			else
+			(
+				if JointAxis == [0,0,-1] then
+				(
+					--format "Axis is facing down\n"
+					transRow2 = cross  [1,0,0] JointAxis
+				--format "transRow3 = %\n" transRow3
+					transRow3 = cross  JointAxis transRow2
+				--format "transRow2 = %\n" transRow2
+					transRow2 = cross JointAxis transRow3
+				--format "transRow3 = %\n" transRow3
+				)
+				else if JointAxis == [0,0,1] then
+				(
+					--format "Axis is facing up\n"
+					transRow2 = cross  [-1,0,0] JointAxis
+				--format "transRow3 = %\n" transRow3
+					transRow3 = cross transRow2 JointAxis
+				--format "transRow2 = %\n" transRow2
+					transRow2 = cross JointAxis transRow3
+				--format "transRow3 = %\n" transRow3
+				)
+				else
+				(
+					--format "Axis is not facing backwards\n"
+					transRow2 = cross JointAxis [0,0,-1]
+				--format "transRow3 = %\n" transRow3
+					transRow3 = cross   JointAxis transRow2
+				--format "transRow2 = %\n" transRow2
+					transRow2 = cross JointAxis transRow3
+				--format "transRow3 = %\n" transRow3
+				)
+				trans.row2 = transRow2
+				trans.row3 = transRow3
+			)
+			thisNode.transform = matrix3 transRow1 transRow2 transRow3 trans.row4
+			
 	)
 	on postload do
 	(
@@ -447,52 +496,6 @@ plugin simpleObject CarmaHelper_JointHelper
 			meshObj = copy tmpMeshObj.mesh
 			delete tmpmeshobj
 			
-			trans = thisNode.transform
-			transRow1 = JointAxis
-			--format "transRow1 = %\n" transRow1
-			if UseNormal then
-			(
-				transRow2 = cross  JointNormal JointAxis
-				--format "transRow2 = %\n" transRow2
-				transRow3 = JointNormal
-				--format "transRow3 = %\n" transRow3
-			)
-			else
-			(
-				if JointAxis == [0,0,-1] then
-				(
-					--format "Axis is facing down\n"
-					transRow2 = cross  [1,0,0] JointAxis
-				--format "transRow3 = %\n" transRow3
-					transRow3 = cross  JointAxis transRow2
-				--format "transRow2 = %\n" transRow2
-					transRow2 = cross JointAxis transRow3
-				--format "transRow3 = %\n" transRow3
-				)
-				else if JointAxis == [0,0,1] then
-				(
-					--format "Axis is facing up\n"
-					transRow2 = cross  [-1,0,0] JointAxis
-				--format "transRow3 = %\n" transRow3
-					transRow3 = cross transRow2 JointAxis
-				--format "transRow2 = %\n" transRow2
-					transRow2 = cross JointAxis transRow3
-				--format "transRow3 = %\n" transRow3
-				)
-				else
-				(
-					--format "Axis is not facing backwards\n"
-					transRow2 = cross JointAxis [0,0,-1]
-				--format "transRow3 = %\n" transRow3
-					transRow3 = cross   JointAxis transRow2
-				--format "transRow2 = %\n" transRow2
-					transRow2 = cross JointAxis transRow3
-				--format "transRow3 = %\n" transRow3
-				)
-				trans.row2 = transRow2
-				trans.row3 = transRow3
-			)
-			thisNode.transform = matrix3 transRow1 transRow2 transRow3 trans.row4
 			
 		)
 		setmesh mesh meshObj
@@ -539,6 +542,7 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 		wheelFileName type:#string animatable:false ui:txt_wheelFileName
 		wheelName type:#string animatable:false ui:txt_wheelName
 		previewWheel type:#boolean animatable:false ui:chk_PreviewWheel
+		forceRefresh type:#boolean default:false
 	)
 	
 		fn combineWheelMeshes obj doDelete:false =
@@ -548,6 +552,7 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			(
 				outMesh = copy obj
 				convertTo outMesh Editable_Poly
+				ResetXForm outMesh
 			)
 			for child in obj.children do
 			(
@@ -578,7 +583,9 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 	(
 		--format "======================\nLoading wheelmesh %\n==================\n" cnt_name
 		rimMesh = ImportCNT cnt_name importTextures:true forcePREP:true useTriStrips:false
+		
 		tyreMesh = ImportCNT ((getFilenamePath cnt_name)+"Tyre.cnt") importTextures:true forcePREP:true useTriStrips:false
+		
 		append rimMesh.children tyreMesh
 		combinedMesh = combineWheelMeshes rimMesh
 		actualMeshObj = copy combinedMesh.mesh
@@ -602,6 +609,10 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			wheelTypeID = dpdn_wheelType.selection
 			wheelType = dpdn_wheelType.items[i]
 			thisNode.name = wheelType
+			forceRefresh= true
+		)
+		on chk_PreviewWheel checked value do (
+			forceRefresh= value == false
 		)
 		on but_loadWheel pressed do
 		(
@@ -610,6 +621,7 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			(
 				loadWheelMesh cnt_name
 			)
+		this.forceRefresh = this.previewWheel == false
 		)
 		on wheelParams open do
 		(
@@ -623,6 +635,7 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 		usingMesh = undefined
 		placeholderMeshObj = undefined
 		actualMeshObj = undefined
+		this.forceRefresh = this.previewWheel == false
 	)
 	on load do (
 		thisNode = NodeStorage.node
@@ -655,23 +668,34 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			(
 				loadWheelMesh wheelFileName
 			)
+			if actualMeshObj == undefined then format "Actual Mesh undefined\n"
+			else format "Actual mesh is there yay!\n"
 		if this.previewWheel and actualMeshObj!=undefined then
 		(
+			format "Setting model to tire\n"
 			thisNode.material = actualMeshMat
-			setmesh mesh actualMeshObj
-			usingMesh = actualMeshObj
-			--format "Using Preview Wheel with % verts\n" (getNumVerts actualMeshObj)
-			--format "Usingmesh with % verts\n" (getNumVerts usingMesh)
+			setmesh thisNode.mesh actualMeshObj
+			usingMesh = copy actualMeshObj
+			format "Using Preview Wheel with % verts\n" (getNumVerts actualMeshObj)
+			format "Usingmesh with % verts\n" (getNumVerts usingMesh)
+			
 		)
 		else 
 		(
+			format "Setting model to placeholder\n"
+
 			thisNode.material=undefined
-			--setmesh mesh placeholderMeshObj
-			usingMesh = placeholderMeshObj
-			--format "Using Placeholder Wheel with % verts\n" (getNumVerts placeholderMeshObj)
-			--format "Usingmesh with % verts\n" (getNumVerts usingMesh)
+			setmesh thisNode.mesh placeholderMeshObj
+			usingMesh = copy placeholderMeshObj
+			if forceRefresh then forceRefresh = false
+			format "Using Placeholder Wheel with % verts\n" (getNumVerts placeholderMeshObj)
+			format "Usingmesh with % verts\n" (getNumVerts usingMesh)
 		)
+		if this.forceRefresh != this.previewWheel then this.forceRefresh = this.previewWheel
+		--setmesh mesh undefined
+		--	CompleteRedraw()
 		setmesh mesh usingMesh
+			--CompleteRedraw()
 		--setMesh  -- mesh vertices:#([-0.163197, 0.0, -0.316496],[-0.163197, 0.108248, -0.297409],[-0.163198, 0.20344, -0.24245],[-0.163198, 0.274093, -0.158248],[-0.163198, 0.311688, -0.0549589],[-0.163198, 0.311688, 0.0549589],[-0.163198, 0.274093, 0.158248],[-0.163198, 0.20344, 0.24245],[-0.163198, 0.108248, 0.297409],[-0.163198, 0.0, 0.316496],[-0.163198, -0.108248, 0.297409],[-0.163198, -0.20344, 0.24245],[-0.163198, -0.274093, 0.158248],[-0.163198, -0.311687, 0.054959],[-0.163198, -0.311688, -0.0549588],[-0.163198, -0.274093, -0.158248],[-0.163198, -0.20344, -0.24245],[-0.163198, -0.108248, -0.297409],[0.0, 0.122818, -0.33744],[0.0, 0.230822, -0.275083],[0.0, 0.310986, -0.179548],[0.0, 0.35364, -0.0623563],[0.0, 0.35364, 0.0623563],[0.0, 0.310986, 0.179548],[0.0, 0.230822, 0.275083],[0.0, 0.122818, 0.33744],[0.0, 0.0, 0.359096],[0.0, -0.122818, 0.33744],[0.0, -0.230822, 0.275083],[0.0, -0.310986, 0.179548],[0.0, -0.35364, 0.0623564],[0.0, -0.35364, -0.0623562],[0.0, -0.310986, -0.179548],[0.0, -0.230822, -0.275083],[0.0, -0.122818, -0.33744],[0.0, 0.0, -0.359096],[0.163197, 0.0, -0.316496],[0.163197, 0.108248, -0.297409],[0.163197, 0.20344, -0.24245],[0.163197, 0.274093, -0.158248],[0.163197, 0.311688, -0.0549589],[0.163197, 0.311688, 0.0549589],[0.163197, 0.274093, 0.158248],[0.163197, 0.20344, 0.24245],[0.163197, 0.108248, 0.297409],[0.163197, 0.0, 0.316496],[0.163197, -0.108248, 0.297409],[0.163197, -0.20344, 0.24245],[0.163197, -0.274093, 0.158248],[0.163197, -0.311687, 0.054959],[0.163197, -0.311688, -0.0549588],[0.163197, -0.274093, -0.158248],[0.163197, -0.20344, -0.24245],[0.163197, -0.108248, -0.297409],[0.163197, 0.0, -0.275879],[0.163197, 0.0943561, -0.259241],[0.163197, 0.177331, -0.211335],[0.163197, 0.238918, -0.137939],[0.163197, 0.271688, -0.0479058],[0.163197, 0.271688, 0.0479059],[0.163197, 0.238918, 0.137939],[0.163197, 0.177331, 0.211335],[0.163197, 0.0943561, 0.259241],[0.163197, 0.0, 0.275879],[0.163197, -0.094356, 0.259241],[0.163197, -0.177331, 0.211335],[0.163197, -0.238918, 0.137939],[0.163197, -0.271687, 0.0479059],[0.163197, -0.271688, -0.0479057],[0.163197, -0.238918, -0.137939],[0.163197, -0.177332, -0.211335],[0.163197, -0.0943563, -0.259241],[-0.0768025, 0.0, -0.275879],[-0.0768025, 0.0943561, -0.259241],[-0.0768026, 0.177331, -0.211335],[-0.0768026, 0.238918, -0.137939],[-0.0768026, 0.271688, -0.0479059],[-0.0768025, 0.271688, 0.0479058],[-0.0768026, 0.238918, 0.137939],[-0.0768026, 0.177331, 0.211335],[-0.0768026, 0.0943561, 0.259241],[-0.0768026, 0.0, 0.275879],[-0.0768025, -0.094356, 0.259241],[-0.0768026, -0.177331, 0.211335],[-0.0768026, -0.238918, 0.137939],[-0.0768025, -0.271687, 0.0479059],[-0.0768025, -0.271688, -0.0479057],[-0.0768026, -0.238918, -0.137939],[-0.0768026, -0.177332, -0.211335],[-0.0768025, -0.0943563, -0.259241]) faces:#([1.0, 2.0, 19.0],[19.0, 36.0, 1.0],[2.0, 3.0, 20.0],[20.0, 19.0, 2.0],[3.0, 4.0, 21.0],[21.0, 20.0, 3.0],[4.0, 5.0, 22.0],[22.0, 21.0, 4.0],[5.0, 6.0, 23.0],[23.0, 22.0, 5.0],[6.0, 7.0, 24.0],[24.0, 23.0, 6.0],[7.0, 8.0, 25.0],[25.0, 24.0, 7.0],[8.0, 9.0, 26.0],[26.0, 25.0, 8.0],[9.0, 10.0, 27.0],[27.0, 26.0, 9.0],[10.0, 11.0, 28.0],[28.0, 27.0, 10.0],[11.0, 12.0, 29.0],[29.0, 28.0, 11.0],[12.0, 13.0, 30.0],[30.0, 29.0, 12.0],[13.0, 14.0, 31.0],[31.0, 30.0, 13.0],[14.0, 15.0, 32.0],[32.0, 31.0, 14.0],[15.0, 16.0, 33.0],[33.0, 32.0, 15.0],[16.0, 17.0, 34.0],[34.0, 33.0, 16.0],[17.0, 18.0, 35.0],[35.0, 34.0, 17.0],[18.0, 1.0, 36.0],[36.0, 35.0, 18.0],[36.0, 19.0, 38.0],[38.0, 37.0, 36.0],[19.0, 20.0, 39.0],[39.0, 38.0, 19.0],[20.0, 21.0, 40.0],[40.0, 39.0, 20.0],[21.0, 22.0, 41.0],[41.0, 40.0, 21.0],[22.0, 23.0, 42.0],[42.0, 41.0, 22.0],[23.0, 24.0, 43.0],[43.0, 42.0, 23.0],[24.0, 25.0, 44.0],[44.0, 43.0, 24.0],[25.0, 26.0, 45.0],[45.0, 44.0, 25.0],[26.0, 27.0, 46.0],[46.0, 45.0, 26.0],[27.0, 28.0, 47.0],[47.0, 46.0, 27.0],[28.0, 29.0, 48.0],[48.0, 47.0, 28.0],[29.0, 30.0, 49.0],[49.0, 48.0, 29.0],[30.0, 31.0, 50.0],[50.0, 49.0, 30.0],[31.0, 32.0, 51.0],[51.0, 50.0, 31.0],[32.0, 33.0, 52.0],[52.0, 51.0, 32.0],[33.0, 34.0, 53.0],[53.0, 52.0, 33.0],[34.0, 35.0, 54.0],[54.0, 53.0, 34.0],[35.0, 36.0, 37.0],[37.0, 54.0, 35.0],[17.0, 16.0, 15.0],[15.0, 14.0, 13.0],[13.0, 12.0, 11.0],[15.0, 13.0, 11.0],[11.0, 10.0, 9.0],[9.0, 8.0, 7.0],[11.0, 9.0, 7.0],[7.0, 6.0, 5.0],[5.0, 4.0, 3.0],[7.0, 5.0, 3.0],[11.0, 7.0, 3.0],[15.0, 11.0, 3.0],[3.0, 2.0, 1.0],[15.0, 3.0, 1.0],[17.0, 15.0, 1.0],[18.0, 17.0, 1.0],[74.0, 75.0, 76.0],[76.0, 77.0, 78.0],[78.0, 79.0, 80.0],[76.0, 78.0, 80.0],[80.0, 81.0, 82.0],[82.0, 83.0, 84.0],[80.0, 82.0, 84.0],[84.0, 85.0, 86.0],[86.0, 87.0, 88.0],[84.0, 86.0, 88.0],[80.0, 84.0, 88.0],[76.0, 80.0, 88.0],[88.0, 89.0, 90.0],[76.0, 88.0, 90.0],[74.0, 76.0, 90.0],[73.0, 74.0, 90.0],[37.0, 38.0, 56.0],[56.0, 55.0, 37.0],[38.0, 39.0, 57.0],[57.0, 56.0, 38.0],[39.0, 40.0, 58.0],[58.0, 57.0, 39.0],[40.0, 41.0, 59.0],[59.0, 58.0, 40.0],[41.0, 42.0, 60.0],[60.0, 59.0, 41.0],[42.0, 43.0, 61.0],[61.0, 60.0, 42.0],[43.0, 44.0, 62.0],[62.0, 61.0, 43.0],[44.0, 45.0, 63.0],[63.0, 62.0, 44.0],[45.0, 46.0, 64.0],[64.0, 63.0, 45.0],[46.0, 47.0, 65.0],[65.0, 64.0, 46.0],[47.0, 48.0, 66.0],[66.0, 65.0, 47.0],[48.0, 49.0, 67.0],[67.0, 66.0, 48.0],[49.0, 50.0, 68.0],[68.0, 67.0, 49.0],[50.0, 51.0, 69.0],[69.0, 68.0, 50.0],[51.0, 52.0, 70.0],[70.0, 69.0, 51.0],[52.0, 53.0, 71.0],[71.0, 70.0, 52.0],[53.0, 54.0, 72.0],[72.0, 71.0, 53.0],[54.0, 37.0, 55.0],[55.0, 72.0, 54.0],[55.0, 56.0, 74.0],[74.0, 73.0, 55.0],[56.0, 57.0, 75.0],[75.0, 74.0, 56.0],[57.0, 58.0, 76.0],[76.0, 75.0, 57.0],[58.0, 59.0, 77.0],[77.0, 76.0, 58.0],[59.0, 60.0, 78.0],[78.0, 77.0, 59.0],[60.0, 61.0, 79.0],[79.0, 78.0, 60.0],[61.0, 62.0, 80.0],[80.0, 79.0, 61.0],[62.0, 63.0, 81.0],[81.0, 80.0, 62.0],[63.0, 64.0, 82.0],[82.0, 81.0, 63.0],[64.0, 65.0, 83.0],[83.0, 82.0, 64.0],[65.0, 66.0, 84.0],[84.0, 83.0, 65.0],[66.0, 67.0, 85.0],[85.0, 84.0, 66.0],[67.0, 68.0, 86.0],[86.0, 85.0, 67.0],[68.0, 69.0, 87.0],[87.0, 86.0, 68.0],[69.0, 70.0, 88.0],[88.0, 87.0, 69.0],[70.0, 71.0, 89.0],[89.0, 88.0, 70.0],[71.0, 72.0, 90.0],[90.0, 89.0, 71.0],[72.0, 55.0, 73.0],[73.0, 90.0, 72.0])
 	)
 	tool create

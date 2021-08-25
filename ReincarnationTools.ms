@@ -55,3 +55,5 @@ if DisableWindowsGhosting != null then
 	DisableWindowsGhosting.DisableProcessWindowsGhosting()
 uiForm = CreateUI()
 --createDialog carma_reincarnation_main
+
+fn pickJointFilter obj = ( classof obj == CarmaHelper_JointHelper )

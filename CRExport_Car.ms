@@ -156,7 +156,12 @@ fn CreatePartCDataSection obj isRootNode:false indentation:1 =
 	
 	for i=1 to partMod.PhysicsProperties.count do
 	(
-		str += "CDamageParameters:Add_PhysicsProperty( \""+partMod.PhysicsProperties[i]+"\" )"+whiteSpaceString
+		if partMod.PhysicsPropertyIsIndexed[i] then (
+			str += "CDamageParameters:Add_IndexedPhysicsProperty( \""+partMod.PhysicsProperties[i]+"\", "+(partMod.PhysicsPropertyIndices[i] as string)+" )"+whiteSpaceString
+		)
+		else (
+			str += "CDamageParameters:Add_PhysicsProperty( \""+partMod.PhysicsProperties[i]+"\" )"+whiteSpaceString
+		)
 	)
 	--if isRootNode then
 	

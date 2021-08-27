@@ -3215,7 +3215,7 @@ StructurePointToPointValues = #(	"Snap Point To Other Part",
 												"Rotate Point To Point On Other Part With Scaling"
 )
 WishboneAxelTypes = #("Wishbone Upper", "Wishbone Lower", "Strut Wishbone", "Live Axle")
-WishboneWheelTypes = #("Front Left", "Front Right", "Rear Left", "Rear Right")
+WishboneWheelTypes = #("Front Left (#0)", "Front Right (#1)", "Rear Left (#2)", "Rear Right (#3)", "Left Mid 1 (#4)", "Right Mid 1 (#5)", "Left Mid 2 (#6)", "Right Mid 2 (#7)", "Left Mid 3 (#8)", "Right Mid 3 (#9)", "Left Mid 4 (#10)", "Right Mid 4 (#11)")
 WishboneMountTypes = #("Wishbone Lower","Wishbone Upper", "Strut Lower", "Strut Upper", "Trailing Arm")
 WishboneHubType = #("Wishbone Hub", "Strut Hub", "Live Axle Hub")
 WishbonePivotAxis = #("X", "Y", "Z")
@@ -4241,6 +4241,14 @@ StructPhysProps = #(
 	"STEERING_WHEEL"
 )
 
+StructIndexedPhysProps = #(
+	"NONE",
+	"WHEEL",
+	"POINT_OF_SUSPENSION",
+	"POINT_OF_STEERING",
+	"POINT_OF_ROTATION"
+)
+
 StructFunctionalLightTypes = #(
 	"HEAD_LIGHT",
 	"SIDE_LIGHT",
@@ -4388,6 +4396,8 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		
 		AlwaysJointed type:#boolean default:false ui:chk_AlwaysJointed
 		PhysicsProperties type:#stringTab tabSizeVariable:true
+		PhysicsPropertyIsIndexed type:#booltab tabSizeVariable:true
+		PhysicsPropertyIndices type:#inttab tabSizeVariable:true
 		ShapeType type:#string ui:txt_ShapeType default: ""
 		CollisionBoundsMultiplier_Set type:#boolean default: false ui:chk_CollisionBoundsMultiplier_Set
 		CollisionBoundsMultiplier_X type:#float ui:spn_CollisionBoundsMultiplier_X default:1.0
@@ -4408,47 +4418,98 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		spinner spn_CollisionBoundsMultiplier_Z "" range:[1,100,1] across:3 fieldwidth:30
 		
 		label lbl_PhysicsProperties "Manage Physics Properties"
-		dropdownlist dpdn_PhysicsProperty "" items:StructPhysProps width: 100 across:2
-		button AddToPhysprops "Add" across:2
-		dotnetcontrol lv_PhysicsProperties "listview" height: 100
+		checkbox chk_IsIndexedProperty "Indexed?"  labelontop:true
+		spinner spn_PropertyIndex "Index" range:[0,10,0] type:#integer labelontop:true
+		dropdownlist dpdn_PhysicsProperty "" items:StructPhysProps width: 100 
+		button AddToPhysprops "Add" 
+		dotnetcontrol lv_PhysicsProperties "listview" height: 100 width: 200
 		button DeleteFromPhysProps "Delete Selected"
 		
+		fn ToggleIndexedOptions value = (
+
+			if value then (
+				dpdn_PhysicsProperty.items = StructIndexedPhysProps
+				spn_PropertyIndex.enabled = true
+			)
+			else (
+				dpdn_PhysicsProperty.items = StructPhysProps
+				spn_PropertyIndex.enabled = false
+			)
+		)
 		on lv_PhysicsProperties selectedindexchanged do
 		(
 			if lv_PhysicsProperties.SelectedIndices.count > 0 then 
 			(
-				selectedItem = lv_PhysicsProperties.Items.item[lv_PhysicsProperties.SelectedIndices.Item[0]].text
-				dpdn_PhysicsProperty.selection = finditem StructPhysProps selectedItem
+				local selectedIndex = lv_PhysicsProperties.SelectedIndices.Item[0] + 1
+				ToggleIndexedOptions PhysicsPropertyIsIndexed[selectedIndex]
+				chk_IsIndexedProperty.checked =  PhysicsPropertyIsIndexed[selectedIndex]
+				if PhysicsPropertyIsIndexed[selectedIndex] then (
+					spn_PropertyIndex.value = PhysicsPropertyIndices[selectedIndex]
+					dpdn_PhysicsProperty.selection = finditem StructIndexedPhysProps PhysicsProperties[selectedIndex]
+				)
+				else (
+					spn_PropertyIndex.value = 0
+					dpdn_PhysicsProperty.selection = finditem StructPhysProps PhysicsProperties[selectedIndex]
+				)
 			)
+		)
+		on chk_IsIndexedProperty changed value do (
+			ToggleIndexedOptions value
 		)
 		on PhysicsPropertiesParams open do
 		(			
+			spn_PropertyIndex.enabled = false
 			AddToPhysprops.pos = [120, AddToPhysprops.pos.y]
 			lv_PhysicsProperties.view  = (dotnetclass "view").details
 			lv_PhysicsProperties.fullrowselect= true
 			lv_PhysicsProperties.gridlines = true
 			lv_PhysicsProperties.multiselect =false
-			lv_PhysicsProperties.columns.add "Physics Property" 110
+			lv_PhysicsProperties.columns.add "Property" 110
+			lv_PhysicsProperties.columns.add "Index" 50
 			for i=1 to PhysicsProperties.count do
 			(
-				lv_PhysicsProperties.Items.add PhysicsProperties[i]
+				lvItem = dotnetobject "listviewitem" PhysicsProperties[i]
+				if PhysicsPropertyIsIndexed[i] then (
+					lvitem.subitems.add (PhysicsPropertyIndices[i] as string)
+				)
+				else (
+					lvitem.subitems.add "n/a"
+				)
+				lv_PhysicsProperties.Items.add lvItem
 			)
 		)
-		on PhysicsPropertiesParams close do
-		(
-			PhysicsProperties = #()
-			for i=1 to lv_PhysicsProperties.Items.count do
-			(
-				append PhysicsProperties lv_PhysicsProperties.Items.Item[i-1].Text
-			)
-		)
+		--on PhysicsPropertiesParams close do
+		--(
+			--PhysicsProperties = #()
+			--for i=1 to lv_PhysicsProperties.Items.count do
+			--(
+				--append PhysicsProperties lv_PhysicsProperties.Items.Item[i-1].Text
+			--)
+		--)
 		on DeleteFromPhysProps pressed do
 		(
-			if lv_PhysicsProperties.SelectedIndices.count > 0 then lv_PhysicsProperties.Items.removeat lv_PhysicsProperties.SelectedIndices.Item[0]
+			if lv_PhysicsProperties.SelectedIndices.count > 0 then (
+				local selectedIndex = lv_PhysicsProperties.SelectedIndices.Item[0]
+				lv_PhysicsProperties.Items.removeat selectedIndex
+				deleteItem PhysicsProperties (selectedIndex + 1)
+				deleteItem PhysicsPropertyIsIndexed (selectedIndex + 1)
+				deleteItem PhysicsPropertyIndices (selectedIndex + 1)
+			)
 		)
 		on AddToPhysprops pressed do
 		(
-			lv_PhysicsProperties.Items.add (dpdn_PhysicsProperty.selected)
+			lvItem = dotnetobject "listviewitem" dpdn_PhysicsProperty.selected
+			append PhysicsProperties dpdn_PhysicsProperty.selected
+			append PhysicsPropertyIsIndexed chk_IsIndexedProperty.checked
+			if chk_IsIndexedProperty.checked then (
+				lvitem.subitems.add (spn_PropertyIndex.value as string)
+				append PhysicsPropertyIndices spn_PropertyIndex.value
+			)
+			else (
+				append PhysicsPropertyIndices 0
+				lvitem.subitems.add "n/a"
+			)
+			lv_PhysicsProperties.Items.add lvItem
 		)
 	)
 	

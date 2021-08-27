@@ -52,7 +52,21 @@ fn ParseStructurePartCData cData obj carroot:undefined =
 				(
 					
 					physPropString = (filterstring splitline[3] "\" ")[1]
-					appendIfUnique obj.modifiers["Car Structure Part"].PhysicsProperties physPropString
+					if (finditem obj.modifiers["Car Structure Part"].PhysicsProperties physPropString) < 1 then (
+						append obj.modifiers["Car Structure Part"].PhysicsProperties physPropString
+						append obj.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
+						append obj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+					)
+				)
+				"add_indexedphysicsproperty":
+				(
+					
+					physPropString = (filterstring splitline[3] "\", ")
+					if (finditem obj.modifiers["Car Structure Part"].PhysicsProperties physPropString[1]) < 1 then (
+						append obj.modifiers["Car Structure Part"].PhysicsProperties physPropString[1]
+						append obj.modifiers["Car Structure Part"].PhysicsPropertyIndices (physPropString[2] as integer)
+						append obj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
+					)
 				)
 				"set_shapetype":
 				(

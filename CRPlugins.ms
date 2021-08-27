@@ -525,7 +525,7 @@ plugin simpleObject CarmaHelper_JointHelper
 )
 
 format "CREATING CarmaHelper_WheelPlaceholder!!!!\n\n"
-CarmaHelper_WheelType = #("Wheel_FR","Wheel_FL","Wheel_RR","Wheel_RL")
+CarmaHelper_WheelType = #("Wheel_FR","Wheel_FL","Wheel_RR","Wheel_RL","WheelRL_001","WheelRR_001","WheelRL_002","WheelRR_002","WheelRL_003","WheelRR_003","WheelRL_004","WheelRR_004")
 plugin simpleObject CarmaHelper_WheelPlaceholder
 	Name:"Wheel"
 	classID:#(0x4892a691, 0x7b9572bb)

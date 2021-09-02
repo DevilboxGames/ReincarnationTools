@@ -267,7 +267,7 @@ fn SetCarWheelType mdl wheeltype ignoreCheck:false =
 		if wheelType == "Wheel_FR" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 1
 		)
 		else if wheelType == "Wheel_FL" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_WHEEL"
@@ -277,49 +277,49 @@ fn SetCarWheelType mdl wheeltype ignoreCheck:false =
 		else if wheelType == "Wheel_RR" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 3
 		)
 		else if wheelType == "Wheel_RL" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "REAR_LEFT_WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
-		)
-		else if wheelType == "Wheel_RR001" then (
-			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 4
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 2
 		)
 		else if wheelType == "Wheel_RL001" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 5
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 4
 		)
-		else if wheelType == "Wheel_RR002" then (
+		else if wheelType == "Wheel_RR001" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 6
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 5
 		)
 		else if wheelType == "Wheel_RL002" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 7
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 6
 		)
-		else if wheelType == "Wheel_RR003" then (
+		else if wheelType == "Wheel_RR002" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
-			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 8
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 7
 		)
 		else if wheelType == "Wheel_RL003" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 8
+		)
+		else if wheelType == "Wheel_RR003" then (
+			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
+			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 9
 		)
-		else if wheelType == "Wheel_RR004" then (
+		else if wheelType == "Wheel_RL004" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 10
 		)
-		else if wheelType == "Wheel_RL004" then (
+		else if wheelType == "Wheel_RR004" then (
 			append mdl.modifiers["Car Structure Part"].PhysicsProperties "WHEEL"
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
 			append mdl.modifiers["Car Structure Part"].PhysicsPropertyIndices 11
@@ -508,21 +508,54 @@ fn ConvertToWheelButton_Pressed sender arg =
 			selectedWheel = sender.parent.controls.Item["WheelSelectBox"].Items.Item[sender.parent.controls.Item["WheelSelectBox"].selectedIndex]
 			wheelToMake = case selectedWheel of
 			(
+				
+				"Front Left":
+				(
+					"Wheel_FL"
+				)
 				"Front Right":
 				(
 					"Wheel_FR"
 				)
-				"Front Left":
+				"Rear Left":
 				(
-					"Wheel_FL"
+					"Wheel_RL"
 				)
 				"Rear Right":
 				(
 					"Wheel_RR"
 				)
-				"Rear Left":
+				"Mid Left 1":
 				(
-					"Wheel_RL"
+					"Wheel_RL001"
+				)
+				"Mid Right 1":
+				(
+					"Wheel_RR001"
+				)
+				"Mid Left 2":
+				(
+					"Wheel_RL002"
+				)
+				"Mid Right 2":
+				(
+					"Wheel_RR002"
+				)
+				"Mid Left 3":
+				(
+					"Wheel_RL003"
+				)
+				"Mid Right 3":
+				(
+					"Wheel_RR003"
+				)
+				"Mid Left 4":
+				(
+					"Wheel_RL004"
+				)
+				"Mid Right 4":
+				(
+					"Wheel_RR004"
 				)
 			)
 			ConvertToWheelNode selection[1] wheelToMake

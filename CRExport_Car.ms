@@ -55,7 +55,7 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 	for i=1 to indentation do whiteSpaceString += "\t"
 		
 	charmod = obj.modifiers["Car Characteristics"]
-	str = ""
+	str = whiteSpaceString
 	if charmod.DefenceAgainstCars_Active then str += whiteSpaceString+"CVehicleCharacteristics:Set_DefenceAgainstCars( "+(charmod.DefenceAgainstCars as string)+" )"+whiteSpaceString
 	if charmod.DefenceGeneral_Active then str += "CVehicleCharacteristics:Set_DefenceGeneral( "+(charmod.DefenceGeneral as string)+" )"+whiteSpaceString
 	if charmod.Offence_Active then str += "CVehicleCharacteristics:Set_Offence( "+(charmod.Offence as string)+" )"+whiteSpaceString
@@ -88,9 +88,9 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 		str += "CVehicleCharacteristics:Add_PermanentPowerup( \""+(charmod.PermanentPowerups[i])+"\" )"+whiteSpaceString
 	)
 	
-	if charmod.AerofoilOpenSound_Active then str += "CVehicleCharacteristics:Set_AerofoilOpenSound( "+(charmod.AerofoilOpenSound as string)+" )"+whiteSpaceString
-	if charmod.AerofoilCloseSound_Active then str += "CVehicleCharacteristics:Set_AerofoilCloseSound( "+(charmod.AerofoilCloseSound as string)+" )"+whiteSpaceString
-	if charmod.AerofoilSoundLump != undefined then str += "CVehicleCharacteristics:Set_AerofoilSoundLump( "+(charmod.AerofoilSoundLump.node.name)+" )"+whiteSpaceString
+	if charmod.AerofoilOpenSound_Active then str += "CVehicleCharacteristics:Set_AerofoilOpenSound( \""+(charmod.AerofoilOpenSound as string)+"\" )"+whiteSpaceString
+	if charmod.AerofoilCloseSound_Active then str += "CVehicleCharacteristics:Set_AerofoilCloseSound( \""+(charmod.AerofoilCloseSound as string)+"\" )"+whiteSpaceString
+	if charmod.AerofoilSoundLump != undefined and charmod.AerofoilSoundLump.node != undefined then str += "CVehicleCharacteristics:Set_AerofoilSoundLump( \""+(charmod.AerofoilSoundLump.node.name)+"\" )"+whiteSpaceString
 	if charmod.AirBrakeMinSpeed_Active then str += "CVehicleCharacteristics:Set_AirBrakeMinSpeed( "+(charmod.AirBrakeMinSpeed as string)+" )"+whiteSpaceString
 	if charmod.AirBrakeMaxSpeed_Active then str += "CVehicleCharacteristics:Set_AirBrakeMaxSpeed( "+(charmod.AirBrakeMaxSpeed as string)+" )"+whiteSpaceString
 	if charmod.AirBrakeMinParametric_Active then str += "CVehicleCharacteristics:Set_AirBrakeMinParametric( "+(charmod.AirBrakeMinParametric as string)+" )"+whiteSpaceString
@@ -106,17 +106,20 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 	if charmod.Aerofoil2MovementUpTime_Active then str += "CVehicleCharacteristics:Set_Aerofoil2MovementUpTime( "+(charmod.Aerofoil2MovementUpTime as string)+" )"+whiteSpaceString
 	if charmod.Aerofoil2MovementDownTime_Active then str += "CVehicleCharacteristics:Set_Aerofoil2MovementDownTime( "+(charmod.Aerofoil2MovementDownTime as string)+" )"+whiteSpaceString
 	
-	if charmod.CaterpillerTracks_Enabled then
+	if charmod.CaterpillarTracks_Enabled then
 	(
 		for i=1 to charmod.SegmentDefinition_Name.count do
 		(
-			str += "CVehicleCharacteristics:Set_CaterpillarTrack_SegmentDefinition("+(i as string)+", "+(charmod.SegmentDefinition_Name[i])+", \""+(charmod.SegmentDefinition_SegmentPitch as string)+"\", "+(charmod.SegmentDefinition_XOffset)+")"+whiteSpaceString
-			str += "CVehicleCharacteristics:Set_CaterpillarTrack_SagHeights("+(i as string)+", "+(charmod.SagHeight_AmbientLowestPoint as string)+", "+(charmod.SagHeight_LowestAllowablePoint as string)+")"+whiteSpaceString
-			str += "CVehicleCharacteristics:Set_CaterpillarTrack_DamageMode("+(i as string)+", "+(charmod.DamageMode_NumParts as string)+", "+(charmod.DamageMode_Restitution as string)+", "+(charmod.DamageMode_MassPerSegment as string)+")"+whiteSpaceString
+			local wheelIndex = i - 1
+			str += "CVehicleCharacteristics:Add_CaterpillarTrack_SegmentDefinition("+(wheelIndex as string)+", \""+(charmod.SegmentDefinition_Name[i])+"\", "+(charmod.SegmentDefinition_SegmentPitch[i] as string)+", "+(charmod.SegmentDefinition_XOffset[i] as string)+")"+whiteSpaceString
+			str += "CVehicleCharacteristics:Add_CaterpillarTrack_SagHeights("+(wheelIndex as string)+", "+(charmod.SagHeight_AmbientLowestPoint[i] as string)+", "+(charmod.SagHeight_LowestAllowablePoint[i] as string)+")"+whiteSpaceString
+			str += "CVehicleCharacteristics:Add_CaterpillarTrack_DamageMode("+(wheelIndex as string)+", "+(charmod.DamageMode_NumParts[i] as string)+", "+(charmod.DamageMode_Restitution[i] as string)+", "+(charmod.DamageMode_MassPerSegment[i] as string)+")"+whiteSpaceString
 
-			str += "CVehicleCharacteristics:Set_CaterpillarTrack_DamageWobble("+(i as string)+", "+(charmod.DamageWobble_SpeedForMaxWobble as string)+", "+(charmod.DamageWobble_FreqOfMaxWobble as string)+", "+(charmod.DamageWobble_AmpOfMaxWobble as string)+", "+(charmod.DamageWobble_RandomVariance as string)+")"+whiteSpaceString
-			str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundClunkVolume("+(i as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtZero as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtSlopeChange as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtSlopeChange as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtMaxVolume as string)+", "+(charmod.Sound_ClunkVolume_MaxVolume as string)+")"+whiteSpaceString
-			str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundHighSpeedClunkVolume("+(i as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtZero as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtSlopeChange as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtSlopeChange as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtMaxVolume as string)+", "+(charmod.Sound_ClunkVolume_MaxVolume as string)+")"+whiteSpaceString
+			str += "CVehicleCharacteristics:Add_CaterpillarTrack_DamageWobble("+(wheelIndex as string)+", "+(charmod.DamageWobble_SpeedForMaxWobble[i] as string)+", "+(charmod.DamageWobble_FreqOfMaxWobble[i] as string)+", "+(charmod.DamageWobble_AmpOfMaxWobble[i] as string)+", "+(charmod.DamageWobble_RandomVariance[i] as string)+")"+whiteSpaceString
+			if charmod.Sound_ClunkVolume_Enabled[i] then
+			str += "CVehicleCharacteristics:Add_Damage_CaterpillarTrack_SoundClunkVolume("+(wheelIndex as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtZero[i] as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtSlopeChange[i] as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtSlopeChange[i] as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtMaxVolume[i] as string)+", "+(charmod.Sound_ClunkVolume_MaxVolume[i]as string)+")"+whiteSpaceString
+			if charmod.Sound_HighSpeedClunkVolume_Enabled[i] then
+			str += "CVehicleCharacteristics:Add_Damage_CaterpillarTrack_SoundHighSpeedClunkVolume("+(wheelIndex as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtZero[i] as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtSlopeChange[i] as string)+", "+(charmod.Sound_ClunkVolume_VolumeAtSlopeChange[i] as string)+", "+(charmod.Sound_ClunkVolume_SpeedAtMaxVolume[i] as string)+", "+(charmod.Sound_ClunkVolume_MaxVolume[i] as string)+")"+whiteSpaceString
 		)
 		if charmod.Damaged_FrictionFactor_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_Damaged_FrictionFactor("+(charmod.Damaged_FrictionFactor as string)+")"+whiteSpaceString
 		if charmod.Damaged_RollingResistance_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_Damaged_RollingResistance("+(charmod.Damaged_RollingResistance as string)+")"+whiteSpaceString
@@ -124,8 +127,8 @@ fn CreateCharacteristicsCDataString obj indentation:1 =
 		if charmod.DamagedAll_FrictionFactor_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_AllDamaged_FrictionFactor("+(charmod.DamagedAll_FrictionFactor as string)+")"+whiteSpaceString
 		if charmod.DamagedAll_RollingResistance_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_AllDamaged_RollingResistance("+(charmod.DamagedAll_RollingResistance as string)+")"+whiteSpaceString
 
-		if Sound_WhineVolume_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhineVolume("+(i as string)+", "+(charmod.Sound_WhineVolume_VolumeAtZero as string)+", "+(charmod.Sound_WhineVolume_SpeedAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_VolumeAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_SpeedAtMaxVolume as string)+", "+(charmod.Sound_WhineVolume_MaxVolume as string)+")"+whiteSpaceString
-		if Sound_WhinePitch_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhinePitch("+(i as string)+", "+(charmod.Sound_WhinePitch_PitchAtZero as string)+", "+(charmod.Sound_WhinePitch_MaxSpeed as string)+", "+(charmod.Sound_WhinePitch_PitchAtMaxSpeed as string)+")"+whiteSpaceString
+		if charmod.Sound_WhineVolume_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhineVolume("+(i as string)+", "+(charmod.Sound_WhineVolume_VolumeAtZero as string)+", "+(charmod.Sound_WhineVolume_SpeedAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_VolumeAtSlopeChange as string)+", "+(charmod.Sound_WhineVolume_SpeedAtMaxVolume as string)+", "+(charmod.Sound_WhineVolume_MaxVolume as string)+")"+whiteSpaceString
+		if charmod.Sound_WhinePitch_Active then str += "CVehicleCharacteristics:Set_Damage_CaterpillarTrack_SoundWhinePitch("+(i as string)+", "+(charmod.Sound_WhinePitch_PitchAtZero as string)+", "+(charmod.Sound_WhinePitch_MaxSpeed as string)+", "+(charmod.Sound_WhinePitch_PitchAtMaxSpeed as string)+")"+whiteSpaceString
 	)
 	str
 )
@@ -162,6 +165,39 @@ fn CreatePartCDataSection obj isRootNode:false indentation:1 =
 		else (
 			str += "CDamageParameters:Add_PhysicsProperty( \""+partMod.PhysicsProperties[i]+"\" )"+whiteSpaceString
 		)
+	)
+
+	if partMod.GangedSuspension != undefined then (
+		str += "CDamageParameters:Set_GangedWheelSuspension( \"" + partMod.GangedSuspension + "\" )" + whiteSpaceString
+	)
+
+	if partMod.GangedRotation != undefined then (
+		str += "CDamageParameters:Set_GangedWheelRotation( \"" + partMod.GangedRotation + "\" )" + whiteSpaceString
+	)
+
+	if partMod.GangedSteering != undefined then (
+		str += "CDamageParameters:Set_GangedWheelSteering( \"" + partMod.GangedSteering + "\" )" + whiteSpaceString
+	)
+
+	if partMod.SteeringProportion != 1.0 then (
+		str += "CDamageParameters:Set_SteeringProportion( \"" + partMod.SteeringProportion + "\" )" + whiteSpaceString	
+	)
+
+	if partMod.CaterpillarTrackWheelType == "Road Wheel" then (
+		str += "CDamageParameters:Set_CaterpillarTrack_RoadWheel( " + (partMod.CaterpillarTrackWheelIndex as string) + ", "+ (partMod.CaterpillarTrackWheelRadius as string) +" )" + whiteSpaceString
+	)
+	if partMod.CaterpillarTrackWheelType == "Drive Wheel" then (
+		str += "CDamageParameters:Set_CaterpillarTrack_DriveWheel( " + (partMod.CaterpillarTrackWheelIndex as string) + ", "+ (partMod.CaterpillarTrackWheelRadius as string) +" )" + whiteSpaceString
+	)
+	if partMod.CaterpillarTrackWheelType == "Idler" then (
+		str += "CDamageParameters:Set_CaterpillarTrack_Idler( " + (partMod.CaterpillarTrackWheelIndex as string) + ", "+ (partMod.CaterpillarTrackWheelRadius as string) +" )" + whiteSpaceString
+	)
+	if partMod.CaterpillarTrackWheelType == "Return Roller" then (
+		str += "CDamageParameters:Set_CaterpillarTrack_ReturnRoller( " + (partMod.CaterpillarTrackWheelIndex as string) + ", "+ (partMod.CaterpillarTrackWheelRadius as string) +" )" + whiteSpaceString
+	)
+
+	if partMod.CaterpillarTrackContributeSpeed then (
+		str += "CDamageParameters:Set_CaterpillarTrack_DefinesSpeed( " + (partMod.CaterpillarTrackWheelIndex as string) + ", "+ (partMod.CaterpillarTrackSpeedContribution as string) +" )" + whiteSpaceString
 	)
 	--if isRootNode then
 	
@@ -631,7 +667,7 @@ fn ExportStructureXML xmlFilename obj =
 (
 	
 	dotnet.loadAssembly "system.xml"
-	try
+	--try
 	(
 		xmlsettings = (dotnetobject "system.xml.xmlwritersettings")
 		xmlsettings.indent = true
@@ -684,12 +720,12 @@ fn ExportStructureXML xmlFilename obj =
 		xmlwriter.flush()
 		xmlwriter.close()
 	)
-	catch
+	/*catch
 	(
 		format "Current exception: %\n" (getCurrentException())
 		if xmlwriter != undefined then xmlwriter.close()
-		throw()
-	)
+		throw (getCurrentException())
+	)*/
 )
 
 fn FindVFXAnchorObjects obj = (

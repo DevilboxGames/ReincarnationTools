@@ -668,28 +668,28 @@ plugin simpleObject CarmaHelper_WheelPlaceholder
 			(
 				loadWheelMesh wheelFileName
 			)
-			if actualMeshObj == undefined then format "Actual Mesh undefined\n"
-			else format "Actual mesh is there yay!\n"
+			--if actualMeshObj == undefined then format "Actual Mesh undefined\n"
+			--else format "Actual mesh is there yay!\n"
 		if this.previewWheel and actualMeshObj!=undefined then
 		(
-			format "Setting model to tire\n"
+			--format "Setting model to tire\n"
 			thisNode.material = actualMeshMat
 			setmesh thisNode.mesh actualMeshObj
 			usingMesh = copy actualMeshObj
-			format "Using Preview Wheel with % verts\n" (getNumVerts actualMeshObj)
-			format "Usingmesh with % verts\n" (getNumVerts usingMesh)
+			--format "Using Preview Wheel with % verts\n" (getNumVerts actualMeshObj)
+			--format "Usingmesh with % verts\n" (getNumVerts usingMesh)
 			
 		)
 		else 
 		(
-			format "Setting model to placeholder\n"
+			--format "Setting model to placeholder\n"
 
 			thisNode.material=undefined
 			setmesh thisNode.mesh placeholderMeshObj
 			usingMesh = copy placeholderMeshObj
 			if forceRefresh then forceRefresh = false
-			format "Using Placeholder Wheel with % verts\n" (getNumVerts placeholderMeshObj)
-			format "Usingmesh with % verts\n" (getNumVerts usingMesh)
+			--format "Using Placeholder Wheel with % verts\n" (getNumVerts placeholderMeshObj)
+			--format "Usingmesh with % verts\n" (getNumVerts usingMesh)
 		)
 		if this.forceRefresh != this.previewWheel then this.forceRefresh = this.previewWheel
 		--setmesh mesh undefined

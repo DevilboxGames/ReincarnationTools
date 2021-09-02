@@ -50,7 +50,7 @@ fn ParseStructurePartCData cData obj carroot:undefined =
 				)
 				"add_physicsproperty":
 				(
-					
+					--format "%: add physics property %\n" obj.name splitline[3]
 					physPropString = (filterstring splitline[3] "\" ")[1]
 					if (finditem obj.modifiers["Car Structure Part"].PhysicsProperties physPropString) < 1 then (
 						append obj.modifiers["Car Structure Part"].PhysicsProperties physPropString
@@ -60,12 +60,18 @@ fn ParseStructurePartCData cData obj carroot:undefined =
 				)
 				"add_indexedphysicsproperty":
 				(
+					--format "%: add indexed physics property %\n" obj.name splitline[3]
 					
 					physPropString = (filterstring splitline[3] "\", ")
-					if (finditem obj.modifiers["Car Structure Part"].PhysicsProperties physPropString[1]) < 1 then (
+					local physPropertyIndex = finditem obj.modifiers["Car Structure Part"].PhysicsProperties physPropString[1]
+					if (physPropertyIndex) < 1 then (
 						append obj.modifiers["Car Structure Part"].PhysicsProperties physPropString[1]
 						append obj.modifiers["Car Structure Part"].PhysicsPropertyIndices (physPropString[2] as integer)
 						append obj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed true
+						--format "\t%: physics props set to %, %\n" obj.name obj.modifiers["Car Structure Part"].PhysicsProperties[obj.modifiers["Car Structure Part"].PhysicsProperties.count] obj.modifiers["Car Structure Part"].PhysicsPropertyIndices[obj.modifiers["Car Structure Part"].PhysicsPropertyIndices.count]
+					)
+					else (
+						obj.modifiers["Car Structure Part"].PhysicsPropertyIndices[physPropertyIndex] = (physPropString[2] as integer)
 					)
 				)
 				"set_shapetype":
@@ -201,6 +207,65 @@ fn ParseStructurePartCData cData obj carroot:undefined =
 					append obj.modifiers["Car Structure Part"].DriverBoxVertexColour_B b
 					append obj.modifiers["Car Structure Part"].DriverBoxVertexColour_A a
 					
+				)
+				"set_gangedwheelrotation":
+				(
+					format "===setting ganged rotation % / %\n" splitline[3] (filterstring splitline[3] ", \"")[1]
+					obj.modifiers["Car Structure Part"].GangedRotation = (filterstring splitline[3] ", \"")[1]
+				)
+				"set_gangedwheelsuspension":
+				(
+					format "===setting ganged suspension % / %\n" splitline[3] (filterstring splitline[3] ", \"")[1]
+					obj.modifiers["Car Structure Part"].GangedSuspension = (filterstring splitline[3] ", \"")[1]
+				)
+				"set_gangedwheelsteering":
+				(
+					format "===setting ganged steering % / %\n" splitline[3] (filterstring splitline[3] ", \"")[1]
+					obj.modifiers["Car Structure Part"].GangedSteering = (filterstring splitline[3] ", \"")[1]
+				)
+				"set_steeringproportion":
+				(
+					obj.modifiers["Car Structure Part"].SteeringProportion = (filterstring splitline[3] ", \"")[1] as float
+				)
+				"set_caterpillartrack_roadwheel":
+				(
+
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelType = "Road Wheel"
+					local values = filterstring splitline[3] ", "
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelIndex = values[1] as integer
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelRadius = values[2] as float
+				)
+				"set_caterpillartrack_drivewheel":
+				(
+
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelType = "Drive Wheel"
+					local values = filterstring splitline[3] ", "
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelIndex = values[1] as integer
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelRadius = values[2] as float
+				)
+				"set_caterpillartrack_idler":
+				(
+
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelType = "Idler"
+					local values = filterstring splitline[3] ", "
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelIndex = values[1] as integer
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelRadius = values[2] as float
+				)
+				"set_caterpillartrack_returnroller":
+				(
+
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelType = "Return Roller"
+					local values = filterstring splitline[3] ", "
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelIndex = values[1] as integer
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelRadius = values[2] as float
+				)
+				"set_caterpillartrack_definesspeed":
+				(
+
+					obj.modifiers["Car Structure Part"].CaterpillarTrackContributeSpeed = true
+					local values = filterstring splitline[3] ", "
+					obj.modifiers["Car Structure Part"].CaterpillarTrackWheelIndex = values[1] as integer
+					obj.modifiers["Car Structure Part"].CaterpillarTrackSpeedContribution = values[2] as float
 				)
 				"set_renderlevel":
 				(
@@ -2259,6 +2324,35 @@ fn ParseStructurePartNode xmlNode obj carroot:undefined =
 	)
 )
 
+fn MakeSureThereAreEnoughTracks obj trackCount = (
+	while obj.modifiers["Car Characteristics"].SegmentDefinition_Name.count < trackCount do (
+		append obj.modifiers["Car Characteristics"].SegmentDefinition_Name "Track"
+		append obj.modifiers["Car Characteristics"].SegmentDefinition_SegmentPitch 0
+		append obj.modifiers["Car Characteristics"].SegmentDefinition_XOffset 0
+		append obj.modifiers["Car Characteristics"].SagHeight_AmbientLowestPoint 0
+		append obj.modifiers["Car Characteristics"].SagHeight_LowestAllowablePoint 0
+		append obj.modifiers["Car Characteristics"].DamageMode_NumParts 0
+		append obj.modifiers["Car Characteristics"].DamageMode_Restitution 0
+		append obj.modifiers["Car Characteristics"].DamageMode_MassPerSegment 0
+		append obj.modifiers["Car Characteristics"].DamageWobble_SpeedForMaxWobble 0
+		append obj.modifiers["Car Characteristics"].DamageWobble_FreqOfMaxWobble 0
+		append obj.modifiers["Car Characteristics"].DamageWobble_AmpOfMaxWobble 0
+		append obj.modifiers["Car Characteristics"].DamageWobble_RandomVariance 0
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_Enabled false
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtZero 0
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtSlopeChange 0
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtSlopeChange 0
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtMaxVolume 0
+		append obj.modifiers["Car Characteristics"].Sound_ClunkVolume_MaxVolume 0
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_Enabled false
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtZero 0
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtSlopeChange 0
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtSlopeChange 0
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtMaxVolume 0
+		append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_MaxVolume 0
+	)
+)
+
 fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 (
 	splitCData = filterstring cdata "\n"
@@ -2275,6 +2369,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 				--format "This line is a comment: %\n" splitcdata[i]
 				continue
 			)
+			format "\t%\n" splitline
 			case (tolower splitline[2]) of
 			(
 				"set_defenceagainstcars":
@@ -2436,7 +2531,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 				"set_cannotbesplit":
 				(
 					isTrue = (filterstring splitline[3] " ")[1]
-					if isTrue == true then
+					if isTrue == "true" then
 						obj.modifiers["Car Characteristics"].CannotBeSplit_Active = true
 					else
 						obj.modifiers["Car Characteristics"].CannotBeSplit_Active = false
@@ -2485,7 +2580,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 					obj.modifiers["Car Characteristics"].TowingSteerSpeedMultiplier_Active = true
 					obj.modifiers["Car Characteristics"].TowingSteerSpeedMultiplier =  (filterstring splitline[3] " \",")[1]  as float
 				)
-				"set_caterpillartrack_segmentdefinition":
+				/*"set_caterpillartrack_segmentdefinition":
 				(
 					params = (filterstring splitline[3] " \",")
 					append obj.modifiers["Car Characteristics"].SegmentDefinition_Name params[2]
@@ -2513,7 +2608,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 					append obj.modifiers["Car Characteristics"].DamageWobble_FreqOfMaxWobble (params[3] as float)
 					append obj.modifiers["Car Characteristics"].DamageWobble_AmpOfMaxWobble (params[4] as float)
 					append obj.modifiers["Car Characteristics"].DamageWobble_RandomVariance (params[5] as float)
-				) 
+				)*/ 
 				"set_damage_caterpillartrack_damaged_frictionfactor":
 				(
 					params = (filterstring splitline[3] " \",")
@@ -2559,7 +2654,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 					obj.modifiers["Car Characteristics"].Sound_WhinePitch_MaxSpeed = params[2] as float
 					obj.modifiers["Car Characteristics"].Sound_WhinePitch_PitchAtMaxSpeed = params[3] as float
 				)
-
+/*
 				"set_damage_caterpillartrack_soundclunkvolume":
 				(
 					params = (filterstring splitline[3] " \",")
@@ -2573,11 +2668,88 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 				(
 					params = (filterstring splitline[3] " \",")
 					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtZero (params[2] as float)
+					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtZero (params[2] as float)
 					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtSlopeChange (params[3] as float)
 					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtSlopeChange (params[4] as float)
 					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtMaxVolume (params[5] as float)
 					append obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_MaxVolume (params[6] as float)
-				) 
+				) */
+				"set_damage_maxdeflectionfordamagetexture": (
+
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].MaxDeflectionForDamageTexture_Active  = true
+					obj.modifiers["Car Characteristics"].MaxDeflectionForDamageTexture  = params[1] as float
+				)
+				"add_caterpillartrack_segmentdefinition": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					obj.modifiers["Car Characteristics"].SegmentDefinition_Name[trackIndex] = params[2]
+					obj.modifiers["Car Characteristics"].SegmentDefinition_SegmentPitch[trackIndex] = params[3] as float
+					obj.modifiers["Car Characteristics"].SegmentDefinition_XOffset[trackIndex] = params[4] as float
+
+				)
+				"add_caterpillartrack_damagemode": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					obj.modifiers["Car Characteristics"].DamageMode_NumParts[trackIndex] = params[2] as integer
+					obj.modifiers["Car Characteristics"].DamageMode_Restitution[trackIndex] = params[3] as float
+					obj.modifiers["Car Characteristics"].DamageMode_MassPerSegment[trackIndex] = params[4] as float
+				)
+
+				"add_caterpillartrack_sagheights": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					
+					obj.modifiers["Car Characteristics"].SagHeight_AmbientLowestPoint[trackIndex] = params[2] as float
+					obj.modifiers["Car Characteristics"].SagHeight_LowestAllowablePoint[trackIndex] = params[3] as float
+				)
+
+				"add_caterpillartrack_damagewobble": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					
+					obj.modifiers["Car Characteristics"].DamageWobble_SpeedForMaxWobble[trackIndex] = params[2] as float
+					obj.modifiers["Car Characteristics"].DamageWobble_FreqOfMaxWobble[trackIndex] = params[3] as float
+					obj.modifiers["Car Characteristics"].DamageWobble_AmpOfMaxWobble[trackIndex] = params[4] as float
+					obj.modifiers["Car Characteristics"].DamageWobble_RandomVariance[trackIndex] = params[5] as float
+				)
+
+				"add_damage_caterpillartrack_soundclunkvolume": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_Enabled[trackIndex] = true
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtZero[trackIndex] = params[2] as float
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtSlopeChange[trackIndex] = params[3] as float
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_VolumeAtSlopeChange[trackIndex] = params[4] as float
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_SpeedAtMaxVolume[trackIndex] = params[5] as float
+					obj.modifiers["Car Characteristics"].Sound_ClunkVolume_MaxVolume[trackIndex] = params[6] as float
+				)
+
+
+				"add_damage_caterpillartrack_soundhighspeedclunkvolume": (
+					params = (filterstring splitline[3] " \",")
+					obj.modifiers["Car Characteristics"].CaterpillarTracks_Enabled = true
+					local trackIndex = params[1] as integer + 1
+					MakeSureThereAreEnoughTracks obj trackIndex	
+					
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_Enabled[trackIndex] = true
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtZero[trackIndex] = params[2] as float
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtSlopeChange[trackIndex] = params[3] as float
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_VolumeAtSlopeChange[trackIndex] = params[4] as float
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_SpeedAtMaxVolume[trackIndex] = params[5] as float
+					obj.modifiers["Car Characteristics"].Sound_HighSpeedClunkVolume_MaxVolume[trackIndex] = params[6] as float
+				)
 
 				default:
 				(
@@ -2589,7 +2761,7 @@ fn ParseStructureCharacteristicsCData CData obj carRoot:carRoot =
 )
 fn ParseStructureCharacteristicsNode xmlNode obj carRoot:undefined =
 (
-		
+		format "Parsing Structure Characteristics node\n"
 	AddStructureCharacteristicsModifier obj
 	--format "node data:%\n\n" xmlNode.value
 	
@@ -2607,6 +2779,7 @@ fn ParseStructureCharacteristicsNode xmlNode obj carRoot:undefined =
 )
 fn LoadStructureXML file rootMesh =
 (
+	format "Loading structure.xml\n"
 	--clearlistener()
 	dotnet.loadAssembly "system.xml"
 		xmlDoc=dotNetObject "system.xml.xmlDocument"
@@ -2630,6 +2803,7 @@ fn LoadStructureXML file rootMesh =
 
 fn ParseSystemsDamageUnitCData CData systemDamageMod carRoot:carRoot =
 (
+	format "Parsing Systems Damage unit\n"
 	splitCData = filterstring cdata "\n"
 
 	for i =1 to splitcdata.count do
@@ -2728,6 +2902,7 @@ fn ParseSystemsDamageUnitCData CData systemDamageMod carRoot:carRoot =
 )
 fn LoadSystemDamageXML file rootmesh =
 (
+	format "Loading Systems Damage xml file\n"
 
 	dotnet.loadAssembly "system.xml"
 		xmlDoc=dotNetObject "system.xml.xmlDocument"
@@ -2786,6 +2961,38 @@ fn RecurseCarHierarchyToFindWheels obj =
 		(
 			append outputArray obj
 		)
+		"wheel_rr001":
+		(
+			append outputArray obj
+		)
+		"wheel_rl001":
+		(
+			append outputArray obj
+		)
+		"wheel_rr002":
+		(
+			append outputArray obj
+		)
+		"wheel_rl002":
+		(
+			append outputArray obj
+		)
+		"wheel_rr003":
+		(
+			append outputArray obj
+		)
+		"wheel_rl003":
+		(
+			append outputArray obj
+		)
+		"wheel_rr004":
+		(
+			append outputArray obj
+		)
+		"wheel_rl004":
+		(
+			append outputArray obj
+		)
 	)
 	for i=1 to obj.children.count do
 	(
@@ -2798,50 +3005,29 @@ fn ReplaceWheels rootMesh =
 	wheels = RecurseCarHierarchyToFindWheels rootMesh
 	for wheel in wheels do
 	(
-		case (tolower wheel.name) of
+		local wheelFolderName =case (tolower wheel.name) of
 		(
-			"wheel_fr":
-			(
-				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
-				(
-					ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FRWheelFolderNames[1] 
-				)
-				--else 
-				--	ConvertToWheelNode wheel "Wheel_FR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
-			)
-			"wheel_fl":
-			(
-				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
-				(
-					ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].FLWheelFolderNames[1]
-				)
-				--else 
-				--	ConvertToWheelNode wheel "Wheel_FL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
-			)
-			"wheel_rr":
-			(
-				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
-				(
-					ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RRWheelFolderNames[1]
-				)
-				--else 
-				--	ConvertToWheelNode wheel "Wheel_RR" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
-			)
-			"wheel_rl":
-			(
-				--if rootMesh.modifiers["vehicle_setup.cfg"].WheelsAllSetToSame==false then
-				(
-					ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].RLWheelFolderNames[1]
-				)
-				--else 
-				--	ConvertToWheelNode wheel "Wheel_RL" wheelName:rootMesh.modifiers["vehicle_setup.cfg"].WheelFolderName
-			)
+			"wheel_fr":rootMesh.modifiers["vehicle_setup.cfg"].FRWheelFolderNames[1]
+			"wheel_fl":rootMesh.modifiers["vehicle_setup.cfg"].FLWheelFolderNames[1]
+			"wheel_rr":rootMesh.modifiers["vehicle_setup.cfg"].RRWheelFolderNames[1]
+			"wheel_rl": rootMesh.modifiers["vehicle_setup.cfg"].RLWheelFolderNames[1]
+			"wheel_rl001":rootMesh.modifiers["vehicle_setup.cfg"].d4wheelFolderNames[1]
+			"wheel_rr001": rootMesh.modifiers["vehicle_setup.cfg"].d5wheelFolderNames[1]
+			"wheel_rl002":rootMesh.modifiers["vehicle_setup.cfg"].d6wheelFolderNames[1]
+			"wheel_rr002": rootMesh.modifiers["vehicle_setup.cfg"].d7wheelFolderNames[1]
+			"wheel_rl003":rootMesh.modifiers["vehicle_setup.cfg"].d8wheelFolderNames[1]
+			"wheel_rr003": rootMesh.modifiers["vehicle_setup.cfg"].d9wheelFolderNames[1]
+			"wheel_rl004":rootMesh.modifiers["vehicle_setup.cfg"].d10wheelFolderNames[1]
+			"wheel_rr004": rootMesh.modifiers["vehicle_setup.cfg"].d11wheelFolderNames[1]
 		)
+		ConvertToWheelNode wheel wheel.name wheelName:wheelFolderName
+
 		
 	)
 )
 fn LoadVehicleConfig obj folderName =
 (
+	format "Loading vehicle congif\n"
 	f = undefined
 	try 
 	(
@@ -2877,6 +3063,7 @@ fn LoadVehicleConfig obj folderName =
 						--format "read typeToDo: %\n" typeToDo
 						wheelFolder = splitline[2] --readtoken curLine
 						--format "read wheelFolder: %\n" wheelFolder
+						if typeToDo != undefined then 
 						case tolower(typeToDo) of
 						(
 							"wheel_folder_name":
@@ -2908,6 +3095,46 @@ fn LoadVehicleConfig obj folderName =
 								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
 								append obj.modifiers["vehicle_setup.cfg"].RLWheelFolderNames  wheelFolder
 							)
+							"d4_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D4WheelFolderNames  wheelFolder
+							)
+							"d5_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D5WheelFolderNames  wheelFolder
+							)
+							"d6_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D6WheelFolderNames  wheelFolder
+							)
+							"d7_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D7WheelFolderNames  wheelFolder
+							)
+							"d8_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D8WheelFolderNames  wheelFolder
+							)
+							"d9_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D9WheelFolderNames  wheelFolder
+							)
+							"d10_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D10WheelFolderNames  wheelFolder
+							)
+							"d11_wheel_folder_name":
+							(
+								--obj.modifiers["vehicle_setup.cfg"].WheelsAllSetToSamefalse
+								append obj.modifiers["vehicle_setup.cfg"].D11WheelFolderNames  wheelFolder
+							)
 						)
 					)
 					else format "this line is: %\n\n" curLine
@@ -2918,8 +3145,9 @@ fn LoadVehicleConfig obj folderName =
 	)
 	catch
 	(
-		format "There was a fucking error!\n"
+		format "There was a fucking error!\n%\n" (getCurrentException())
 		if f != undefined then close f
+		throw()
 	)
 )
 

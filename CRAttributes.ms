@@ -2308,7 +2308,7 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 			if WBDRandomCrumplingRandomMax_Active then spn_WBDRandomCrumplingRandomMax.enabled = true
 			else spn_WBDRandomCrumplingRandomMax.enabled = false
 			
-			if MaxDeflectionForDamageTexture_Active then spn__MaxDeflectionForDamageTexture.enabled = true
+			if MaxDeflectionForDamageTexture_Active then spn_MaxDeflectionForDamageTexture.enabled = true
 			else spn_MaxDeflectionForDamageTexture.enabled = false
 			
 			if WheelRadius_Active then
@@ -2720,7 +2720,7 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 	parameters caterpillarTracks rollout:CaterpillarTracksRollout
 	(
-		CaterpillerTracks_Enabled type:#boolean default:false ui:chk_CaterpillerTracks_Enabled
+		CaterpillarTracks_Enabled type:#boolean default:false ui:chk_CaterpillarTracks_Enabled
 
 		SegmentDefinition_Name type:#stringTab  tabSizeVariable:true
 		SegmentDefinition_SegmentPitch type:#floatTab tabSizeVariable:true
@@ -2738,12 +2738,14 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 		DamageWobble_AmpOfMaxWobble type:#floatTab tabSizeVariable:true
 		DamageWobble_RandomVariance type:#floatTab tabSizeVariable:true
 
+		Sound_ClunkVolume_Enabled type:#boolTab tabSizeVariable:true
 		Sound_ClunkVolume_VolumeAtZero type:#floatTab tabSizeVariable:true
 		Sound_ClunkVolume_SpeedAtSlopeChange type:#floatTab tabSizeVariable:true
 		Sound_ClunkVolume_VolumeAtSlopeChange type:#floatTab tabSizeVariable:true
 		Sound_ClunkVolume_SpeedAtMaxVolume type:#floatTab tabSizeVariable:true
 		Sound_ClunkVolume_MaxVolume type:#floatTab tabSizeVariable:true
 
+		Sound_HighSpeedClunkVolume_Enabled type:#boolTab tabSizeVariable:true
 		Sound_HighSpeedClunkVolume_VolumeAtZero type:#floatTab tabSizeVariable:true
 		Sound_HighSpeedClunkVolume_SpeedAtSlopeChange type:#floatTab tabSizeVariable:true
 		Sound_HighSpeedClunkVolume_VolumeAtSlopeChange type:#floatTab tabSizeVariable:true
@@ -2779,11 +2781,11 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 	Rollout CaterpillarTracksRollout "Caterpillar Track Settings"
 	(
-		checkbox chk_CaterpillerTracks_Enabled "Enable Caterpillar Tracks" default:false
+		checkbox chk_CaterpillarTracks_Enabled "Enable Caterpillar Tracks" default:false
 
 		button btn_AddNewTrack "Add New Track" across:2
 		button btn_DeleteTrack "Delete Track" across:2
-		dropdownlist drpdn_CaterpillerTracksList "Track Number" items:#() tooltip:"List of Caterpillar Tracks"
+		dropdownlist drpdn_CaterpillarTracksList "Track Number" items:#() tooltip:"List of Caterpillar Tracks"
 
 		group "Segment Definition"
 		(
@@ -2794,20 +2796,20 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 		on txt_SegmentDefinition_Name changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			SegmentDefinition_Name[index] = val
-			items = drpdn_CaterpillerTracksList.items
+			items = drpdn_CaterpillarTracksList.items
 			items[index] = (((index-1) as String ) + ": " + val)
-			drpdn_CaterpillerTracksList.items = items
+			drpdn_CaterpillarTracksList.items = items
 		)
 		on spn_SegmentDefinition_Pitch changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			SegmentDefinition_SegmentPitch[index] = val
 		)
 		on spn_SegmentDefimition_XOffset changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			SegmentDefinition_XOffset[index] = val
 		)
 
@@ -2819,35 +2821,35 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 		on spn_SagHeight_Ambient changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			SagHeight_AmbientLowestPoint[index] = val
 		)
 		on spn_SagHeight_Lowest changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			SagHeight_LowestAllowablePoint[index] = val
 		)
 
 		group "Segment Damage"
 		(
-			spinner spn_DamageNumParts "Num Parts" range:[-1,100,-1] type:#integer
+			spinner spn_DamageNumParts "Num Parts" range:[-1,100,-1] type:#integer tooltip:"Number of track segments, -1 is automatic"
 			spinner spn_DamageRestitution "Restitution" range:[0,100,0]
 			spinner spn_DamageMassPerSegment "Mass Per Segment" range:[0,10000,0]
 		)
 		on spn_DamageNumParts changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageMode_NumParts[index]=val
 		)
 		on spn_DamageRestitution changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageMode_Restitution[index]=val
 		)
 		
 		on spn_DamageMassPerSegment changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageMode_MassPerSegment[index]=val
 		)
 		
@@ -2861,89 +2863,106 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 		on spn_DamageWobble_SpeedForMaxWobble changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageWobble_SpeedForMaxWobble[index] = val
 		)
 		on spn_DamageWobble_FreqOfMaxWobble changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageWobble_FreqOfMaxWobble[index] = val
 		)
 		on spn_DamageWobble_AmpOfMaxWobble changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageWobble_AmpOfMaxWobble[index] = val
 		)
 		on spn_DamageWobble_RandomVariance changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			DamageWobble_RandomVariance[index] = val
 		)
 		group "Clunk Volume"
 		(
+			checkbox chk_ClunkVolume_Enabled "Enabled?"
 			spinner spn_ClunkVolume_VolumeAtZero "Volume At Zero" range:[-100,100,-6]
 			spinner spn_ClunkVolume_SpeedAtSlopeChange "Speed At Slope Change" range:[0,300,20]
 			spinner spn_ClunkVolume_VolumeAtSlopeChange "Volume At Slope Change" range:[-100,100,-3]
 			spinner spn_ClunkVolume_SpeedAtMaxVolume "Max Speed" range:[0,300,80]
 			spinner spn_ClunkVolume_MaxVolume "Volume At Max Speed" range:[-100,100,0]
 		)
+
+		on chk_ClunkVolume_Enabled changed val do (
+			spn_ClunkVolume_VolumeAtZero.enabled = val
+			spn_ClunkVolume_SpeedAtSlopeChange.enabled = val
+			spn_ClunkVolume_VolumeAtSlopeChange.enabled = val
+			spn_ClunkVolume_SpeedAtMaxVolume.enabled = val
+			spn_ClunkVolume_MaxVolume.enabled = val
+		)
 		on spn_ClunkVolume_VolumeAtZero changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_ClunkVolume_VolumeAtZero[index] = val
 		)
 		on spn_ClunkVolume_SpeedAtSlopeChange changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_ClunkVolume_SpeedAtSlopeChange[index] = val
 		)
 		on spn_ClunkVolume_VolumeAtSlopeChange changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_ClunkVolume_VolumeAtSlopeChange[index] = val
 		)
 		on spn_ClunkVolume_SpeedAtMaxVolume changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_ClunkVolume_SpeedAtMaxVolume[index] = val
 		)
 		on spn_ClunkVolume_MaxVolume changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_ClunkVolume_MaxVolume[index] = val
 		)
 
 		group "High Speed Clunk Volume"
 		(
+			checkbox chk_HighSpeedClunkVolume_Enabled "Enabled?"
 			spinner spn_HighSpeedClunkVolume_VolumeAtZero "Volume At Zero" range:[-100,100,-6]
 			spinner spn_HighSpeedClunkVolume_SpeedAtSlopeChange "Speed At Slope Change" range:[0,300,20]
 			spinner spn_HighSpeedClunkVolume_VolumeAtSlopeChange "Volume At Slope Change" range:[-100,100,-3]
 			spinner spn_HighSpeedClunkVolume_SpeedAtMaxVolume "Max Speed" range:[0,300,80]
 			spinner spn_HighSpeedClunkVolume_MaxVolume "Volume At Max Speed" range:[-100,100,0]
 		)
+		on chk_HighSpeedClunkVolume_Enabled changed val do (
+			spn_HighSpeedClunkVolume_VolumeAtZero.enabled = val
+			spn_HighSpeedClunkVolume_SpeedAtSlopeChange.enabled = val
+			spn_HighSpeedClunkVolume_VolumeAtSlopeChange.enabled = val
+			spn_HighSpeedClunkVolume_SpeedAtMaxVolume.enabled = val
+			spn_HighSpeedClunkVolume_MaxVolume.enabled = val
+		)
 		on spn_HighSpeedClunkVolume_VolumeAtZero changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_HighSpeedClunkVolume_VolumeAtZero[index] = val
 		)
 		on spn_HighSpeedClunkVolume_SpeedAtSlopeChange changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_HighSpeedClunkVolume_SpeedAtSlopeChange[index] = val
 		)
 		on spn_HighSpeedClunkVolume_VolumeAtSlopeChange changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_HighSpeedClunkVolume_VolumeAtSlopeChange[index] = val
 		)
 		on spn_HighSpeedClunkVolume_SpeedAtMaxVolume changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_HighSpeedClunkVolume_SpeedAtMaxVolume[index] = val
 		)
 		on spn_HighSpeedClunkVolume_MaxVolume changed val do
 		(
-			index = drpdn_CaterpillerTracksList.selection
+			index = drpdn_CaterpillarTracksList.selection
 			Sound_HighSpeedClunkVolume_MaxVolume[index] = val
 		)
 
@@ -2998,6 +3017,20 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 				spn_DamageWobble_AmpOfMaxWobble.value = DamageWobble_AmpOfMaxWobble[index]
 				spn_DamageWobble_RandomVariance.value = DamageWobble_RandomVariance[index]
 
+				chk_ClunkVolume_Enabled.checked = Sound_ClunkVolume_Enabled[index]
+				spn_ClunkVolume_VolumeAtZero.enabled = Sound_ClunkVolume_Enabled[index]
+				spn_ClunkVolume_SpeedAtSlopeChange.enabled = Sound_ClunkVolume_Enabled[index]
+				spn_ClunkVolume_VolumeAtSlopeChange.enabled = Sound_ClunkVolume_Enabled[index]
+				spn_ClunkVolume_SpeedAtMaxVolume.enabled = Sound_ClunkVolume_Enabled[index]
+				spn_ClunkVolume_MaxVolume.enabled = Sound_ClunkVolume_Enabled[index]
+		
+				chk_HighSpeedClunkVolume_Enabled.checked = Sound_HighSpeedClunkVolume_Enabled[index]
+				spn_HighSpeedClunkVolume_VolumeAtZero.enabled = Sound_HighSpeedClunkVolume_Enabled[index]
+				spn_HighSpeedClunkVolume_SpeedAtSlopeChange.enabled = Sound_HighSpeedClunkVolume_Enabled[index]
+				spn_HighSpeedClunkVolume_VolumeAtSlopeChange.enabled = Sound_HighSpeedClunkVolume_Enabled[index]
+				spn_HighSpeedClunkVolume_SpeedAtMaxVolume.enabled = Sound_HighSpeedClunkVolume_Enabled[index]
+				spn_HighSpeedClunkVolume_MaxVolume.enabled = Sound_HighSpeedClunkVolume_Enabled[index]
+		
 				spn_ClunkVolume_VolumeAtZero.value = Sound_ClunkVolume_VolumeAtZero[index]
 				spn_ClunkVolume_SpeedAtSlopeChange.value = Sound_ClunkVolume_SpeedAtSlopeChange[index]
 				spn_ClunkVolume_VolumeAtSlopeChange.value = Sound_ClunkVolume_VolumeAtSlopeChange[index]
@@ -3044,9 +3077,9 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 			if addToDropDown then
 			(
-				append drpdn_CaterpillerTracksList.items (((SegmentDefinition_Name.count-1) as String ) + ": " + trackname)
-				drpdn_CaterpillerTracksList.items = drpdn_CaterpillerTracksList.items
-				drpdn_CaterpillerTracksList.selection = SegmentDefinition_Name.count
+				append drpdn_CaterpillarTracksList.items (((SegmentDefinition_Name.count-1) as String ) + ": " + trackname)
+				drpdn_CaterpillarTracksList.items = drpdn_CaterpillarTracksList.items
+				drpdn_CaterpillarTracksList.selection = SegmentDefinition_Name.count
 				ChangeSelectedTrack SegmentDefinition_Name.count
 			)
 		)
@@ -3081,13 +3114,13 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 				deleteItem Sound_HighSpeedClunkVolume_VolumeAtSlopeChange index ---6.0
 				deleteItem Sound_HighSpeedClunkVolume_SpeedAtMaxVolume index --80
 				deleteItem Sound_HighSpeedClunkVolume_MaxVolume index --0.0
-				drpdn_CaterpillerTracksList.items = deleteItem drpdn_CaterpillerTracksList.items index
-				items = drpdn_CaterpillerTracksList.items
+				drpdn_CaterpillarTracksList.items = deleteItem drpdn_CaterpillarTracksList.items index
+				items = drpdn_CaterpillarTracksList.items
 				for i=index to items.count do
 				(
 					items[i] = (((i-1) as String) + ": "+ SegmentDefinition_Name[i])
 				)
-				drpdn_CaterpillerTracksList.items = items
+				drpdn_CaterpillarTracksList.items = items
 
 				ChangeSelectedTrack index
 			)
@@ -3144,20 +3177,20 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 			if SegmentDefinition_Name.count < 1 then
 			(
 				CreateNewCaterpillarTrack "Track" addToDropDown:false
-				CaterpillerTracks_Enabled = false
+				CaterpillarTracks_Enabled = false
 			)
 			else
 			(
-				CaterpillerTracks_Enabled = true
+				CaterpillarTracks_Enabled = true
 			)
 
 			for i=1 to SegmentDefinition_Name.count do
 			(
-				drpdn_CaterpillerTracksList.items = append drpdn_CaterpillerTracksList.items (((i-1) as String ) + ": " + SegmentDefinition_Name[i])
+				drpdn_CaterpillarTracksList.items = append drpdn_CaterpillarTracksList.items (((i-1) as String ) + ": " + SegmentDefinition_Name[i])
 			)
-			drpdn_CaterpillerTracksList.selection = 1
+			drpdn_CaterpillarTracksList.selection = 1
 			ChangeSelectedTrack 1
-			EnableTracks chk_CaterpillerTracks_Enabled.checked
+			EnableTracks chk_CaterpillarTracks_Enabled.checked
 		)
 
 		on btn_AddNewTrack pressed do
@@ -3168,15 +3201,15 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 
 		on btn_DeleteTrack pressed do
 		(
-			DeleteCaterpillarTrack drpdn_CaterpillerTracksList.selection
+			DeleteCaterpillarTrack drpdn_CaterpillarTracksList.selection
 		)
 
-		on chk_CaterpillerTracks_Enabled changed state do
+		on chk_CaterpillarTracks_Enabled changed state do
 		(
 			EnableTracks state
 		)
 
-		on drpdn_CaterpillerTracksList selected index do
+		on drpdn_CaterpillarTracksList selected index do
 		(
 			ChangeSelectedTrack index
 		)
@@ -4248,6 +4281,53 @@ StructIndexedPhysProps = #(
 	"POINT_OF_STEERING",
 	"POINT_OF_ROTATION"
 )
+StructPhysicsPropType = #(
+	"Wheel",
+	"Point of Suspension",
+	"Point of Steering",
+	"Point of Rotation",
+	"Steering Wheel",
+	"Left Steering",
+	"Right Steering"
+)
+StructPhysicsPropWheelTypes = #(
+	"Front Left (#0)", 
+	"Front Right (#1)", 
+	"Rear Left (#2)", 
+	"Rear Right (#3)", 
+	"Left Mid 1 (#4)", 
+	"Right Mid 1 (#5)", 
+	"Left Mid 2 (#6)", 
+	"Right Mid 2 (#7)", 
+	"Left Mid 3 (#8)", 
+	"Right Mid 3 (#9)", 
+	"Left Mid 4 (#10)", 
+	"Right Mid 4 (#11)"
+)
+StructPhysicsPropertyWheelPrefix = #(
+	"FRONT_LEFT",
+	"FRONT_RIGHT",
+	"REAR_LEFT",
+	"REAR_RIGHT"
+)
+
+StructPhysicsPropertyWheelPrefixWithNone = #("None") + StructPhysicsPropertyWheelPrefix
+StructPhysicsPropertyTypePostfix = #(
+	"_WHEEL",
+	"_POINT_OF_SUSPENSION",
+	"_POINT_OF_STEERING",
+	"_POINT_OF_ROTATION",
+	"STEERING_WHEEL",
+	"LEFT_STEERING",
+	"RIGHT_STEERING"
+)
+StructPhysicsPropertyIndexedType = #(
+	"WHEEL",
+	"POINT_OF_SUSPENSION",
+	"POINT_OF_STEERING",
+	"POINT_OF_ROTATION"
+)
+
 
 StructFunctionalLightTypes = #(
 	"HEAD_LIGHT",
@@ -4259,6 +4339,16 @@ StructFunctionalLightTypes = #(
 	"STROBE1_LIGHT",
 	"STROBE2_LIGHT"
 )
+
+StructCaterpillarTrackWheelType = #(
+	"None",
+	"Drive Wheel",
+	"Road Wheel",
+	"Idler",
+	"Return Roller"
+)
+
+
 
 StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x40afe183) version:1
 (
@@ -4403,6 +4493,17 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		CollisionBoundsMultiplier_X type:#float ui:spn_CollisionBoundsMultiplier_X default:1.0
 		CollisionBoundsMultiplier_Y type:#float ui:spn_CollisionBoundsMultiplier_Y default:1.0
 		CollisionBoundsMultiplier_Z type:#float ui:spn_CollisionBoundsMultiplier_Z default:1.0
+		
+		GangedSuspension type:#string
+		GangedRotation type:#string
+		GangedSteering type:#string
+		SteeringProportion type:#float default: 1.0 ui:spn_SteeringProportion
+		
+		CaterpillarTrackWheelType type:#string 
+		CaterpillarTrackWheelIndex type:#integer ui:spn_CaterpillarTrackIndex
+		CaterpillarTrackWheelRadius type:#float ui:spn_CaterpillarTrackWheelRadius
+		CaterpillarTrackContributeSpeed type:#boolean ui:chk_ContributesSpeed
+		CaterpillarTrackSpeedContribution type:#float ui:spn_CaterpillarTrackSpeedContribution
 	)
 	rollout PhysicsPropertiesParams "Physics Properties"
 	(
@@ -4418,47 +4519,173 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		spinner spn_CollisionBoundsMultiplier_Z "" range:[1,100,1] across:3 fieldwidth:30
 		
 		label lbl_PhysicsProperties "Manage Physics Properties"
-		checkbox chk_IsIndexedProperty "Indexed?"  labelontop:true
-		spinner spn_PropertyIndex "Index" range:[0,10,0] type:#integer labelontop:true
-		dropdownlist dpdn_PhysicsProperty "" items:StructPhysProps width: 100 
-		button AddToPhysprops "Add" 
+		dropdownlist dpdn_PhysicsProperty "" items:StructPhysicsPropType 
+		dropdownlist dpdn_PhysicsPropertyWheel "" items:StructPhysicsPropWheelTypes  
+		button AddToPhysprops "Add" align:#center
 		dotnetcontrol lv_PhysicsProperties "listview" height: 100 width: 200
-		button DeleteFromPhysProps "Delete Selected"
-		
-		fn ToggleIndexedOptions value = (
+		button DeleteFromPhysProps "Delete Selected" align:#center
 
-			if value then (
-				dpdn_PhysicsProperty.items = StructIndexedPhysProps
-				spn_PropertyIndex.enabled = true
-			)
-			else (
-				dpdn_PhysicsProperty.items = StructPhysProps
-				spn_PropertyIndex.enabled = false
-			)
+		group "Extra Wheel Properties" (
+			dropdownlist dpdn_GangedRotation "Ganged Rotation" items:StructPhysicsPropertyWheelPrefixWithNone
+			dropdownlist dpdn_GangedSuspension "Ganged Suspension" items:StructPhysicsPropertyWheelPrefixWithNone
+			dropdownlist dpdn_GangedSteering "Ganged Steering" items:StructPhysicsPropertyWheelPrefixWithNone
+			spinner spn_SteeringProportion "Steering Proportion" range:[0,1,1] type:#float
 		)
+
+		group "Caterpillar Tracks" (
+			dropdownlist dpdn_CaterpillarTrackWheelType "Caterpillar Track Wheel Type" items:StructCaterpillarTrackWheelType
+			spinner spn_CaterpillarTrackIndex "Track #" type:#integer range:[0,10,0]
+			spinner spn_CaterpillarTrackWheelRadius "Radius" type:#float range:[0,20,0]
+			button btn_CalculateTrackWheelRadius "Calculate Radius" 
+			checkbox chk_ContributesSpeed "Contribute Speed?"
+			spinner spn_CaterpillarTrackSpeedContribution "Amount" type:#float range:[0,1,1]
+
+		)
+		
+
+
 		on lv_PhysicsProperties selectedindexchanged do
 		(
 			if lv_PhysicsProperties.SelectedIndices.count > 0 then 
 			(
 				local selectedIndex = lv_PhysicsProperties.SelectedIndices.Item[0] + 1
-				ToggleIndexedOptions PhysicsPropertyIsIndexed[selectedIndex]
-				chk_IsIndexedProperty.checked =  PhysicsPropertyIsIndexed[selectedIndex]
-				if PhysicsPropertyIsIndexed[selectedIndex] then (
-					spn_PropertyIndex.value = PhysicsPropertyIndices[selectedIndex]
-					dpdn_PhysicsProperty.selection = finditem StructIndexedPhysProps PhysicsProperties[selectedIndex]
+				
+				for i = 1 to StructPhysicsPropertyTypePostfix.count do (
+					if (findstring PhysicsProperties[selectedIndex] StructPhysicsPropertyTypePostfix[i]) != undefined then (
+						dpdn_PhysicsProperty.selection = i
+					)
+				)
+				if physicsPropertyPrettyName == undefined or physicsPropertyPrettyName == "" then for i = 1 to StructPhysicsPropertyIndexedType.count do (
+					if (findstring PhysicsProperties[selectedIndex] StructPhysicsPropertyIndexedType[i]) != undefined then (
+						dpdn_PhysicsProperty.selection = i
+					)
+				)
+				
+				if PhysicsPropertyIndices[selectedIndex] >= 0 then (
+					dpdn_PhysicsPropertyWheel.selection = PhysicsPropertyIndices[selectedIndex]+1
+					dpdn_PhysicsPropertyWheel.enabled = true
 				)
 				else (
-					spn_PropertyIndex.value = 0
-					dpdn_PhysicsProperty.selection = finditem StructPhysProps PhysicsProperties[selectedIndex]
+					dpdn_PhysicsPropertyWheel.enabled = false
 				)
 			)
 		)
-		on chk_IsIndexedProperty changed value do (
-			ToggleIndexedOptions value
+		on dpdn_GangedRotation selected value do (
+			if value == 1 then GangedRotation = ""
+			else GangedRotation = StructPhysicsPropertyWheelPrefix[value - 1] + "_WHEEL"
+		)
+		on dpdn_GangedSuspension selected value do (
+			if value == 1 then GangedSuspension = ""
+			else GangedSuspension = StructPhysicsPropertyWheelPrefix[value - 1] + "_WHEEL"
+		)
+		on dpdn_GangedSteering selected value do (
+			if value == 1 then (
+				GangedSteering = ""
+				spn_SteeringProportion.enabled = false
+			)
+			else (
+				GangedSteering = StructPhysicsPropertyWheelPrefix[value - 1] + "_WHEEL"
+				spn_SteeringProportion.enabled = true
+			)
+		)
+		on dpdn_PhysicsProperty selected value do (
+			local selectedValue = dpdn_PhysicsProperty.items[value]
+			if selectedValue == "Steering Wheel" or selectedValue == "Left Steering" or selectedValue == "Right Steering" then (
+				dpdn_PhysicsPropertyWheel.enabled = false
+			)
+			else (
+				dpdn_PhysicsPropertyWheel.enabled = true
+			)
+		)
+		on dpdn_CaterpillarTrackWheelType selected value do (
+			if value == 1 then (
+				CaterpillarTrackWheelType = ""
+				spn_CaterpillarTrackIndex.enabled = false
+				spn_CaterpillarTrackWheelRadius.enabled = false
+				btn_CalculateTrackWheelRadius.enabled = false
+				chk_ContributesSpeed.enabled = false
+				spn_CaterpillarTrackSpeedContribution.enabled = false
+			)
+			else (
+				CaterpillarTrackWheelType = StructCaterpillarTrackWheelType[value]
+				spn_CaterpillarTrackIndex.enabled = true
+				spn_CaterpillarTrackWheelRadius.enabled = true
+				btn_CalculateTrackWheelRadius.enabled = true
+				chk_ContributesSpeed.enabled = true
+				spn_CaterpillarTrackSpeedContribution.enabled = CaterpillarTrackContributeSpeed
+			)
+		)
+		on chk_ContributesSpeed checked value do (
+			spn_CaterpillarTrackSpeedContribution.enabled = value
 		)
 		on PhysicsPropertiesParams open do
 		(			
-			spn_PropertyIndex.enabled = false
+			if CaterpillarTrackWheelType == undefined then (
+				dpdn_CaterpillarTrackWheelType.selection = 1
+				spn_CaterpillarTrackIndex.enabled = false
+				spn_CaterpillarTrackWheelRadius.enabled = false
+				btn_CalculateTrackWheelRadius.enabled = false
+				chk_ContributesSpeed.enabled = false
+				spn_CaterpillarTrackSpeedContribution.enabled = false
+			)
+			else (
+				dpdn_CaterpillarTrackWheelType.selection = (finditem StructCaterpillarTrackWheelType CaterpillarTrackWheelType) 
+				spn_CaterpillarTrackIndex.enabled = true
+				spn_CaterpillarTrackWheelRadius.enabled = true
+				btn_CalculateTrackWheelRadius.enabled = true
+				chk_ContributesSpeed.enabled = true
+				spn_CaterpillarTrackSpeedContribution.enabled = CaterpillarTrackContributeSpeed
+			)
+
+			if GangedRotation == undefined or GangedRotation == "" then dpdn_GangedRotation.selection = 1
+			else (
+				for i = 1 to StructPhysicsPropertyWheelPrefix.count do (
+					if GangedRotation == (StructPhysicsPropertyWheelPrefix[i] + "_WHEEL") then (
+						dpdn_GangedRotation.selection = i + 1
+					)
+				)
+			
+			)
+
+
+			if GangedSteering == undefined or GangedSteering == "" then dpdn_GangedSteering.selection = 1
+			else (
+
+				for i = 1 to StructPhysicsPropertyWheelPrefix.count do (
+					if GangedSteering == (StructPhysicsPropertyWheelPrefix[i] + "_WHEEL") then (
+						dpdn_GangedSteering.selection = i + 1
+					)
+				)
+			)
+
+			if GangedSuspension == undefined or GangedSuspension == "" then (
+				dpdn_GangedSuspension.selection = 1
+				spn_SteeringProportion.enabled = false
+			)
+			else (
+				for i = 1 to StructPhysicsPropertyWheelPrefix.count do (
+					if GangedSuspension == (StructPhysicsPropertyWheelPrefix[i] + "_WHEEL") then (
+						dpdn_GangedSuspension.selection = i + 1
+					)
+				)
+
+				spn_SteeringProportion.enabled = true
+			)
+			
+
+			while PhysicsPropertyIsIndexed.count < PhysicsProperties.count do (
+				append PhysicsPropertyIsIndexed false
+			)
+			while PhysicsPropertyIndices.count < PhysicsProperties.count do (
+				local nextPhysProp = PhysicsProperties[PhysicsPropertyIndices.count + 1]
+				local wheelindex = -1
+				for i = 1 to 4 do (
+					if (findString nextPhysProp StructPhysicsPropertyWheelPrefix[i]) then (
+						wheelIndex = i - 1
+					)
+				)
+				append PhysicsPropertyIndices wheelIndex
+			)
 			AddToPhysprops.pos = [120, AddToPhysprops.pos.y]
 			lv_PhysicsProperties.view  = (dotnetclass "view").details
 			lv_PhysicsProperties.fullrowselect= true
@@ -4468,8 +4695,22 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 			lv_PhysicsProperties.columns.add "Index" 50
 			for i=1 to PhysicsProperties.count do
 			(
-				lvItem = dotnetobject "listviewitem" PhysicsProperties[i]
-				if PhysicsPropertyIsIndexed[i] then (
+				local physicsPropertyName = PhysicsProperties[i]
+				local physicsPropertyPrettyName = undefined
+				for i = 1 to StructPhysicsPropertyTypePostfix.count do (
+					if (findstring physicsPropertyName StructPhysicsPropertyTypePostfix[i]) != undefined then (
+						physicsPropertyPrettyName = StructPhysicsPropType[i]
+					)
+				)
+				if physicsPropertyPrettyName == undefined then for i = 1 to StructPhysicsPropertyIndexedType.count do (
+					if (findstring physicsPropertyName StructPhysicsPropertyIndexedType[i]) != undefined then (
+						physicsPropertyPrettyName = StructPhysicsPropType[i]
+					)
+				)
+
+				if physicsPropertyPrettyName == undefined then physicsPropertyPrettyName = physicsPropertyName
+				lvItem = dotnetobject "listviewitem" physicsPropertyPrettyName
+				if PhysicsPropertyIndices[i] >= 0 then (
 					lvitem.subitems.add (PhysicsPropertyIndices[i] as string)
 				)
 				else (
@@ -4499,16 +4740,33 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 		on AddToPhysprops pressed do
 		(
 			lvItem = dotnetobject "listviewitem" dpdn_PhysicsProperty.selected
-			append PhysicsProperties dpdn_PhysicsProperty.selected
-			append PhysicsPropertyIsIndexed chk_IsIndexedProperty.checked
-			if chk_IsIndexedProperty.checked then (
-				lvitem.subitems.add (spn_PropertyIndex.value as string)
-				append PhysicsPropertyIndices spn_PropertyIndex.value
+			if dpdn_PhysicsProperty.selection > 4 then (
+				append PhysicsProperties StructPhysicsPropertyTypePostfix[dpdn_PhysicsProperty.selection]
+				append PhysicsPropertyIsIndexed false
+				append PhysicsPropertyIndices -1
+				lvitem.subitems.add "n/a"
+
 			)
 			else (
-				append PhysicsPropertyIndices 0
-				lvitem.subitems.add "n/a"
+				local wheelIndex = dpdn_PhysicsPropertyWheel.selection - 1
+				lvitem.subitems.add (wheelIndex as string)
+				if wheelIndex < 4 then (
+					append PhysicsPropertyIsIndexed false
+					append PhysicsPropertyIndices wheelIndex
+					local propPrefix = StructPhysicsPropertyWheelPrefix[dpdn_PhysicsPropertyWheel.selection]
+
+					local propPostfix = StructPhysicsPropertyTypePostfix[dpdn_PhysicsProperty.selection]
+					append PhysicsProperties (propPrefix+propPostfix)
+				)
+				else  (
+					append PhysicsPropertyIsIndexed true
+					append PhysicsPropertyIndices wheelIndex
+					local propName = StructPhysicsPropertyIndexedType[dpdn_PhysicsProperty.selection]
+					append PhysicsProperties propName
+				)
+
 			)
+			
 			lv_PhysicsProperties.Items.add lvItem
 		)
 	)

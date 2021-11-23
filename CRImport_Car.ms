@@ -3025,9 +3025,234 @@ fn ReplaceWheels rootMesh =
 		
 	)
 )
-fn LoadVehicleConfig obj folderName =
+fn LoadVehicleConfig obj folderName = (
+	local cfgPath = folderName 
+
+	if ((dotnetClass "System.IO.Path").GetFilename cfgPath) == "" then 
+		cfgPath = (folderName+"vehicle_setup.cfg")
+
+	if (dotnetClass "System.IO.File").Exists cfgPath then (
+		local cfgMod = GetVehilceCFGModifier obj
+		cfg = (dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupConfig").Load cfgPath
+
+		if cfg.AIScript != undefined then
+			cfgMod.AIScript = cfg.AIScript
+
+		if cfg.DriverSuffix != undefined then
+			cfgMod.DriverSuffix = cfg.DriverSuffix
+		cfgMod.SmallDriver = cfg.SmallDriver
+		cfgMod.EjectDriver = cfg.EjectDriver
+
+		for i=cfgMod.Drivers.count to 1 by -1 do (
+			deleteitem cfgMod.Drivers i
+		)
+		for i=0 to cfg.Drivers.Count - 1 do (
+			append cfgMod.Drivers cfg.Drivers.Item[i]
+		)
+		if cfg.GarageCameraOffset.x != 0 or cfg.GarageCameraOffset.y != 0 or cfg.GarageCameraOffset.z != 0 then
+		(
+			cfgMod.GarageCameraOffset_x = -cfg.GarageCameraOffset.x
+			cfgMod.GarageCameraOffset_y = -cfg.GarageCameraOffset.z
+			cfgMod.GarageCameraOffset_z = cfg.GarageCameraOffset.y
+		)
+		cfgMod.InCarCameraPos_x = -cfg.InCarCamOffset.x
+		cfgMod.InCarCameraPos_y = -cfg.InCarCamOffset.z
+		cfgMod.InCarCameraPos_z = cfg.InCarCamOffset.y
+
+		for i=cfgMod.PaintJobNames.count to 1 by -1  do (
+			deleteitem cfgMod.PaintJobNames i
+			deleteitem cfgMod.PaintJobLocalisedNames i
+			deleteitem cfgMod.ShrapneColours i
+			deleteitem cfgMod.MatReplacements i
+		)
+		for i=0 to cfg.MaterialMaps.Count - 1 do (
+			local matMap = cfg.MaterialMaps.Item[i]
+			append cfgMod.PaintJobNames matMap.Name
+			append cfgMod.PaintJobLocalisedNames matMap.Localisation
+			append cfgMod.ShrapneColours [matMap.Shrapnel.x, matMap.Shrapnel.y, matMap.Shrapnel.z]
+			local replacements = ""
+			/*
+			for j = 0 to matMap.Substitutions.Count - 1 do (
+				local key = matMap.Substitutions.Keys.Item[j]
+				local val = matMap.Substitutions.Values.Item[j]
+				replacements = replacements + key+":"+val+";"
+			)
+			*/
+			local itterator = matMap.Substitutions.GetEnumerator()
+			while itterator.MoveNext() do (
+				local key = itterator.current.Key
+				local val = itterator.current.Value
+				
+				replacements = replacements + key+":"+val+";"
+			)
+			append cfgMod.MatReplacements replacements
+		)
+
+		for i = cfgMod.WheelNames.Count to 1 by -1 do (
+
+				deleteitem cfgMod.WheelNames i
+				deleteitem cfgMod.WheelLocalisedNames i
+				deleteitem cfgMod.FRWheelFolderNames i
+				deleteitem cfgMod.FLWheelFolderNames i
+				deleteitem cfgMod.RRWheelFolderNames i
+				deleteitem cfgMod.RLWheelFolderNames i
+				deleteitem cfgMod.D4WheelFolderNames i
+				deleteitem cfgMod.D5WheelFolderNames i
+				deleteitem cfgMod.D6WheelFolderNames i
+				deleteitem cfgMod.D7WheelFolderNames i
+				deleteitem cfgMod.D8WheelFolderNames i
+				deleteitem cfgMod.D9WheelFolderNames i
+				deleteitem cfgMod.D10WheelFolderNames i
+				deleteitem cfgMod.D11WheelFolderNames i
+				deleteitem cfgMod.GarageSetFolderNames i 
+		)
+
+		for i = 0 to cfg.WheelMaps.Count - 1 do (
+			local wheelMap = cfg.WheelMaps.Item[i]
+			append cfgMod.WheelNames wheelMap.Name
+			append cfgMod.WheelLocalisedNames wheelMap.Localisation
+			
+			if wheelMap.Wheels.FLWheel != undefined then
+				append cfgMod.FLWheelFolderNames wheelMap.Wheels.FLWheel
+			else
+				append cfgMod.FLWheelFolderNames ""
+			
+			if wheelMap.Wheels.FRWheel != undefined then
+				append cfgMod.FRWheelFolderNames wheelMap.Wheels.FRWheel
+			else
+				append cfgMod.FRWheelFolderNames ""
+
+			if wheelMap.Wheels.RLWheel != undefined then
+				append cfgMod.RLWheelFolderNames wheelMap.Wheels.RLWheel
+			else
+				append cfgMod.RLWheelFolderNames ""
+			
+			if wheelMap.Wheels.RRWheel != undefined then
+				append cfgMod.RRWheelFolderNames wheelMap.Wheels.RRWheel
+			else
+				append cfgMod.RRWheelFolderNames ""
+			
+			if wheelMap.Wheels.D4 != undefined then
+				append cfgMod.D4WheelFolderNames wheelMap.Wheels.D4
+			else
+				append cfgMod.D4WheelFolderNames ""
+			
+			if wheelMap.Wheels.D5 != undefined then
+				append cfgMod.D5WheelFolderNames wheelMap.Wheels.D5
+			else
+				append cfgMod.D5WheelFolderNames ""
+			
+			if wheelMap.Wheels.D6 != undefined then
+				append cfgMod.D6WheelFolderNames wheelMap.Wheels.D6
+			else
+				append cfgMod.D6WheelFolderNames ""
+			
+			if wheelMap.Wheels.D7 != undefined then
+				append cfgMod.D7WheelFolderNames wheelMap.Wheels.D7
+			else
+				append cfgMod.D7WheelFolderNames ""
+			
+			if wheelMap.Wheels.D8 != undefined then
+				append cfgMod.D8WheelFolderNames wheelMap.Wheels.D8
+			else
+				append cfgMod.D8WheelFolderNames ""
+			
+			if wheelMap.Wheels.D9 != undefined then
+				append cfgMod.D9WheelFolderNames wheelMap.Wheels.D9
+			else
+				append cfgMod.D9WheelFolderNames ""
+			
+			if wheelMap.Wheels.D10 != undefined then
+				append cfgMod.D10WheelFolderNames wheelMap.Wheels.D10
+			else
+				append cfgMod.D10WheelFolderNames ""
+			
+			if wheelMap.Wheels.D11 != undefined then
+				append cfgMod.D11WheelFolderNames wheelMap.Wheels.D11
+			else
+				append cfgMod.D11WheelFolderNames ""
+
+			if wheelMap.Wheels.GarageSet != undefined then
+				append cfgMod.GarageSetFolderNames wheelMap.Wheels.GarageSet
+			else
+				append cfgMod.GarageSetFolderNames ""
+		)
+
+		cfgMod.TopSpeed = cfg.stats.TopSpeed
+		cfgMod.To60Time = cfg.stats.Time
+		cfgMod.Toughness = cfg.stats.Toughness
+		cfgMod.Weight = cfg.stats.Weight
+		cfgMod.UnlockLevel = cfg.stats.UnlockLevel
+
+		local attachTypeClass = dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleAttachment+AttachmentType"
+		local wheelModuleTypeClass = dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleWheelModule+WheelModuleType"
+		for i = 0 to cfg.Attachments.Count - 1 do (
+			local attachment = cfg.Attachments.Item[i]
+			case attachment.Type of (
+				(attachTypeClass.ExhaustParticles): (
+					cfgMod.ExhaustParticleVFX = attachment.Exhaust.VFX
+					cfgMod.ExhaustParticleUnderwaterVFX = attachment.Exhaust.UnderwaterVFX
+					cfgMod.ExhaustAnchor = attachment.Exhaust.Anchor
+					cfgMod.ExhaustNeutralMultiplier = attachment.Exhaust.NeutralMultiplier
+				)
+				(attachTypeClass.DynamicsFmodEngine): (
+					cfgMod.FMODEngine_RPMSmooth = attachment.FModEngine.RPMSmooth
+					cfgMod.FMODEngine_OnLoadSmooth = attachment.FModEngine.OnLoadSmooth
+					cfgMod.FMODEngine_OffLoadSmooth = attachment.FModEngine.OffLoadSmooth
+					cfgMod.FMODEngine_LoadMin = attachment.FModEngine.LoadMin
+					cfgMod.FMODEngine_MaxSpeed = attachment.FModEngine.MaxSpeed
+					cfgMod.FMODEngine_MinRevs = attachment.FModEngine.MinRevs
+					cfgMod.FMODEngine_MaxRevs = attachment.FModEngine.MaxRevs
+					cfgMod.FMODEngine = attachment.FModEngine.Engine
+				)
+				(attachTypeClass.Horn): (
+					cfgMod.HornSound = attachment.Horn
+				)
+				(attachTypeClass.ReverseLightSound): (
+					cfgMod.ReverseLightSound = attachment.ReverseLightSound
+				)
+				(attachTypeClass.ContinuousSound): (
+					cfgMod.ContinuousSound = attachment.ContinuousSound
+					cfgMod.ContinuousSound_Lump = attachment.ContinuousSoundLump
+				)
+
+			)
+		)
+		for i = 0 to cfg.WheelModules.Count - 1 do (
+			local wheelModule = cfg.WheelModules.Item[i]
+			case wheelModule.Type of (
+				(wheelModuleTypeClass.SkidMarks): (
+					cfgMod.SkidMarksImage = wheelModule.SkidMarkImage
+					cfgMod.OnlyTrails = wheelModule.OnlyTrails
+				)
+				(wheelModuleTypeClass.TyreParticles): (
+					cfgMod.TyreParticlesVFX = wheelModule.TyreParticleVFX
+				)
+				(wheelModuleTypeClass.SkidNoise): (
+					cfgMod.SkidNoises = wheelModule.SkidNoiseSound
+					cfgMod.ScrapeIndex = wheelModule.ScrapeSoundIndex
+					cfgMod.Volume = wheelModule.Volume
+					cfgMod.UseScrapeSounds = wheelModule.UseScrapeSounds
+				)
+			)
+		)
+
+		for i = 0 to cfg.HumanTrailer.Count - 1 do (
+			append cfgMod.HumanTrailers cfg.HumanTrailer.Item[i]
+		)
+		for i = 0 to cfg.AITrailer.Count - 1 do (
+			append cfgMod.AITrailers cfg.AITrailer.Item[i]
+		)
+		for i = 0 to cfg.MPTrailer.Count - 1 do (
+			append cfgMod.MPTrailers cfg.MPTrailer.Item[i]
+		)
+	)
+)
+fn LoadVehicleConfigOld obj folderName =
 (
 	format "Loading vehicle congif\n"
+
+
 	f = undefined
 	try 
 	(
@@ -3151,6 +3376,270 @@ fn LoadVehicleConfig obj folderName =
 	)
 )
 
+fn ImportVFXAnchors rootMesh filePath = (
+	luaFilename = filePath
+	if ((dotnetclass "System.IO.Path").GetFilename luaFilename) == "" then (
+		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vehicle_setup.lua"
+	)
+	
+	if ((dotnetclass "System.IO.File").Exists luaFilename) == false then (
+		luaFilename = (dotnetclass "System.IO.Path").ChangeExtension luaFilename ".lol"
+
+	)
+	if ((dotnetclass "System.IO.File").Exists luaFilename) then (
+		format "Loading vfx anvhors lua %\n" luaFilename
+		local f = stringstream (DecodeLOLFile luaFilename)
+		seek f #eof
+		endOfFile = filePos f
+		seek f 0
+		
+		do (
+			if (skipToString f "id = \"") != undefined then (
+				anchorGroup = VFXAnchorGroupData GroupName:(readDelimitedString f "\"")
+				skipToString f "{"
+				local curLine = ""
+				local prevLine = ""
+				anchorData = VFXAnchorData()
+				do (
+					local lineStart = filePos f
+					prevLine = curLine
+					curLine = ReadNonBlankLine f
+					splitLine = filterstring curLine " ="
+					if splitline.count == 2 then (
+						case splitLine[1] of (
+							"id": (
+								seek f lineStart
+								skipToString f "\""
+								anchorData.AnchorID = readDelimitedString f "\""
+								skipToNextLine f
+							)
+							"lump_name": (
+								seek f lineStart
+								skipToString f "\""
+								anchorData.LumpName = readDelimitedString f "\""
+								skipToNextLine f
+							)
+							"offset": (
+								local splitValue = filterstring splitLine[2] "{, }"
+								anchorData.offset = ConvertFromCRSpace [splitValue[1] as float, splitValue[2] as float, splitValue[3] as float]
+							)
+							"angle": (
+								local splitValue = filterstring splitLine[2] "{, }"
+								anchorData.rotation = ConvertFromCRSpace [splitValue[1] as float, splitValue[2] as float, splitValue[3] as float]
+							)
+							"scale": (
+								local splitValue = filterstring splitLine[2] "{, }"
+								anchorData.scale = ConvertFromCRSpace [splitValue[1] as float, splitValue[2] as float, splitValue[3] as float]
+							)
+						)
+					)
+					else if curLine[1] == "}" then (
+						--append anchorGroup.anchors anchorData
+						
+						local anchorNode = GetDescendantByName rootMesh anchorData.LumpName
+						vfxMod = AddVFXAnchor anchorNode groupname:anchorGroup.GroupName anchorid:anchorData.AnchorID offset:anchorData.offset rot:anchorData.rotation scale:anchorData.scale
+						anchorData = VFXAnchorData()
+						curLine = readnonblankline f
+					)
+				) while (filepos f) != endOfFile and curLine[1] != "}"
+
+			)
+		) while (filePos f) != endOfFile 
+	)
+)
+
+fn LoadVehicleSetupLua obj filePath = (
+	luaFilename = filePath
+	if ((dotnetclass "System.IO.Path").GetFilename luaFilename) == "" then (
+		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vehicle_setup.lua"
+	)
+	
+	local luaMod = GetVehicleSetupLUAModifier obj
+	if ((dotnetclass "System.IO.File").Exists luaFilename) == false then (
+		luaFilename = (dotnetclass "System.IO.Path").ChangeExtension luaFilename ".lol"
+
+	)
+	if ((dotnetclass "System.IO.File").Exists luaFilename) then (
+		format "Loading vehicle setup lua %\n" luaFilename
+		local f = stringstream (DecodeLOLFile luaFilename)
+		seek f #eof
+		endOfFile = filePos f
+		seek f 0
+		while (filePos f) != endOfFile do
+		(
+			local lineStart = filepos f
+			local line = readLine f
+			if line != undefined and line != "" then (
+				local splitLine = filterstring line " ="
+
+				case tolower splitLine[1] of (
+					"camera_distance":  luaMod.camera_distance = splitLine[2] as float
+					"camera_extra_tilt_angle":  luaMod.camera_extra_tilt_angle = splitLine[2] as float
+					"default":  luaMod.default = splitLine[2] == "true"
+					"dev":  luaMod.dev = splitLine[2] == "true"
+					"cop":  luaMod.cop = splitLine[2] == "true"
+					"eagle":  luaMod.eagle = splitLine[2] == "true"
+					"tier":  luaMod.tier = splitLine[2] as integer
+					"progress":  luaMod.progress = splitLine[2] as integer
+					"shipped":  luaMod.shipped = splitLine[2] == "true"
+					"leaderboard_id":  luaMod.leaderboard_id = splitLine[2] as integer
+					"unlock_node":  luaMod.unlock_node = splitLine[2] as integer
+					"class_rounded":  luaMod.class_rounded = splitLine[2] == "true"
+					"class_speedy":  luaMod.class_speedy = splitLine[2] == "true"
+					"class_smashy":  luaMod.class_smashy = splitLine[2] == "true"
+					"barred_from_easy_on_ramp":  luaMod.barred_from_easy_on_ramp = splitLine[2] == "true"
+					"hawk":  luaMod.hawk = splitLine[2] == "true"
+					"suppressor":  luaMod.suppressor = splitLine[2] == "true"
+					"product_id":  luaMod.product_id = splitLine[2] as integer
+					"consider_in_stats":  luaMod.consider_in_stats = splitLine[2] == "true"
+					"override_vehicle_name": (
+						seek f lineStart
+						skipToString f "="
+						luaMod.override_vehicle_name = (substituteString (ReadQuotedString f) "\\\"" "\"")
+					)
+					"override_driver_name":(
+						seek f lineStart
+						skipToString f "="
+						 luaMod.override_driver_name = (substituteString (ReadQuotedString f) "\\\"" "\"")
+					)
+					"override_bio": (
+						seek f lineStart
+						skipToString f "="
+						luaMod.override_bio = (substituteString (ReadQuotedString f) "\\\"" "\"")
+					)
+					"hud_damage_levels": (
+						seek f lineStart
+						skipToString f "{"
+						local values = filterstring (readDelimitedString f "}") " ,\n\r\t"
+						for val in values do (
+							append luaMod.hud_damage_levels (val as float)
+						)
+						if (filePos f) < endOfFile then
+							skipToNextLine f
+					)
+				)
+			)
+		)
+	)
+)
+fn LoadHandlingSetupLua obj filePath = (
+	luaFilename = filePath
+	if ((dotnetclass "System.IO.Path").GetFilename luaFilename) == "" then (
+		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vehicle_setup.lua"
+	)
+	
+	local luaMod = GetHandlingSetupLUAModifier obj
+	if ((dotnetclass "System.IO.File").Exists luaFilename) == false then (
+		luaFilename = (dotnetclass "System.IO.Path").ChangeExtension luaFilename ".lol"
+
+	)
+	if ((dotnetclass "System.IO.File").Exists luaFilename) then (
+		format "Loading handling setup lua %\n" luaFilename
+		local f = stringstream (DecodeLOLFile luaFilename)
+		seek f #eof
+		endOfFile = filePos f
+		seek f 0
+		while (filePos f) != endOfFile do
+		(
+			local lineStart = filepos f
+			local line = readLine f
+			if line != undefined and line != "" then (
+				local splitLine = filterstring line "()"
+				case tolower splitLine[1] of (
+					"car:setcollisioneffect": (
+						local splitValue = filterstring splitline[2] ","
+						seek f lineStart
+						skipToString f "\""
+						luaMod.CollisionEffect_Name = readDelimitedString f "\""
+						luaMod.CollisionEffect_Strength = splitValue[2] as float
+						skipToNextLine f
+					)
+					"car:setpowermultiplier": luaMod.PowerMultiplier = splitLine[2] as float
+					"car:settractionfactor": luaMod.TractionFactor = splitLine[2] as float
+					"car:setfinaldrive": luaMod.FinalDrive = splitLine[2] as float
+					"car:setreargrip": luaMod.RearGrip = splitLine[2] as float
+					"car:setfrontgrip": luaMod.FrontGrip = splitLine[2] as float
+					"car:setcmposy": luaMod.CMPosY = splitLine[2] as float
+					"car:setcmposz": luaMod.CMPosZ = splitLine[2] as float
+					"car:setfrontdownforce": luaMod.FrontDownforce = splitLine[2] as float
+					"car:setreardownforce": luaMod.RearDownforce = splitLine[2] as float
+					"car:setfrontroll": luaMod.FrontRoll = splitLine[2] as float
+					"car:setrearroll": luaMod.RearRoll = splitLine[2] as float
+					"car:setfrontcriticalangle": luaMod.FrontCriticalAngle = splitLine[2] as float
+					"car:setrearcriticalangle": luaMod.RearCriticalAngle = splitLine[2] as float
+					"car:setfrontsuspgive": luaMod.FrontSuspGive = splitLine[2] as float
+					"car:setrearsuspgive": luaMod.RearSuspGive = splitLine[2] as float
+					"car:setsuspdamping": luaMod.SuspDamping = splitLine[2] as float
+					"car:setsuspensionrollfactor": luaMod.SuspensionRollFactor = splitLine[2] as float
+					"car:setsuspensionpitchfactor": luaMod.SuspensionPitchFactor = splitLine[2] as float
+					"car:setmomentofinertiamultiplier": luaMod.MomentOfInertiaMultiplier = splitLine[2] as float
+					"car:steerspeed1": luaMod.SteerSpeed1 = splitLine[2] as float
+					"car:steerspeed2": luaMod.SteerSpeed2 = splitLine[2] as float
+					"car:steerspeedvel": luaMod.SteerSpeedVel = splitLine[2] as float
+					"car:steercentremultiplier": luaMod.SteerCentreMultiplier = splitLine[2] as float
+					"car:maxsteeringangle": luaMod.MaxSteeringAngle = splitLine[2] as float
+					"car:brakebalance": luaMod.BrakeBalance = splitLine[2] as float
+					"car:brakeforce": luaMod.BrakeForce = splitLine[2] as float
+					"car:handbrakestrength": luaMod.HandBrakeStrength = splitLine[2] as float
+					"car:torquesplit": luaMod.TorqueSplit = splitLine[2] as float
+					"car:lsdthresholdf": luaMod.LSDThresholdF = splitLine[2] as float
+					"car:lsdthresholdr": luaMod.LSDThresholdR = splitLine[2] as float
+					"car:lsdthresholdm": luaMod.LSDThresholdM = splitLine[2] as float
+					"car:reversepowermulitplier": luaMod.ReversePowerMulitplier = splitLine[2] as float
+					"car:wheelmass": luaMod.WheelMass = splitLine[2] as float
+					"car:dragcoefficient": luaMod.DragCoefficient = splitLine[2] as float
+					"car:steerlimit1": luaMod.SteerLimit1 = splitLine[2] as float
+					"car:steerlimit2": luaMod.SteerLimit2 = splitLine[2] as float
+					"car:steerlimitspeed": luaMod.SteerLimitSpeed = splitLine[2] as float
+					"car:castorspeed1": luaMod.CastorSpeed1 = splitLine[2] as float
+					"car:CastorSpeed2": luaMod.CastorSpeed2 = splitLine[2] as float
+					"car:castorspeedvel": luaMod.CastorSpeedVel = splitLine[2] as float
+					"car:steergyroscope": luaMod.SteerGyroscope = splitLine[2] as float
+					"car:brakeattack": luaMod.BrakeAttack = splitLine[2] as float
+					"car:handbrakeattack": luaMod.HandBrakeAttack = splitLine[2] as float
+					"car:slidespinrecovery": luaMod.SlideSpinRecovery = splitLine[2] as float
+					"car:rollingresistance": luaMod.RollingResistance = splitLine[2] as float
+					"car:drivemi": luaMod.DriveMI = splitLine[2] as float
+					"car:enginemi": luaMod.EngineMI = splitLine[2] as float
+					"car:redline": luaMod.RedLine = splitLine[2] as float
+					"car:maxrevs": luaMod.MaxRevs = splitLine[2] as float
+					"car:limitrevs": luaMod.LimitRevs = splitLine[2] as float
+					"car:constantenginefriction": luaMod.ConstantEngineFriction = splitLine[2] as float
+					"car:linearenginefriction": luaMod.LinearEngineFriction = splitLine[2] as float
+					"car:quadraticenginefriction": luaMod.QuadraticEngineFriction = splitLine[2] as float
+					"car:constantdrivefriction": luaMod.ConstantDriveFriction = splitLine[2] as float
+					"car:lineardrivefriction": luaMod.LinearDriveFriction = splitLine[2] as float
+					"car:quadraticdrivefriction": luaMod.QuadraticDriveFriction = splitLine[2] as float
+					"car:enginebrakedelay": luaMod.EngineBrakeDelay = splitLine[2] as float
+					"car:enginebrakeattack": luaMod.EngineBrakeAttack = splitLine[2] as float
+					"car:clutchdelay": luaMod.ClutchDelay = splitLine[2] as float
+					"car:mass": luaMod.Mass = splitLine[2] as float
+					"car:numgears": luaMod.NumGears = splitLine[2] as integer
+					"car:stabilitygripchange": luaMod.StabilityGripChange = splitLine[2] as float
+					"car:stabilitythreshold": luaMod.StabilityThreshold = splitLine[2] as float
+					"car:gearratios": (
+						local splitValue = filterstring splitLine[2] ", "
+						for i = luaMod.GearRatios.Count to 1 by -1 do (
+							deleteItem luaMod.GearRatios i
+						)
+						for i = 1 to splitValue.Count do (
+							append luaMod.GearRatios splitValue[i]
+						)
+					)
+					"car:torquecurve": (
+						local splitValue = filterstring splitLine[2] ", "
+						for i = luaMod.TorqueCurve.Count to 1 by -1 do (
+							deleteItem luaMod.TorqueCurve i
+						)
+						for i = 1 to splitValue.Count do (
+							append luaMod.TorqueCurve splitValue[i]
+						)
+					)
+				)
+			)
+		)
+	)
+)
 fn ParseSetupLOL lolFileName =
 (
 	lolscript = DecodeLOLFile lolFileName

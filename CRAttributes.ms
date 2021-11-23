@@ -1546,7 +1546,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 		fn SetupReplacementsList replacementString = (
 			lv_Replacement.Items.clear()
 			replacements = filterstring replacementString ";"
-			for repalacement in replacements do (
+			for replacement in replacements do (
 				splitReplacement = filterstring replacement ":"
 				lvItem = dotnetobject "listviewitem" splitReplacement[1]
 				lvItem.subitems.add splitReplacement[2]

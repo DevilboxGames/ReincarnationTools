@@ -8,7 +8,7 @@ fn InvLerp a b v = (
 	t = va / ba
 	t
 )
-fn AddCustomModifier obj modifierName csutattrib allowMultiple:false = (
+fn AddCustomModifier obj modifierName custattrib allowMultiple:false = (
 
 	accessoryModifier = obj.modifiers[modifierName]
 	if accessoryModifier == undefined or allowMultiplier then (
@@ -718,6 +718,14 @@ fn BatchCarStructuresButton_Pressed sender arg =
 *** IMPORT EXPORT HELPERS
 ********************************************/
 
+fn ReadQuotedString f = (
+	skipToString f "\""
+	local str = readDelimitedString f "\""
+	while str[str.count] == "\\" do (
+		str = str + "\"" + readDelimitedString f "\""
+	)
+	str
+)
 fn ReadNonBlankLine f = (
 	if not eof f then (
 	curline = trimLeft (trimRight (readline f))

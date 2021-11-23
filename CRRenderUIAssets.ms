@@ -112,7 +112,7 @@ fn RenderTopViewMobile file outputsize:[720,360] carRoot: = (
 	delete lit
 	delete ground
 )
-fn RenderThreeQuarterView file outputsize:[240,240] carRoot: = (
+fn RenderThreeQuarterView file outputsize:[240,240] selfIllum:100.0 carRoot: = (
 	StopNullNodesRendering()
 	makeDir (getFilenamePath file)
 
@@ -143,12 +143,12 @@ fn RenderThreeQuarterView file outputsize:[240,240] carRoot: = (
 		if classof obj.mat == multimaterial then (
 			for i =1 to obj.material.material.count do (
 				diffusebmp = obj.material.material[i].diffusemap
-				obj.material.material[i].selfillumination = 100.0
+				obj.material.material[i].selfillumination = selfIllum
 			)
 		)
 		else if classof obj.mat == standardmaterial then (
 			diffusebmp = obj.material.diffusemap
-			obj.material.selfillumination = 100.0
+			obj.material.selfillumination = selfIllum
 		)
 	)
 	render camera:cam outputsize:outputsize outputfile:file vfb:off

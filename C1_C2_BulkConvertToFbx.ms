@@ -123,3 +123,45 @@ fn ConvertAllC1Cars exportFolder = (
 	)
 	format "converted % cars with % errors\n%\n" numConverted numErrors (errors as string)
 )
+
+
+fn RenderAllC2Cars saveFolder = (
+	carFolders = getDirectories "G:\\VanillaC2\\Data\\CARS\\*"
+	numCars = carFolders.count
+	errors= StringStream ""
+	numErrors = 0
+	numConverted = 0
+	i = 1
+	renderSize = [2560,2560]
+	while i <= numCars do (
+		carFolder = carFolders[i]
+		carName = GetFolderName carFolder
+		if (getfiles (carFolder+"\\"+carName+".dat")).count != 0 then (
+			
+		--	try (
+				carRoot = LoadC2Dat (C2DataFolder+CarsFolder+carName+"\\"+carName+".dat") &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true imp_hier:true imp_group:true imp_act:true prefix:"" imp_scale69:true
+				RenderThreeQuarterView (saveFolder+"C2\\"+carname+".png") outputsize:renderSize carroot:carRoot
+				numConverted = numConverted + 1
+		--	)
+		/*	catch (
+				numErrors = numErrors + 1
+				format "Failed to convert %\n" carname to:errors
+				KeepMaxAlive()
+				CompleteRedraw()
+			)
+		*/	select objects
+			if $ != undefined then
+			(
+				delete $
+			)
+			resetMaxFile #noprompt
+		)
+		i = i + 1
+
+		if i > 100 then (
+			numCars = 0
+		)
+
+	)
+	format "converted % cars with % errors\n%\n" numConverted numErrors (errors as string)
+)

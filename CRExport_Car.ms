@@ -875,7 +875,17 @@ fn ExportSystemsDamageXML xmlfilename carRoot = (
 	)
 )
 
-fn ExportCarVehicleCFG filename cfgMod = (
+fn ExportCarVehicleCFG filename obj = (
+
+	local cfgMod
+
+	if classof obj == EmptyModifier then (
+		cfgMod = obj
+	)
+	else (
+		cfgMod = GetVehilceCFGModifier obj
+	)
+
 	cfg = dotNetObject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupConfig"
 
 	cfg.AIScript = cfgMod.AIScript
@@ -904,7 +914,8 @@ fn ExportCarVehicleCFG filename cfgMod = (
 		matMap.Shrapnel.z = cfgMod.ShrapneColours[i].z
 		replacements = filterstring cfgMod.MatReplacements[i] ";"
 		for replacement in replacements do (
-			matMap.Substitutions.Add replacement[1] replacement[2]
+			splitReplacement = filterstring replacement[i] ";"
+			matMap.Substitutions.Add splitReplacement[1] splitReplacement[2]
 		)
 		cfg.MaterialMaps.Add(matMap)
 	)
@@ -926,6 +937,7 @@ fn ExportCarVehicleCFG filename cfgMod = (
 		wheelEntries.D9 = cfgMod.D9WheelFolderNames[i]
 		wheelEntries.D10 = cfgMod.D10WheelFolderNames[i]
 		wheelEntries.D11 = cfgMod.D11WheelFolderNames[i]
+		wheelEntries.GarageSet = cfgMod.GarageSetFolderNames[i]
 		wheelMap.Wheels = wheelEntries
 		cfg.WheelMaps.Add(wheelMap)
 	)
@@ -1046,7 +1058,16 @@ fn ExportCarVehicleCFG filename cfgMod = (
 
 	cfg.Save filename
 )
-fn ExportCarSetupLUA filename setupMod = (
+fn ExportCarSetupLUA filename obj = (
+	local setupMod
+
+	if classof obj == EmptyModifier then (
+		setupMod = obj
+	)
+	else (
+		setupMod = GetHandlingSetupLUAModifier obj
+	)
+
 	setupFile = dotnetobject "ToxicRagers.CarmageddonReincarnation.Formats.Setup" 
 	setupFile.Settings = dotNetObject "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupCode"
 
@@ -1191,7 +1212,15 @@ setupFile.Settings.SetParameterForMethod "StabilityThreshold" "Value" 0.5
  */
 	setupFile.Save filename
 )
-fn ExportCarVehicleSetupLUA filename luaMod = (
+fn ExportCarVehicleSetupLUA filename obj = (
+	local luaMod
+
+	if classof obj == EmptyModifier then (
+		luaMod = obj
+	)
+	else (
+		luaMod = GetVehicleSetupLUAModifier obj
+	)
 	lua = stringstream ""
 	format "module( ... )\n\n" to:lua
 	format "camera_distance = %\n" luaMod.camera_distance to:lua

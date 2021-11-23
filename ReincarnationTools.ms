@@ -1,3 +1,4 @@
+fileIn "CRToolsSettings.ms"
 fileIn "CRFormHelpers.ms"
 fileIn "CRRollouts.ms"
 
@@ -29,6 +30,7 @@ fileIn "CRImport.ms"
 fileIn "CRImport_Car.ms"
 fileIn "CRImport_Level.ms"
 fileIn "CRImport_Peds.ms"
+fileIn "CRImportRBA.ms"
 
 filein "CRLights.ms"
 

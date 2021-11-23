@@ -105,9 +105,9 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 				--if CarmaSettings.TexturePath != "" then (dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX").Convert TDXFilename CarmaSettings.TexturePath
 				--ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
 				--ConvertTDX.Convert TDXFilename convesionPath false 5 CarmaSettings.MaxResolution
-				TDXClass = dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.TDX"
+				TDXClass = dotNetClass "ToxicRagers.Stainless.Formats.TDX"
 				TDXFile = TDXClass.Load TDXFilename
-				texBitmp = TDXFile.Decompress 0 false
+				texBitmp = TDXFile.GetBitmap 0
 				texBitmp.Save (convesionPath+"\\"+textureName+".png")
 				--format "TDX result is %\n" tdxresult
 				

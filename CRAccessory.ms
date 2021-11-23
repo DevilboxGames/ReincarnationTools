@@ -909,7 +909,7 @@ struct AccessoryBreakableReplacement
 		)
 	),
 	fn Write f =(
-		if Axis == undefined then
+		if Axis != undefined then
 			format "replace % %\n" Axis Replacement to:f
 		else
 			format "replace %\n" Replacement to:f
@@ -1011,9 +1011,16 @@ struct AccessoryDynamicsShapeBlock
 		)
 	),
 	fn Write f = (
-		format "%\n%\n" label shapes.count to:f
-		for i = 1 to shapes.count do (
-			shapes[i].Write f
+		if shapes.count < 1 then (
+
+			format "(no_shape)" to:f
+
+		)
+		else (
+			format "%\n%\n" label shapes.count to:f
+			for i = 1 to shapes.count do (
+				shapes[i].Write f
+			)
 		)
 	), 
 	fn CreateShape objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
@@ -1959,7 +1966,7 @@ AccessoryManagedAccessoryAttribute = attributes AccessoryManagedAccesoryCustAttr
 		)
 	)
 )
-AccessoryNoDataAttribute = attributes AccessorynodataCustAttrib attribid:#(0x64193b2,0xbc3e6a8e) version:1
+AccessoryNoDataAttribute = attributes AccessorynodataCustAttrib attribid:#(0x15ac8da4, 0x2f5d1054) version:1
 (
 	parameters main rollout:nodatarollout (
 	)
@@ -1967,7 +1974,7 @@ AccessoryNoDataAttribute = attributes AccessorynodataCustAttrib attribid:#(0x641
 		label lbl_nodata "No settings for this accessory!"
 	)
 )
-AccessoryangulardampedAttribute = attributes AccessoryangulardampedCustAttrib attribid:#(0x64193b2,0xbc3e6a8e) version:1
+AccessoryangulardampedAttribute = attributes AccessoryangulardampedCustAttrib attribid:#(0x632da2b9, 0x57efe039) version:1
 (
 	parameters main rollout:angulardampedrollout (
 		damping type:#float ui:spn_damping		--Float
@@ -1976,7 +1983,7 @@ AccessoryangulardampedAttribute = attributes AccessoryangulardampedCustAttrib at
 		spinner spn_damping "Damping" type:#float range:[0,1000000,0]
 	)
 )
-AccessoryRotatingAccessoryAttribute = attributes AccessoryRotatingAccessoryCustAttrib attribid:#(0x64193b2,0xbc3e6a8e) version:1
+AccessoryRotatingAccessoryAttribute = attributes AccessoryRotatingAccessoryCustAttrib attribid:#(0x4831d80a, 0x1c838d36) version:1
 (
 	parameters main rollout:rotatingaccessoryrollout (
 		speed type:#float ui:spn_speed		--Float
@@ -1985,7 +1992,7 @@ AccessoryRotatingAccessoryAttribute = attributes AccessoryRotatingAccessoryCustA
 		spinner spn_speed "Speed" type:#float range:[0,1000000,0]
 	)
 )
-AccessoryPowerUpAccessoryAttribute = attributes AccessoryPowerUpAccessoryCustAttrib attribid:#(0x64193b2,0xbc3e6a8e) version:1
+AccessoryPowerUpAccessoryAttribute = attributes AccessoryPowerUpAccessoryCustAttrib attribid:#(0x719ca767, 0x10b66bfb) version:1
 (
 	parameters main rollout:powerupaccessoryrollout (
 		powerup_type type:#string ui:txt_type		--String
@@ -2030,6 +2037,8 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 	parameters main rollout:standardaccessoryrollout (
 
 		CollisionAudioEvent type:#string ui:txt_collisionaudioevent				--string
+		CollisionAudioEventHeavy type:#string ui:txt_collisionaudioeventheavy	--string
+		CollisionAudioHeavyImpactMagnitude type:#float ui:spn_collisionaudioheavyimpactmagnitude			--string
 		CollisionAudioMinTime type:#float ui:spn_collisionaudiomintime			--string
 		CollisionAudioLump type:#string ui:txt_collisionaudiolump				--string
 		CollisionAudioEventScrape type:#string ui:txt_collisionaudioeventscrape	--string
@@ -2042,6 +2051,7 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 		force_target type:#boolean ui:chk_force_target						--bool
 		disable_pinball type:#boolean ui:chk_disable_pinball					--bool
 		vehicle_vfx type:#boolean ui:chk_vehicle_vfx						--bool
+		weapon type:#string ui:txt_weapon				--string
 		AccessoryAudio_Sound1 type:#string ui:txt_AccessoryAudio_Sound1				--String
 		AccessoryAudio_Sound2 type:#string ui:txt_AccessoryAudio_Sound2				--String
 		AccessoryAudio_Type type:#string ui:txt_AccessoryAudio_Type					--String
@@ -2053,9 +2063,11 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 	rollout standardaccessoryrollout "Standard Accessory Data" (
 		group "Collision Audio" (
 			edittext txt_collisionaudioevent "Event" labelOnTop:true
+			edittext txt_collisionaudioeventheavy "Heavy Event" labelOnTop:true
 			edittext txt_collisionaudioeventscrape "Scrape Event" labelOnTop:true
 			edittext txt_collisionaudiolump "Lump Name"
 			spinner spn_collisionaudiomintime "Min Time" type:#float range:[0,10000,0]
+			spinner spn_collisionaudioheavyimpactmagnitude "Heavy Impact Magnitude" type:#float range:[0,10000,0]
 		)
 
 		group "Damage Magnifier" (
@@ -2078,6 +2090,7 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 			checkbox chk_force_target "Always Target"
 			checkbox chk_disable_pinball "Disable Pinball"
 			checkbox chk_vehicle_vfx "Vehicle VFX"
+			edittext txt_weapon "Weapon"
 			spinner spn_recovery_exclusion_radius "Recovery Exclusion Radius" type:#float range:[0,1000,0]
 			spinner spn_special_flags "Recovery Exclusion Radius" type:#integer range:[0,1,0]
 		)
@@ -2086,6 +2099,7 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 AccessoryBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#(0x43628563, 0x36485726) version:1
 (
 	parameters main rollout:mainbreakablerollout (
+		Type type:#string ui:txt_type
 		break_impulse type:#float default:100 ui:spn_break_impulse
 		replace type:#string ui:txt_replace
 		directional_replacements type:#stringtab tabsizevariable:true
@@ -2094,15 +2108,20 @@ AccessoryBreakableAttribute = attributes AccessoryBreakableCustAttrib attribid:#
 		trigger_particles type:#boolean default:false ui:chk_trigger_particles
 		collision_with_world_will_break_me type:#boolean default:true ui:chk_collision_with_world_will_break_me
 		sound type:#string ui:txt_sound
-		random_rotation type:#point3 
+		random_rotation_min type:#float ui:spn_random_rotation_min
+		random_rotation_max type:#float ui:spn_random_rotation_max
 		detach_children type:#boolean ui:chk_detach_children
 		destroy_children type:#boolean ui:chk_destroy_children
 	)
 	
 
 	rollout mainbreakablerollout "Breakable" (
+		edittext txt_type "Type"
 		spinner spn_break_impulse "Break Impulse" type:#float
 		spinner spn_explode_force "Explode Force" type:#float
+		label lbl_random_rotation "Random Rotation"
+		spinner spn_random_rotation_min "Min" type:#float
+		spinner spn_random_rotation_max "Max" type:#float
 		edittext txt_sound "Sound"
 		checkbox chk_trigger_particles "Trigger Particles"
 		checkbox chk_collision_with_world_will_break_me "Break on world collisions" 
@@ -2199,7 +2218,8 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 		ignore_group type:#boolean default:false ui:chk_ignore_group
 		group type:#intTab tabsizevariable:true
 		buoyant type:#boolean default:false; ui:chk_buoyant
-		buoyancy_relative_to_com type:#point3 default:[0,0,0]
+		buoyancy type:#point3 default:[0,0,0];
+		buoyancy_relative_to_com type:#boolean default:false
 		sphere_rolling_resistance type:#float default:0 ui:spn_sphere_rolling_resistance
 		substance type:#integer default:0 ui:spn_substance
 		linear_acceleration type:#point3
@@ -2227,10 +2247,9 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			checkbox chk_inf_mi "Infinite MI" across:2
 			checkbox chk_drivable_on "Drivable On" across:2
 			checkbox chk_stop_sinking_into_ground "Dont Sink In Ground" across:2
-			checkbox chk_buoyant "Buoyant" across:2
 			checkbox chk_ignore_gravity "Ignore Gravity" across:2
 			checkbox chk_ignore_world "Ignore World" across:2
-			checkbox chk_ignore_group "Ignore Group" across:2
+			checkbox chk_ignore_group "Ignore Group"
 		)
 
 		group "Properties" (
@@ -2244,6 +2263,7 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			spinner spn_sphere_rolling_resistance "Sphere Rolling Resistance" type:#float range:[0,1000000,0]
 			button btn_SelectCentreOfMassHelper "Select CoM Helper"
 
+			checkbox chk_buoyant "Buoyancy"
 			spinner spn_BuoyancyX "X" width:110 type:#float range:[0,100000,0]
 			spinner spn_BuoyancyY "Y" width:110 type:#float range:[0,100000,0]
 			spinner spn_BuoyancyZ "Z" width:110 type:#float range:[0,100000,0]
@@ -2375,7 +2395,13 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 		)
 		on mainacessorydynamicsrollout open do (
 			UpdateCoMButtonLabel()
+			spn_MomentsX.value = Moments.X
+			spn_MomentsY.value = Moments.Y
+			spn_MomentsZ.value = Moments.Z
 
+			spn_BuoyancyX.value = Buoyancy.X
+			spn_BuoyancyY.value = Buoyancy.Y
+			spn_BuoyancyZ.value = Buoyancy.Z
 			lv_shapes.view  = (dotnetclass "view").details
 			lv_shapes.fullrowselect= true
 			lv_shapes.gridlines = true
@@ -2519,81 +2545,391 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 
 	)
 )
-
-fn AddAccessoryCheckpointAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Checkpoint Accessory Data" AccessoryCheckpointAttribute
+fn ApplyStandardData dataMod data = (
+	if CollisionAudioEvent != undefined then 
+			dataMod.CollisionAudioEvent = data.CollisionAudioEvent
+	if CollisionAudioEventHeavy != undefined then 
+			dataMod.CollisionAudioEventHeavy = data.CollisionAudioEventHeavy
+	if CollisionAudioMinTime != undefined then 
+			dataMod.CollisionAudioMinTime = data.CollisionAudioMinTime
+	if CollisionAudioHeavyImpactMagnitude != undefined then 
+			dataMod.CollisionAudioHeavyImpactMagnitude = data.CollisionAudioHeavyImpactMagnitude
+	if CollisionAudioLump != undefined then 
+			dataMod.CollisionAudioLump = data.CollisionAudioLump
+	if CollisionAudioEventScrape != undefined then 
+			dataMod.CollisionAudioEventScrape = data.CollisionAudioEventScrape
+	if damage_magnifier != undefined then 
+			dataMod.damage_magnifier = data.damage_magnifier
+	if damage_magnifier_X != undefined then 
+			dataMod.damage_magnifier_X = data.damage_magnifier_X
+	if damage_magnifier_Y != undefined then 
+			dataMod.damage_magnifier_Y = data.damage_magnifier_Y
+	if damage_magnifier_Z != undefined then 
+			dataMod.damage_magnifier_Z = data.damage_magnifier_Z
+	if speed_sensitive_damage_magnifier != undefined then 
+			dataMod.speed_sensitive_damage_magnifier = data.speed_sensitive_damage_magnifier
+	if dont_target != undefined then 
+			dataMod.dont_target = data.dont_target
+	if disable_pinball != undefined then 
+			dataMod.disable_pinball = data.disable_pinball
+	if vehicle_vfx != undefined then 
+			dataMod.vehicle_vfx = data.vehicle_vfx
+	if weapon != undefined then 
+			dataMod.weapon = data.weapon
+	if AccessoryAudio_Sound1 != undefined then 
+			dataMod.AccessoryAudio_Sound1 = data.AccessoryAudio_Sound1
+	if AccessoryAudio_Sound2 != undefined then 
+			dataMod.AccessoryAudio_Sound2 = data.AccessoryAudio_Sound2
+	if AccessoryAudio_Type != undefined then 
+			dataMod.AccessoryAudio_Type = data.AccessoryAudio_Type
+	if AccessoryAudio_LumpName != undefined then 
+			dataMod.AccessoryAudio_LumpName = data.AccessoryAudio_LumpName
+	if force_target != undefined then 
+			dataMod.force_target = data.force_target
+	if recovery_exclusion_radius != undefined then 
+			dataMod.recovery_exclusion_radius = data.recovery_exclusion_radius
+	if special_flags != undefined then 
+			dataMod.special_flags = data.special_flags
+)
+fn AddAccessoryCheckpointAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Checkpoint Accessory Data" AccessoryCheckpointAttribute
 	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
 
-fn AddAccessoryManagedAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Managed Accessory Data" AccessoryManagedAccessoryAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
+	if data != unsupplied then (
+		if data.radius != undefined then 
+			accessoryModifier.radius = data.radius
+		if data.top != undefined then 
+			accessoryModifier.top = data.top
+		if data.bottom != undefined then 
+			accessoryModifier.bottom = data.bottom
+		if data.left != undefined then 
+			accessoryModifier.left = data.left
+		if data.right != undefined then 
+			accessoryModifier.right = data.right
+		if data.deactivated != undefined then 
+			accessoryModifier.deactivated = data.deactivated
+		if data.next != undefined then 
+			accessoryModifier.next = data.next
 
-fn AddAccessoryAngularDampedAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Angular Damped Accessory Data" AccessoryangulardampedAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
-
-fn AddAccessoryRotatingAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Rotating Accessory Data" AccessoryRotatingAccessoryAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
-
-fn AddAccessoryPowerupAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Powerup Accessory Data" AccessoryPowerUpAccessoryAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
-
-fn AddAccessoryAnimatedAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Animated Accessory Data" AccessoryAnimatedAccessoryAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
-
-fn AddAccessoryRockingAppData obj = (
-	accessoryModifier = AddCustomModifier obj "Rocking Accessory Data" AccessoryAnimatedAccessoryAttribute
-	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
-)
-
-fn AddAccessoryExplodingAppData obj = (
-	AddCustomModifier obj "Exploding Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryBicycleAppData obj = (
-	AddCustomModifier obj "Bicycle Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryConveyorAppData obj = (
-	AddCustomModifier obj "Conveyor Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryCopSpawnAppData obj = (
-	AddCustomModifier obj "Cop Spawn Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryMultiplaterSpawnAppData obj = (
-	AddCustomModifier obj "Multiplayer Spawn Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryTrailerSpawnAppData obj = (
-	AddCustomModifier obj "Trailer Spawn Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryStartingGridAppData obj = (
-	AddCustomModifier obj "Starting Grid Accessory" AccessoryNoDataAttribute
-)
-fn AddAccessoryStandardAppData obj = (
-	AddCustomModifier obj "Standard Accessory Data" AccessoryStandardAccessoryAttribute
-)
-
-fn AddAccessoryDynamicsModifier obj = (
-
-	accessoryModifier = obj.modifiers["Accessory Dynamics"]
-	if accessoryModifier == undefined then (
-		max modify mode
-		accessoryModifier = emptyModifier()
-		
-		accessoryModifier.name = "Accessory Dynamics"
-		addModifier obj accessoryModifier
-		custattributes.add accessoryModifier AccessoryDynamicsAttribute baseObject:false
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
 	)
-	accessoryModifier
 )
-fn AddAccessoryBreakableModifier obj = (
+
+fn AddAccessoryManagedAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Managed Accessory Data" AccessoryManagedAccessoryAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+		if data.break_fuse != undefined then 
+			accessoryModifier.break_fuse = data.break_fuse
+		if data.management_policy != undefined then 
+			accessoryModifier.management_policy = data.management_policy
+		if data.trigger_particles != undefined then 
+			accessoryModifier.trigger_particles = data.trigger_particles
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryAngularDampedAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Angular Damped Accessory Data" AccessoryangulardampedAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+		if data.Damper != undefined then 
+			accessoryModifier.Damper = data.Damper
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryRotatingAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Rotating Accessory Data" AccessoryRotatingAccessoryAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+		if data.Speed != undefined then 
+			accessoryModifier.Speed = data.Speed
+
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryPowerupAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Powerup Accessory Data" AccessoryPowerUpAccessoryAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+	if data.type != undefined then 
+		accessoryModifier.type = data.type
+	if data.respawn_time != undefined then 
+		accessoryModifier.respawn_time = data.respawn_time
+	if data.simple_rotate != undefined then 
+		accessoryModifier.simple_rotate = data.simple_rotate
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryAnimatedAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Animated Accessory Data" AccessoryAnimatedAccessoryAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+		if data.anim != undefined then 
+			accessoryModifier.anim = data.anim
+		if data.looping != undefined then 
+			accessoryModifier.looping = data.looping
+		if data.hit_to_trigger != undefined then 
+			accessoryModifier.hit_to_trigger = data.hit_to_trigger
+		if data.time_offset != undefined then 
+			accessoryModifier.time_offset = data.time_offset
+		if data.max_acceleration != undefined then 
+			accessoryModifier.max_acceleration = data.max_acceleration
+		if data.max_angular_acceleration != undefined then 
+			accessoryModifier.max_angular_acceleration = data.max_angular_acceleration
+		if data.max_force != undefined then 
+			accessoryModifier.max_force = data.max_force
+		if data.max_force_linear != undefined then 
+			accessoryModifier.max_force_linear = data.max_force_linear
+		if data.break_factor != undefined then 
+			accessoryModifier.break_factor = data.break_factor
+		if data.stop_factor != undefined then 
+			accessoryModifier.stop_factor = data.stop_factor
+		if data.message_triggered != undefined then 
+			accessoryModifier.message_triggered = data.message_triggered
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryRockingAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Rocking Accessory Data" AccessoryAnimatedAccessoryAttribute
+	custattributes.add accessoryModifier AccessoryStandardAccessoryAttribute baseObject:false
+
+	if data != unsupplied then (
+
+		if data.anim != undefined then 
+			accessoryModifier.anim = data.anim
+		if data.looping != undefined then 
+			accessoryModifier.looping = data.looping
+		if data.hit_to_trigger != undefined then 
+			accessoryModifier.hit_to_trigger = data.hit_to_trigger
+		if data.time_offset != undefined then 
+			accessoryModifier.time_offset = data.time_offset
+		if data.max_acceleration != undefined then 
+			accessoryModifier.max_acceleration = data.max_acceleration
+		if data.max_angular_acceleration != undefined then 
+			accessoryModifier.max_angular_acceleration = data.max_angular_acceleration
+		if data.max_force != undefined then 
+			accessoryModifier.max_force = data.max_force
+		if data.max_force_linear != undefined then 
+			accessoryModifier.max_force_linear = data.max_force_linear
+		if data.break_factor != undefined then 
+			accessoryModifier.break_factor = data.break_factor
+		if data.stop_factor != undefined then 
+			accessoryModifier.stop_factor = data.stop_factor
+		if data.message_triggered != undefined then 
+			accessoryModifier.message_triggered = data.message_triggered
+		if data.StandardData != undefined then (
+			ApplyStandardData accessoryModifier data.StandardData
+		)
+	)
+)
+
+fn AddAccessoryExplodingAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Exploding Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryBicycleAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Bicycle Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryConveyorAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Conveyor Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryCopSpawnAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Cop Spawn Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryMultiplayerSpawnAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Multiplayer Spawn Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryTrailerSpawnAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Trailer Spawn Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryStartingGridAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Starting Grid Accessory" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+fn AddAccessoryStandardAppData obj data:unsupplied = (
+	local accessoryModifier = AddCustomModifier obj "Standard Accessory Data" AccessoryStandardAccessoryAttribute
+
+	if data != unsupplied then (
+		ApplyStandardData accessoryModifier data
+	)
+)
+
+fn AddAccessoryJoints obj joints = (
+
+)
+
+fn AddAccessoryShapes obj shapeData = (
+	local shapes = #()
+
+
+
+	local layerObject = LayerManager.getLayerFromName "Accessory Collision Shapes"
+	if layerObject == undefined then
+	(
+		layerObject= LayerManager.newLayerFromName  "Accessory Collision Shapes"
+	)
+
+	local shapeObj = undefined
+	local shapeNameBase = obj.name + "_Shape_"
+	local shapenum = 0
+	for curShape in shapeData.Shapes do (
+		shapeObj = undefined
+		case tolower curShape.Type of (
+			"sphere": (
+				shapeObj = sphere()
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = curShape.Points[1]
+				)
+				shapeObj.radius = curShape.radius
+			)
+			"alignedcuboid": (
+				local exMin = [amin curShape.points[1].x curShape.Points[2].x,amin curShape.points[1].y curShape.Points[2].y,amin curShape.points[1].z curShape.Points[2].z]
+				local exmax = [amax curShape.points[1].x curShape.Points[2].x,amax curShape.points[1].y curShape.Points[2].y,amax curShape.points[1].z curShape.Points[2].z]
+				local extents = exmax - exMin 
+				local pos = [exMin.x + extents.x * 0.5, exMin.y + extents.y * 0.5, exMin.z]
+				shapeObj = box width:extents.x length:extents.y height:extents.z
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = pos
+				)
+			)
+			"tictac": (
+				shapeObj = Capsule radius:curShape.radius
+				local capRadius = curShape.radius
+				local capStart = curShape.Points[1]
+				local capEnd = curShape.Points[2]
+				local capDir = normalize (capEnd - capStart)
+				local capHeight = (distance capStart capEnd) 
+				local capPos = capStart
+				shapeObj.height = capHeight
+				shapeObj.transform = matrixFromNormal capDir
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = capPos
+				)
+			)
+			"capsule": (
+				shapeObj = Capsule radius:curShape.radius
+				local capRadius = curShape.radius
+				local capStart = curShape.Points[1]
+				local capEnd = curShape.Points[2]
+				local capDir = normalize (capEnd - capStart)
+				local capHeight = (distance capStart capEnd)
+				local capPos = capStart
+				shapeObj.height = capHeight
+				shapeObj.transform = matrixFromNormal capDir
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = capPos
+				)
+			)
+			"polyhedron": (
+				local points = #()
+				for p in curShape.points do (
+					append points p.x
+					append points p.y
+					append points p.z
+				)
+				local msh = (nvpx.CreateConvexFromPoints Points curShape.Points.count 0)
+				update msh
+				shapeObj = editable_mesh()
+				setmesh shapeobj msh
+				update shapeObj
+
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = [0,0,0]
+				)
+			)
+			"roundedpolyhedron": (
+
+				local points = #()
+				for p in curShape.points do (
+					append points p.x
+					append points p.y
+					append points p.z
+				)
+				local msh = (nvpx.CreateConvexFromPoints Points curShape.Points.count 0)
+				update msh
+				shapeObj = editable_mesh()
+				setmesh shapeobj msh
+				update shapeObj
+
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = [0,0,0]
+				)
+
+				
+			)
+		)
+
+		shapeObj.name = shapeNameBase+(shapeNum as string)
+		shapeNum += 1
+		shapeMod = AddAccessoryShapeModifier shapeObj
+		shapeMod.CollisionType = curShape.type
+		if curShape.radius != undefined then
+			shapeMod.radius = curShape.radius
+		append obj.modifiers["Accessory Dynamics"].collisionshapes (NodeTransformMonitor node:shapeObj forwardTransformChangeMsgs:false)
+		layerObject.addnode shapeObj
+	)
+)
+fn AddAccessoryBreakableModifier obj data:unsupplied = (
 
 	accessoryModifier = obj.modifiers["Accessory Breakable"]
 	if accessoryModifier == undefined then (
@@ -2603,6 +2939,164 @@ fn AddAccessoryBreakableModifier obj = (
 		accessoryModifier.name = "Accessory Breakable"
 		addModifier obj accessoryModifier
 		custattributes.add accessoryModifier AccessoryBreakableAttribute baseObject:false
+	)
+	if data != unsupplied then (
+		if data.Type != undefined then 
+			accessoryModifier.Type = data.Type
+		if data.break_impulse != undefined then 
+			accessoryModifier.break_impulse = data.break_impulse
+
+		if data.explode_force != undefined then 
+			accessoryModifier.explode_force = data.explode_force
+		if data.trigger_particles != undefined then 
+			accessoryModifier.trigger_particles = data.trigger_particles
+		if data.sound != undefined then 
+			accessoryModifier.sound = data.sound
+		if data.random_rotation != undefined then (
+			accessoryModifier.random_rotation_min = data.random_rotation.x
+			accessoryModifier.random_rotation_max = data.random_rotation.y
+		)
+		if data.detach_children != undefined then 
+			accessoryModifier.detach_children = data.detach_children
+		if data.destroy_children != undefined then 
+			accessoryModifier.destroy_children = data.destroy_children	
+		for replacement in data.replacements do (
+			if replacement.Axis == undefined then accessoryModifier.replace = replacement.Replacement
+			else (
+				append accessoryModifier.directional_replacements_direction replacement.Axis
+				append accessoryModifier.directional_replacements replacement.Replacement
+
+			)
+		)
+	)
+	accessoryModifier
+)
+
+fn AddAccessoryDynamicsModifier obj data:unsupplied = (
+
+	accessoryModifier = obj.modifiers["Accessory Dynamics"]
+	if accessoryModifier == undefined then (
+		max modify mode
+		accessoryModifier = emptyModifier()
+		
+		accessoryModifier.name = "Accessory Dynamics"
+		addModifier obj accessoryModifier
+		custattributes.add accessoryModifier AccessoryDynamicsAttribute baseObject:false
+		newDummyPosition = obj.pos
+		newDummy = point name:(obj.name+"_CoMHelper") position:newDummyPosition
+		newDummy.size = 1
+		--newDummy.axistripod = true
+		newDummy.axistripod = true
+		newDummy.box = true
+		accessoryModifier.CentreOfMassHelper = NodeTransformMonitor node:newDummy forwardtransformchangemsgs:false
+
+	)
+	if data != unsupplied then (
+		if data.moments != undefined then
+			accessoryModifier.moments = data.moments
+
+		if data.mass != undefined then
+			accessoryModifier.mass = data.mass
+
+		if data.solid == true then
+			accessoryModifier.solid = true
+		else
+			accessoryModifier.solid = false
+
+		if data.inf_mi == true then
+			accessoryModifier.inf_mi = true
+		else
+			accessoryModifier.inf_mi = false
+
+		if  data.inf_mass == true then
+			accessoryModifier.inf_mass = true
+		else
+			accessoryModifier.inf_mass = false
+		
+		if data.drivable_on == true then
+			accessoryModifier.drivable_on = true
+		else
+			accessoryModifier.drivable_on = false
+
+		if  data.part_of_world == true then
+			accessoryModifier.part_of_world = true
+		else
+			accessoryModifier.part_of_world = false
+
+		if data.stop_sinking_into_ground == true then
+			accessoryModifier.stop_sinking_into_ground = true
+		else
+			accessoryModifier.stop_sinking_into_ground = false
+		
+		if data.ignore_gravity == true then
+			accessoryModifier.ignore_gravity = true
+		else
+			accessoryModifier.ignore_gravity = false
+
+		if data.ignore_world == true then
+			accessoryModifier.ignore_world = true
+		else
+			accessoryModifier.ignore_world = false
+
+		if data.groupIndex != undefined then
+			accessoryModifier.groupIndex = data.groupIndex
+
+		if data.ignore_group != undefined then (
+			for ignoreGroup in data.ignore_group do (
+				append accessoryModifier.ignore_group ignoreGroup
+
+			)
+		)
+
+		if data.buoyant == true then
+		(
+			accessoryModifier.buoyant = true
+			if data.buoyancy != undefined then 
+				accessoryModifier.buoyancy = data.buoyancy
+		)
+		else
+			accessoryModifier.buoyant = false
+
+		if data.buoyancy != undefined then
+			accessoryModifier.buoyancy = data.buoyancy
+
+		if data.buoyancy_position != undefined then	
+			accessoryModifier.buoyancy_position = data.buoyancy_position
+
+		if data.buoyancy_relative_to_com == true then
+			accessoryModifier.buoyancy_relative_to_com = true
+		else 
+			accessoryModifier.buoyancy_relative_to_com = false
+
+		if data.sphere_rolling_resistance != undefined then
+			accessoryModifier.sphere_rolling_resistance = data.sphere_rolling_resistance
+
+		if data.substance != undefined then
+			accessoryModifier.substance = data.substance
+
+		if data.linear_acceleration != undefined then
+			accessoryModifier.linear_acceleration = data.linear_acceleration
+
+		if data.angular_acceleration != undefined then
+			accessoryModifier.angular_acceleration = data.angular_acceleration
+
+		if data.centre_of_mass != undefined then (
+			in coordsys obj (
+				accessoryModifier.CentreOfMassHelper.node.pos = data.centre_of_mass
+			)
+		)
+
+		if data.Shape != undefined then (
+			AddAccessoryShapes obj data.Shape
+		)
+		if data.Joints != undefined then (
+			for joint in data.Joints do (
+				AddAccessoryJoints obj joint
+			)
+		)
+		if data.Breakable != undefined then (
+			AddAccessoryBreakableModifier obj data:data.Breakable
+		)
 	)
 	accessoryModifier
 )
@@ -2618,4 +3112,70 @@ fn AddAccessoryTXTModifier obj = (
 		custattributes.add accessoryModifier AccessoryTXTAttribute baseObject:false
 	)
 	accessoryModifier
+)
+
+fn ImportAccessoryTXT file obj = (
+	local accessoryData = AccessoryFileLump()
+	accessoryData.Read file
+
+	for customBlock in accessoryData.CustomBlocks do (
+		case (tolower customBlock.Type) of (
+			"angulardampedaccessory": (
+				AddAccessoryAngularDampedAppData obj data:customblock.CustomData
+			)
+			"rigidbodyanimation": (
+				CustomData = AddAccessoryAnimatedAppData obj data:customblock.CustomData
+			)
+			"checkpoint": (
+				CustomData = AddAccessoryCheckpointAppData obj data:customblock.CustomData
+			)
+			"rotatingaccessory": (
+				CustomData = AddAccessoryRotatingAppData obj data:customblock.CustomData
+			)
+			"managedaccessory": (
+				CustomData = AddAccessoryManagedAppData obj data:customblock.CustomData
+			)
+			"powerup": (
+				CustomData = AddAccessoryPowerupAppData obj data:customblock.CustomData
+			)
+			"standardaccessory": (
+				CustomData = AddAccessoryStandardAppData obj data:customblock.CustomData
+			)
+			"conveyoraccessory": (
+				CustomData = AddAccessoryStandardAppData obj data:customblock.CustomData
+			)
+			"copspawn": (
+				CustomData = AddAccessoryCopSpawnAppData obj data:customblock.CustomData
+			)
+			"startinggrid": (
+				CustomData = AddAccessoryStartingGridAppData obj data:customblock.CustomData
+			)
+			"multiplayerspawn": (
+				CustomData = AddAccessoryMultiplayerSpawnAppData obj data:customblock.CustomData
+			)
+			"trailerspawn": (
+				CustomData = AddAccessoryTrailerSpawnAppData obj data:customblock.CustomData
+			)
+			"explodingaccessory": (
+				CustomData = AddAccessoryExplodingAppData obj data:customblock.CustomData
+			)
+			"bicycle": (
+				CustomData = AddAccessoryBicycleAppData obj data:customblock.CustomData
+			)
+			"rockingaccessory": (
+				CustomData = AddAccessoryRockingAppData obj data:customblock.CustomData
+			)
+			default: format "Unknown custom accessory type in %:\n\t\t%\n" f curLine
+		)
+		accMod = AddAccessoryTXTModifier obj
+	)
+	for dynamicsblock in accessoryData.DynamicsBlocks do (
+		local dynamicsObj = obj
+		if (tolower dynamicsObj.name) != (toLower dynamicsblock.lump_name) then (
+			dynamicsObj = GetDescendantByName obj dynamicsblock.lump_name
+		)
+
+		local dynamicsMod = AddAccessoryDynamicsModifier dynamicsObj data:dynamicsblock
+	)
+	accessoryData
 )

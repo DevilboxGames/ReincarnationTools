@@ -1,5 +1,4 @@
 leafindex = 0
-struct CRSettings (GamePath, DataCorePath, AllowSeperateDataCore, SetupForUE4, ConvertTexturesInPlace, TexturePath, GibbedTools, LOLDecoder, MaxResolution,MaxResolutionID)
 
 struct AdjacentTriangle (ref, tri)
 struct AdjacentEdge (refa, refb, face)
@@ -27,6 +26,8 @@ struct NewCNTNode (nameLength, nodeName, isA12CNT, unknownFloat, parentNode, tra
 format "Defining MTL Structs - ca is %\n" mtlmat_ca
 struct MTLLayer
 (
+	Version_Minor,	 -- byte
+	Version_Major,	 -- byte
 	MapNameLength,	--Int32
 	MapName,			-- string padded to 4byte alignment
 	BlendMode,			--Uint33
@@ -43,19 +44,33 @@ struct MTLLayer
 	LayerFlags,			--UInt8
 	fn Save f = 
 	(
+		if MapName == undefined then MapName = ""
 		if MapName.count != MapNameLength then MapNameLength = MapName.count
-			
-		writelong f MapNameLength
-		if MapNameLength > 0 then
-		(
-			paddingLength = 3 - (bit.and (MapNameLength - 1) 3)
-			
-			writestring f MapName
-			fseek f -1 #seek_cur
-			for i=1 to paddingLength do
+
+		if Version_Minor == 0 and Version_Major == 5 then (
+			writelong f MapNameLength
+			if MapNameLength > 0 then
 			(
-				writeByte f 0
+				paddingLength = 3 - (bit.and (MapNameLength - 1) 3)
+				
+				writestring f MapName
+				fseek f -1 #seek_cur
+				for i=1 to paddingLength do
+				(
+					writeByte f 0
+				)
 			)
+		)
+		else if Version_Minor == 7 and Version_Major == 4 then (
+
+				paddingLength = 32 - MapName.Count 
+				
+				writestring f MapName
+				fseek f -1 #seek_cur
+				for i=1 to paddingLength do
+				(
+					writeByte f 0
+				)
 		)
 				writelong f BlendMode #unsigned
 		writefloat f AlphaOpacity
@@ -105,19 +120,38 @@ struct MTLLayer
 	),
 	fn Load f =
 	(
-		MapNameLength = readlong f
-		if MapNameLength > 0 then
-		(
-			paddingLength = 3 - (bit.and (MapNameLength - 1) 3)
-			MapName = ""
-			for i = 1 to MapNameLength do
+
+		if Version_Major == 5 and Version_Minor == 0 then (
+			MapNameLength = readlong f
+
+			if MapNameLength > 0 then
 			(
-				str0 = ReadByte f #unsigned
-				if str0!=0xFD AND str0!=0xFC do MapName+= bit.intAsChar str0
+				paddingLength = 3 - (bit.and (MapNameLength - 1) 3)
+				MapName = ""
+				for i = 1 to MapNameLength do
+				(
+					str0 = ReadByte f #unsigned
+					if str0!=0xFD AND str0!=0xFC do MapName+= bit.intAsChar str0
+				)
+				for i=1 to paddingLength do
+				(
+					ReadByte f
+				)
 			)
-			for i=1 to paddingLength do
+
+		)
+		else if Version_Minor == 7 and Version_Major == 4 then (
+			MapNameLength = 32
+			if MapNameLength > 0 then
 			(
-				ReadByte f
+				MapName = ""
+				local hitEndOfString = false
+				for i = 1 to MapNameLength do
+				(
+					str0 = ReadByte f #unsigned
+					if str0 ==0 then hitEndOfString = true
+					if str0!=0xFD AND str0!=0xFC and hitEndOfString != false do MapName+= bit.intAsChar str0
+				)
 			)
 		)
 		BlendMode = readlong f #unsigned
@@ -137,7 +171,8 @@ struct MTLLayer
 )
 
 struct MTLFile (
-	Version,				--UInt16
+	Version_Minor,				--byte
+	Version_Major,				--byte
 	NumLayers,			--UInt32
 	Layers,				--MTLLayer[]
 	PhysSubstance,			--Int32
@@ -162,7 +197,8 @@ struct MTLFile (
 	AppFlags,			--UInt32
 	on create do (
 
-		version	=	1280
+		version_minor	=	0
+		version_major	=	5
 		numLayers	=	1
 		layer = MTLLayer()
 			Layer.MapNameLength	=	8
@@ -203,7 +239,8 @@ struct MTLFile (
 	fn Save filename = 
 	(
 		f = fopen filename "wb"
-		writeshort f Version #unsigned
+		writebyte f Version_Minor #unsigned
+		writebyte f Version_Major #unsigned
 		writelong f NumLayers #unsigned
 		
 		for i=1 to NumLayers do (
@@ -331,11 +368,14 @@ struct MTLFile (
 	fn Load filename = (
 		f = fopen filename "r"
 		
-		Version = readshort f #unsigned
+		Version_Minor = ReadByte f #unsigned
+		Version_Major = ReadByte f #unsigned
 		NumLayers = readlong f #unsigned
 		Layers = #()
 		for i=1 to NumLayers do (
 			layer = MTLLayer()
+			layer.Version_Minor = Version_Minor
+			layer.Version_Major = Version_Major
 			layer.Load f
 			append Layers layer
 		)

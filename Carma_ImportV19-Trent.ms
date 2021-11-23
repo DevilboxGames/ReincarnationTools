@@ -813,6 +813,7 @@ fn LoadMATFile mln &progressValue imageExtension:".tif"=
 			
 			m = standard()
 			m.diffuse = mrgb
+			m.twoSided = true
 			m.ambient = (color (mal*255) (mal*255) (mal*255))
 			m.specular = (color (msl*255) (msl*255) (msl*255))
 			m.specularLevel = msp

@@ -49,6 +49,11 @@ fn AddVFXAnchor obj groupname:"Exhaust" anchorid:undefined offset:[0,0,0] rot:[0
 	structPartModifier
 )
 
+fn GetVFXAnchor obj  groupname:"Exhaust" anchorid:undefined offset:[0,0,0] rot:[0,0,0] scale:[0,0,0] =
+(
+	if obj.modifiers["VFX Anchor"] != undefined then obj.modifiers["VFX Anchor"]
+	else AddVFXAnchor GroupName:GroupName anchorid:anchorid offset:offset rot:rot scale:scale
+)
 fn AddStandardDamageUnits obj = 
 (
 	units = #("bodywork", "transmission", "steering", "fl_wheel", "fr_wheel", "rl_wheel", "rr_wheel")
@@ -68,7 +73,13 @@ fn AddHandlingSetupLUAModifier obj =
 	structPartModifier
 )
 
-fn AddVehilceSetupLUAModifier obj =
+fn GetHandlingSetupLUAModifier obj =
+(
+	if obj.modifiers["setup.lua"] != undefined then obj.modifiers["setup.lua"]
+	else AddHandlingSetupLUAModifier obj
+)
+
+fn AddVehicleSetupLUAModifier obj =
 (
 	max modify mode
 	structPartModifier = emptyModifier()
@@ -77,6 +88,12 @@ fn AddVehilceSetupLUAModifier obj =
 	addModifier obj structPartModifier
 	custattributes.add structPartModifier VehicleSetupLUAAttribute baseObject:false
 	structPartModifier
+)
+
+fn GetVehicleSetupLUAModifier obj =
+(
+	if obj.modifiers["vehicle_setup.lua"] != undefined then obj.modifiers["vehicle_setup.lua"]
+	else AddVehicleSetupLUAModifier obj
 )
 fn AddVehilceCFGModifier obj =
 (
@@ -87,6 +104,11 @@ fn AddVehilceCFGModifier obj =
 	addModifier obj structPartModifier
 	custattributes.add structPartModifier VehicleSetupCFGAttribute baseObject:false
 	structPartModifier
+)
+fn GetVehilceCFGModifier obj =
+(
+	if obj.modifiers["vehicle_setup.cfg"] != undefined then obj.modifiers["vehicle_setup.cfg"]
+	else AddVehilceCFGModifier obj
 )
 
 fn AddStructureAxleModifer obj =

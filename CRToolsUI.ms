@@ -99,44 +99,46 @@ fn SetupTabs form labels:#() Layout:undefined =
 	form.Controls.Add tabs
 	tabs
 )
-
+fileIn "CRToolsNewUI.ms"
 fileIn "CRToolsUI_ImportTabs.ms"
 fileIn "CRToolsUI_ExportTabs.ms"
 fileIn "CRToolsUI_Tools.ms"
-fn LoadFunsizeLaunchSettings currentScriptFolder = (
+fn LoadFunsizeLaunchSettings iniPath = (
 
-	global FunsizeLaunchInfo
-
+	global FunsizeLaunchInfo, CarmaSettings
+	
+	FunsizeLaunchInfo = CarmaSettings.FunsizeSettings
+	/*
 	if FunsizeLaunchInfo == undefined then (
 		FunsizeLaunchInfo = FunsizePackAndLaunchDetails()
 	)
-	if hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" then (
-		FunsizeLaunchInfo.ADB = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ADB"
-		FunsizeLaunchInfo.DeviceIP = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "DeviceIP"
-		FunsizeLaunchInfo.GibbedPacker = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "GibbedPacker"
-		FunsizeLaunchInfo.ObbPacker = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ObbPacker"
-		FunsizeLaunchInfo.WorkingFolder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "WorkingFolder"
+	if hasINISetting iniPath "Funsize" then (
+		FunsizeLaunchInfo.ADB = getINISetting iniPath "Funsize" "ADB"
+		FunsizeLaunchInfo.DeviceIP = getINISetting iniPath "Funsize" "DeviceIP"
+		FunsizeLaunchInfo.GibbedPacker = getINISetting iniPath "Funsize" "GibbedPacker"
+		FunsizeLaunchInfo.ObbPacker = getINISetting iniPath "Funsize" "ObbPacker"
+		FunsizeLaunchInfo.WorkingFolder = getINISetting iniPath "Funsize" "WorkingFolder"
 		if FunsizeLaunchInfo.WorkingFolder[FunsizeLaunchInfo.WorkingFolder.Count] != "\\" then FunsizeLaunchInfo.WorkingFolder = FunsizeLaunchInfo.WorkingFolder +"\\"
 
-		FunsizeLaunchInfo.DataFolder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "DataFolder"
+		FunsizeLaunchInfo.DataFolder = getINISetting iniPath "Funsize" "DataFolder"
 		if FunsizeLaunchInfo.DataFolder[FunsizeLaunchInfo.DataFolder.Count] != "\\" then FunsizeLaunchInfo.DataFolder = FunsizeLaunchInfo.DataFolder +"\\"
 		
-		FunsizeLaunchInfo.ObbName = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "ObbName"
-		FunsizeLaunchInfo.WadName = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "WadName"
+		FunsizeLaunchInfo.ObbName = getINISetting iniPath "Funsize" "ObbName"
+		FunsizeLaunchInfo.WadName = getINISetting iniPath "Funsize" "WadName"
 
-		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoLaunchGame") == "true" then (
+		if (getINISetting iniPath "Funsize" "AutoLaunchGame") == "true" then (
 			FunsizeLaunchInfo.AutoLaunchGame = true
 		)
 		else (
 			FunsizeLaunchInfo.AutoLaunchGame = false
 		)
-		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoDeployObb") == "true" then (
+		if (getINISetting iniPath "Funsize" "AutoDeployObb") == "true" then (
 			FunsizeLaunchInfo.AutoDeployObb = true
 		)
 		else (
 			FunsizeLaunchInfo.AutoDeployObb = false
 		)
-		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Funsize" "AutoBuild") == "true" then (
+		if (getINISetting iniPath "Funsize" "AutoBuild") == "true" then (
 			FunsizeLaunchInfo.AutoBuild = true
 		)
 		else (
@@ -158,6 +160,7 @@ fn LoadFunsizeLaunchSettings currentScriptFolder = (
 		FunsizeLaunchInfo.AutoBuild = false
 		
 	)
+	*/
 )
 fn ToolsStartup = 
 (
@@ -166,7 +169,8 @@ fn ToolsStartup =
 		currentScriptFolder = getFilenamePath currentScriptFileName
 
 		global CarmaSettings = CRSettings()
-
+		CarmaSettings.Load (currentScriptFolder+"CarmaReincarnationToolsSettings.ini")
+		/*
 		CarmaSettings.GamePath = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "GamePath"
 		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "AllowSeperateDataCore") == "true" then
 		(	
@@ -192,6 +196,49 @@ fn ToolsStartup =
 		CarmaSettings.LOLDecoder = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Paths" "LOLDecoder"
 		CarmaSettings.MaxResolution = getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Textures" "MaxResolution"
 		
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "UI" "UseNewUI") == "true" then
+			CarmaSettings.UseNewUI = true
+		else
+			CarmaSettings.UseNewUI = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "ImportTextures") == "true" then
+			CarmaSettings.ImportSettings.ImportTextures = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "ImportTextures") then
+			CarmaSettings.ImportSettings.ImportTextures = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "UserPrepData") == "true" then
+			CarmaSettings.ImportSettings.UsePrepData = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "UserPrepData") then
+			CarmaSettings.ImportSettings.UsePrepData = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "UseTriStrips") == "true" then
+			CarmaSettings.ImportSettings.UseTriStrips = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "UseTriStrips") then
+			CarmaSettings.ImportSettings.UseTriStrips = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "MergeSplits") == "true" then
+			CarmaSettings.ImportSettings.MergeSplits = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Import" "MergeSplits") then
+			CarmaSettings.ImportSettings.MergeSplits = false
+
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportTextures") == "true" then
+			CarmaSettings.ExportSettings.ExportTextures = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportTextures") then
+			CarmaSettings.ExportSettings.ExportTextures = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportMaterials") == "true" then
+			CarmaSettings.ExportSettings.ExportMaterials = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportMaterials") then
+			CarmaSettings.ExportSettings.ExportMaterials = false
+
+		if (getINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportMTL") == "true" then
+			CarmaSettings.ExportSettings.ExportMTL = true
+		else if (hasINISetting (currentScriptFolder+"CarmaReincarnationToolsSettings.ini") "Export" "ExportMTL") then
+			CarmaSettings.ExportSettings.ExportMTL = false
+	
+
+*/
 
 		LoadFunsizeLaunchSettings currentScriptFolder
 
@@ -263,39 +310,46 @@ fn CreateUI =
 (
 	global CRToolsUI
 	global CRToolsFloater
-	if CRToolsUI != undefined then
-	(
-		--CRToolsUI = undefined
-		--CRToolsUI.close()
-		--CRToolsUI.dispose()
-		--gc()
-	)
-	try(
-		if carma_reincarnation_dockfloater.dialogbar then cui.UnRegisterDialogBar carma_reincarnation_dockfloater
-	) catch()
-	destroydialog carma_reincarnation_dockfloater
-	CRToolsFloater = createDialog carma_reincarnation_dockfloater style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing)
-	cui.RegisterDialogBar carma_reincarnation_dockfloater style:#(#cui_floatable,#cui_dock_left,#cui_handles) minSize:[470,500] maxSize:[-1,-1]
-	--cui.DockDialogBar carma_reincarnation_dockfloater #cui_dock_left
-	--CRToolsUI	= dotNetObject "maxCustomControls.maxForm"
-	--CRToolsUI.Width = 405
-	--CRToolsUI.Height = 500
-	--CRToolsUI.Text = "Carmageddon Reincarnation Tools"
-	
-	maxHandlePointer=(Windows.GetMAXHWND())
-	sysPointer = DotNetObject "System.IntPtr" maxHandlePointer
-		
-	--maxHwnd = (dotnetclass "System.Windows.Forms.Control").fromHandle sysPointer --DotNetObject "MaxCustomControls.Win32HandleWrapper" sysPointer
-	--CRToolsUI.show(maxHwnd)
-		
-		tabs = SetupTabs CRToolsUI labels:#("Import", "Export", "Tools", "About") Layout:(DN_ControlLayout AnchorStyles:#("Left","Right","Top","Bottom") BackColor:(CRToolsUI.backColor.FromARGB 255  60 60 60) Height:500 Width:(CRToolsUI.Width))
-		--showProps tabs doClearListener:true
-	CR_SetupImportTab tabs.tabPages.Item[0]
-	CR_SetupExportTab tabs.tabPages.Item[1]
-	CR_SetupToolsTab tabs.tabPages.Item[2]
-			
 	ToolsStartup()
-			
+
+	global CarmaSettings
+	if CarmaSettings.UISettings.UseNewUI then (
+		CreateNewUI()
+	)
+	else (
+		if CRToolsUI != undefined then
+		(
+			--CRToolsUI = undefined
+			--CRToolsUI.close()
+			--CRToolsUI.dispose()
+			--gc()
+		)
+		try(
+			if carma_reincarnation_dockfloater.dialogbar then cui.UnRegisterDialogBar carma_reincarnation_dockfloater
+		) catch()
+		destroydialog carma_reincarnation_dockfloater
+		CRToolsFloater = createDialog carma_reincarnation_dockfloater style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing)
+		cui.RegisterDialogBar carma_reincarnation_dockfloater style:#(#cui_floatable,#cui_dock_left,#cui_handles) minSize:[470,500] maxSize:[-1,-1]
+		--cui.DockDialogBar carma_reincarnation_dockfloater #cui_dock_left
+		--CRToolsUI	= dotNetObject "maxCustomControls.maxForm"
+		--CRToolsUI.Width = 405
+		--CRToolsUI.Height = 500
+		--CRToolsUI.Text = "Carmageddon Reincarnation Tools"
 		
-	CRToolsUI
+		maxHandlePointer=(Windows.GetMAXHWND())
+		sysPointer = DotNetObject "System.IntPtr" maxHandlePointer
+			
+		--maxHwnd = (dotnetclass "System.Windows.Forms.Control").fromHandle sysPointer --DotNetObject "MaxCustomControls.Win32HandleWrapper" sysPointer
+		--CRToolsUI.show(maxHwnd)
+			
+			tabs = SetupTabs CRToolsUI labels:#("Import", "Export", "Tools", "About") Layout:(DN_ControlLayout AnchorStyles:#("Left","Right","Top","Bottom") BackColor:(CRToolsUI.backColor.FromARGB 255  60 60 60) Height:500 Width:(CRToolsUI.Width))
+			--showProps tabs doClearListener:true
+		CR_SetupImportTab tabs.tabPages.Item[0]
+		CR_SetupExportTab tabs.tabPages.Item[1]
+		CR_SetupToolsTab tabs.tabPages.Item[2]
+				
+				
+			
+		CRToolsUI
+	)
 )

@@ -228,6 +228,7 @@ fn ExportCarSystemsDamageClicked sender arg = (
 	(
 
 		file = GetSaveFileName caption:"Save SystemsDamage XML As" types:"SystemsDamage.XML (SystemsDamage.XML)|systemsdamage.xml"
+		
 	)
 
 )
@@ -353,5 +354,18 @@ fn ExportLevelPostProcessScriptsClicked sender arg = (
 \* ==================================== */
 
 fn ExportAccessoryClicked sender arg = (
+	if (selection as array).count == 0 then
+	(
+		messageBox "Please select the root object to export (e.g. the accessory root)" title:"No objects selected!"
+	)
+	else if (selection as array).count > 1 then
+	(
+		messageBox "Please select JUST the root object to export (e.g. the accessory base)" title:"Too many objects selected!"
+	)
+	else
+	(
 
+		file = GetSaveFileName filename:"accessory.txt" caption:"Save Accessory TXT As" types:"Accessory TXT (Accessory.TXT)|accessory.txt;accessory.txt"
+		ExportAccessoryTXT file selection[1]
+	)
 )

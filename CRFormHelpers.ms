@@ -84,3 +84,9 @@ fn SetClickHandler ctrl func =
 	dotNet.setLifetimeControl ctrl #dotnet
 	dotNet.addEventHandler ctrl "Click" func
 )
+fn SetChangeHandler ctrl func =
+(
+	
+	dotNet.setLifetimeControl ctrl #dotnet
+	dotNet.addEventHandler ctrl "Change" func
+)

@@ -313,7 +313,7 @@ fn CreateRBAObjects obj =
 				)
 				--format "\n"
 			)
-			else if crntRBAFrame.Rot1 != prevRBAFrame.Rot1 and crntRBAFrame.Rot1 != nextRBAFrame.Rot1 then
+			else -- if crntRBAFrame.Rot1 != prevRBAFrame.Rot1 and crntRBAFrame.Rot1 != nextRBAFrame.Rot1 then
 			(
 				lerpPos = slerp prevRBAFrame.Rot1 nextRBAFrame.Rot1 ( (crntRBAFrame.Time - prevRBAFrame.Time) / (nextRBAFrame.Time - prevRBAFrame.Time))
 				--format "%:\tRot1: % - LerpPos: %" i crntRBAFrame.Rot1 lerpPos
@@ -347,6 +347,7 @@ fn CreateRBAObjects obj =
 )
 fn ApplyRBA rbaobj suffix:""=
 (
+	animationrange = interval 0 ((rbaobj.animlength as integer) * frameRate)
 	for obj in rbaobj.rbaobjects do
 	(
 		node = getNodeByName2 (obj.name+suffix)
@@ -367,24 +368,44 @@ fn ApplyRBA rbaobj suffix:""=
 				firstFrame = false
 			)
 			firstFrame = true
+			local prevFrame = undefined
+			local q = undefined
 			for rotframe in obj.RotationalTrack.Frames do
 			(
-				q = rotframe.Rot1 --quat rotframe.V2.w rotframe.V2.z rotframe.V2.y rotframe.V2.x
-				frameTime = (rotframe.time * frameRate)
+				local prevQ = undefined
+				local q = rotframe.Rot1 --quat rotframe.V2.w rotframe.V2.z rotframe.V2.y rotframe.V2.x
+				local frameTime = (rotframe.time * frameRate)
+				local prevframeTime = undefined
 				--oldPos = node.pos
 				
 				
+					if firstFrame == false then (
+						prevQ = prevFrame.Rot1
+						prevframeTime = (prevFrame.time * frameRate)
+						at time (lerp prevFrameTime frameTime 0.5)
+						(
+							oldPosAnim = node.pos
+
+							in coordsys parent node.rotation = slerp prevQ q 0.5
+							
+							node.pos = oldPosAnim
+					 	)
+					)
 					--if firstFrame then node.rotation = q
 					at time frameTime
 					(
 						oldPosAnim = node.pos
+
+						
 						in coordsys parent node.rotation = q
+						
 						 node.pos = oldPosAnim
 				 	)
 				
 				--node.pos = oldPos
 				--node.rotation = q * node.parent.rotation 
 				firstFrame=false
+				prevFrame = rotFrame
 			)
 		)
 	)
@@ -486,7 +507,12 @@ fn ImportRBA file =
 	(
 		rba.RBAObjects[i].Name = readstring2 f 32
 		format "\t%: % (%)\n" i rba.RBAObjects[i].Name rba.RBAObjects[i].Name.count
-		
+		for posFrame in rba.RBAObjects[i].PositionalTrack.Frames do (
+			format "\t\t%: [%,%,%] - [%,%,%] - [%,%,%]\n" posFrame.Time posFrame.Pos1.x posFrame.Pos1.y posFrame.Pos1.z posFrame.Pos2.x posFrame.Pos2.y posFrame.Pos2.z posFrame.Pos3.x posFrame.Pos3.y posFrame.Pos3.z
+		)
+		for rotFrame in rba.RBAObjects[i].RotationalTrack.Frames do (
+			format "\t\t%: % - [%,%,%,%] - [%,%,%,%] - [%,%,%,%] - % - %\n" rotFrame.Time rotFrame.F rotFrame.Rot1.x rotFrame.Rot1.y rotFrame.Rot1.z rotFrame.Rot1.w rotFrame.Rot2.x rotFrame.Rot2.y rotFrame.Rot2.z rotFrame.Rot2.w rotFrame.Rot3.x rotFrame.Rot3.y rotFrame.Rot3.z rotFrame.Rot3.w rotFrame.F2 rotFrame.F3
+		)
 	)
 	fclose f
 	rba

@@ -11,7 +11,7 @@ fn InvLerp a b v = (
 fn AddCustomModifier obj modifierName custattrib allowMultiple:false = (
 
 	accessoryModifier = obj.modifiers[modifierName]
-	if accessoryModifier == undefined or allowMultiplier then (
+	if accessoryModifier == undefined or allowMultiple then (
 		max modify mode
 		accessoryModifier = emptyModifier()
 		
@@ -185,6 +185,14 @@ fn StringAsPoint3 str =
 	matches = rx.Match str
 	
 	 [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float, matches.Groups.Item[3].Value as float]
+)
+fn StringAsPoint2 str = 
+(
+	
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+)$"
+	matches = rx.Match str
+	
+	 [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float]
 )
 fn GetBonesFromSkin skinMod =
 (
@@ -728,9 +736,9 @@ fn ReadQuotedString f = (
 )
 fn ReadNonBlankLine f = (
 	if not eof f then (
-	curline = trimLeft (trimRight (readline f))
+	curline = trimRight (trimLeft (readline f))
 	while (curline == undefined or curline == "") and not eof f do
-		curline = trimLeft (trimRight (readline f))
+		curline = trimRight (trimLeft (readline f))
 	)
 	curline 
 ) 

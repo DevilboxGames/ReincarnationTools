@@ -18,39 +18,53 @@ struct AccessoryShape
 (
 	Type,
 	Points = #(),
+	Indices = #(),
 	Radius,
 	Part,
 	CollisionGroups,
 	fn Read f = (
 
 		Type = (ReadNonBlankLine f)
-		case Type of (
-			"Sphere": (
+		case tolower Type of (
+			"sphere": (
 				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				radius = (ReadNonBlankLine f) as float
 			)
-			"AlignedCuboid": (
+			"alignedcuboid": (
 				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 			)
-			"TicTac": (
-				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
-				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
-				radius = (ReadNonBlankLine f) as float
-			)
-			"Capsule": (
+			"tictac": (
 				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				radius = (ReadNonBlankLine f) as float
 			)
-			"Polyhedron": (
+			"capsule": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				radius = (ReadNonBlankLine f) as float
+			)
+			"polyhedron": (
 				numPoints = (ReadNonBlankLine f) as integer
 				for i = 1 to numPoints do 
 				(
 					append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
 				)
 			)
-			"RoundedPolyhedron": (
+			"wireframe": (
+				numPoints = (ReadNonBlankLine f) as integer
+				for i = 1 to numPoints do 
+				(
+					append points (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
+				)
+				numPoints = (ReadNonBlankLine f) as integer
+				for i = 1 to numPoints do 
+				(
+					append indices (StringAsPoint2 (ReadNonBlankLine f))
+				)
+
+			)
+			"roundedpolyhedron": (
 				radius = (ReadNonBlankLine f) as float
 				numPoints = (ReadNonBlankLine f) as integer
 				for i = 1 to numPoints do 
@@ -65,44 +79,55 @@ struct AccessoryShape
 			CollisionGroups = (ReadNonBlankLine f) as integer
 		) 
 		else (
+			format "\tread % from % to \n%" formCollisionsGroupsLabel curPos (filePos f)
 			seek f curPos
-			format "!!!!!!!WARNING: Expected \"form_collision_groups\" and got %. I DON'T KNOW WHAT TO DO!!!!!" formCollisionsGroupsLabel
+			format "!!!!!!!WARNING: Expected \"form_collision_groups\" and got %. I DON'T KNOW WHAT TO DO!!!!!\n" formCollisionsGroupsLabel
 		)
 	),
 	fn Write f = (
 			format "%\n" type to:f
-
-			if type == "Sphere" then
-			(
+		case type of (
+			"sphere": (
 				pos = ConvertToCRSpace points[1]
 				format "%,%,%\n" pos.x pos.y pos.z to:f
 				format "%\n" (radius as string) to:f
 			)
-			else if type == "AlignedCuboid" then
-			(
+			"alignedcuboid": (
 				pos1 = ConvertToCRSpace points[1]
 				pos2 = ConvertToCRSpace points[2]
-				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
-				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
+				format "%,%,%\n" (amin pos1.x pos2.x) (amin pos1.y pos2.y) (amin pos1.z pos2.z) to:f
+				format "%,%,%\n" (amax pos1.x pos2.x) (amax pos1.y pos2.y) (amax pos1.z pos2.z) to:f
 			)
-			else if type == "TicTac" then
-			(
-				pos1 = ConvertToCRSpace points[1]
-				pos2 = ConvertToCRSpace points[2]
-				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
-				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
-				format "%\n" (radius as string) to:f
-			)
-			else if type == "Capsule" then
-			(
+			"tictac": (
 				pos1 = ConvertToCRSpace points[1]
 				pos2 = ConvertToCRSpace points[2]
 				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
 				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
 				format "%\n" (radius as string) to:f
 			)
-			else if type == "Polyhedron" then
-			(
+			"capsule": (
+				pos1 = ConvertToCRSpace points[1]
+				pos2 = ConvertToCRSpace points[2]
+				format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				format "%,%,%\n" pos2.x pos2.y pos2.z to:f
+				format "%\n" (radius as string) to:f
+			)
+			"wireframe": (
+				format "%\n" (points.count as string) to:f
+				for v in points do
+				(
+					pos1 = ConvertToCRSpace v
+					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
+				)
+				format "%\n" (indices.count as string) to:f
+				for ind in indices do
+				(
+					local ind1 = ind.x as integer
+					local ind2 = ind.y as integer
+					format "%,%\n" ind1 ind2 to:f
+				)
+			)
+			"polyhedron": (
 				format "%\n" (points.count as string) to:f
 				for v in points do
 				(
@@ -110,8 +135,7 @@ struct AccessoryShape
 					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
 				)
 			)
-			else if type == "RoundedPolyhedron" then
-			(
+			"roundedpolyhedron": (
 				format "%\n" (radius as string) to:f
 				format "%\n" (points.count as string) to:f
 				for v in points do
@@ -120,7 +144,7 @@ struct AccessoryShape
 					format "%,%,%\n" pos1.x pos1.y pos1.z to:f
 				)
 			)
-			
+		)
 			format "\n\n" to:f
 			format "form_collision_groups\n%\n\n" CollisionGroups to:f
 	)
@@ -142,15 +166,15 @@ struct AccessoryJoint_Weakness (
 
 		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
-		strength = splitLine[1]
+		strength = splitLine[1] as float
 		if splitLine.count > 1 then (
-			twistStrength = splitLine[2]
+			twistStrength = splitLine[2] as float
 		)
 
 	),
 	fn Write f = (
 		format "%\n" type to:f
-		format "%,%,%\n" p3_Unknown to:f
+		format "%,%,%\n" p3_Unknown.x p3_Unknown.y p3_Unknown.z to:f
 		format "%" strength to:f
 		if twistStrength != undefined then (
 			format ",%" twistStrength to:f
@@ -183,11 +207,11 @@ struct AccessoryJoint_Constraint (
 
 		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
-		minDirection = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+		minDirection = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 		curLine = ReadNonBlankLine f
 		splitLine = filterstring curLine ", "
-		maxDirection = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+		maxDirection = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 		
 		curLine = ReadNonBlankLine f
 		f_Unknown2 = curLine as float
@@ -227,9 +251,9 @@ struct AccessoryJoint (
 									-- [0000] [0000] [0000] [0000]
 									-------------------------------------------
 	f_Unknown1,						-- float
-	position,						-- point3 - in accessory's local space
+	local_position,						-- point3 - in accessory's local space
+	parent_position,					-- point3
 	joint_normal,					-- point3
-	p3_Unknown1,					-- point3
 	p3_Unknown2,					-- point3
 	p3_Unknown3,					-- point3
 	p3_Unknown4,					-- point3
@@ -241,10 +265,12 @@ struct AccessoryJoint (
 	weakness1,		     			-- AccessoryJoint_Constraint
 	weakness2,		     			-- AccessoryJoint_Constraint
 	fn Read f = (
+		format "Reading joint at %\n" (filepos f)
 		local keepLooping = true
 		local curPos = filePos f
 		do (
 			curLine = tolower(ReadNonBlankLine f)
+			format "\tcurline at % to %: %\n" curPos (filepos f) curLine
 			if curLine == "<world_joint>" then type = "world_joint"
 			else if curLine == "<child_joint>" then type="child_joint"
 			else if curLine[1] == "[" or curLine[1] == "<" then (
@@ -253,44 +279,49 @@ struct AccessoryJoint (
 			)
 			else if curLine[1] != "[" and curLine[1] != "<" then (
 				label = curLine
-
+				local oldPos = filepos f
 				curLine = ReadNonBlankLine f
+			format "\tcurline at % to %: %\n" oldpos (filepos f) curLine
 				flags =  curLine as integer
 
+				local oldPos = filepos f
 				curLine = ReadNonBlankLine f
+			format "\tcurline at % to %: %\n" oldpos (filepos f) curLine
 				f_Unknown1 = curLine as float
+
+				local oldPos = filepos f
+				curLine = ReadNonBlankLine f
+			format "\tcurline at % to %: %\n" oldpos (filepos f) curLine
+				splitLine = filterstring curLine ", "
+				local_position = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				position = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				parent_position = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 				
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				joint_normal = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				joint_normal = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				p3_Unknown1 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				p3_Unknown2 = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				p3_Unknown2 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				p3_Unknown3 = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				p3_Unknown3 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				p3_Unknown4 = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				p3_Unknown4 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				p3_Unknown5 = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				splitLine = filterstring curLine ", "
-				p3_Unknown5 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
-
-				curLine = ReadNonBlankLine f
-				splitLine = filterstring curLine ", "
-				p3_Unknown6 = [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
+				p3_Unknown6 = ConvertFromCRSpace [splitLine[1] as float,splitLine[2] as float,splitLine[3] as float]
 
 				curLine = ReadNonBlankLine f
 				numConstraints =  curLine as integer
@@ -316,23 +347,36 @@ struct AccessoryJoint (
 		) while keepLooping
 	),
 	fn Write f = (
-		format "<%>\n" type to:f
+
+		local localPos = ConvertToCRSpace local_position
+		local parentPos = ConvertToCRSpace parent_position
+		local jointNormal = ConvertToCRSpace joint_normal
+		local u2 = ConvertToCRSpace p3_unknown2
+		local u3 = ConvertToCRSpace p3_unknown3
+		local u4 = ConvertToCRSpace p3_unknown4
+		local u5 = ConvertToCRSpace p3_unknown5
+		local u6 = ConvertToCRSpace p3_unknown6
+		format "\n<%>\n" type to:f
 		format "%\n" label to:f
 		format "%\n" flags to:f
 		format "%\n" f_Unknown1 to:f
-		format "%,%,%\n" position.x position.y position.z to:f
-		format "%,%,%\n" joint_normal.x joint_normal.y joint_normal.z to:f
-		format "%,%,%\n" p3_Unknown1.x p3_Unknown1.y p3_Unknown1.z to:f
-		format "%,%,%\n" p3_Unknown2.x p3_Unknown2.y p3_Unknown2.z to:f
-		format "%,%,%\n" p3_Unknown3.x p3_Unknown3.y p3_Unknown3.z to:f
-		format "%,%,%\n" p3_Unknown4.x p3_Unknown4.y p3_Unknown4.z to:f
-		format "%,%,%\n" p3_Unknown5.x p3_Unknown5.y p3_Unknown5.z to:f
+		format "%,%,%\n" localPos.x localPos.y localPos.z to:f
+		format "%,%,%\n" parentPos.x parentPos.y parentPos.z to:f
+		format "%,%,%\n" jointNormal.x jointNormal.y jointNormal.z to:f
+		format "%,%,%\n" u2.x u2.y u2.z to:f
+		format "%,%,%\n" u3.x u3.y u3.z to:f
+		format "%,%,%\n" u4.x u4.y u4.z to:f
+		format "%,%,%\n" u5.x u5.y u5.z to:f
+		format "%,%,%\n" u6.x u6.y u6.z to:f
+		
+		if numConstraints == undefined then numConstraints = 0
 		format "%\n" numConstraints to:f
+
 
 		for i=1 to numConstraints do (
 			constraint.Write f
 		)
-		if hasWeakness then (
+		if hasWeakness != undefined and hasWeakness then (
 			format "weakness\n" to:f
 			weakness1.Write f
 			weakness2.Write f
@@ -422,10 +466,10 @@ struct AccessoryType_StandardAppData (
 		if CollisionAudioEventHeavy != undefined then (
 			format "CollisionAudioEventHeavy %\n" CollisionAudioEventHeavy to:f
 		)
-		if CollisionAudioHeavyImpactMagnitude != undefined then (
+		if CollisionAudioHeavyImpactMagnitude != undefined and CollisionAudioHeavyImpactMagnitude != 0 then (
 			format "CollisionAudioHeavyImpactMagnitude %\n" CollisionAudioHeavyImpactMagnitude to:f
 		)
-		if CollisionAudioMinTime != undefined then (
+		if CollisionAudioMinTime != undefined  and CollisionAudioMinTime != 0 then (
 			format "CollisionAudioMinTime %\n" CollisionAudioMinTime to:f
 		)
 		if CollisionAudioLump != undefined then (
@@ -436,9 +480,6 @@ struct AccessoryType_StandardAppData (
 		)
 		if AccessoryAudio_Sound1 != undefined then (
 			format "AccessoryAudio % % % %\n"  AccessoryAudio_Sound1 AccessoryAudio_Sound2 AccessoryAudio_Type AccessoryAudio_LumpName to:f
-		)
-		if AccessoryAudio_Sound2 != undefined then (
-			format "AccessoryAudio_Sound2 %\n" AccessoryAudio_Sound2 to:f
 		)
 		if dont_target == true then (
 			format "dont_target\n" to:f
@@ -455,30 +496,31 @@ struct AccessoryType_StandardAppData (
 		if weapon == true then (
 			format "weapon\n" to:f
 		)
-		if damage_magnifier != undefined then (
+		if damage_magnifier != undefined and damage_magnifier != 1 then (
 			format "damage_magnifier %\n" damage_magnifier to:f
 		)
-		if damage_magnifier_X != undefined then (
+		if damage_magnifier_X != undefined and damage_magnifier_X != 1 then (
 			format "damage_magnifier_X %\n" damage_magnifier_X to:f
 		)
-		if damage_magnifier_Y != undefined then (
+		if damage_magnifier_Y != undefined and damage_magnifier_Y != 1 then (
 			format "damage_magnifier_Y %\n" damage_magnifier_Y to:f
 		)
-		if damage_magnifier_Z != undefined then (
+		if damage_magnifier_Z != undefined and damage_magnifier_Z != 1 then (
 			format "damage_magnifier_Z %\n" damage_magnifier_Z to:f
 		)
-		if speed_sensitive_damage_magnifier != undefined then (
+		if speed_sensitive_damage_magnifier != undefined and speed_sensitive_damage_magnifier != 1 then (
 			format "speed_sensitive_damage_magnifier %\n" speed_sensitive_damage_magnifier to:f
 		)
-		if recovery_exclusion_radius != undefined then (
+		if recovery_exclusion_radius != undefined and recovery_exclusion_radius != 0 then (
 			format "recovery_exclusion_radius %\n" recovery_exclusion_radius to:f
 		)
 		if message_triggered != undefined then (
 			format "message_triggered %\n" message_triggered to:f
 		)
-		if special_flags != undefined then (
+		if special_flags != undefined and special_flags != 0 then (
 			format "special_flags %\n" special_flags to:f
 		)
+		format "\n\n" to:f
 	)
 	
 )
@@ -513,7 +555,7 @@ struct AccessoryType_RotatingAccessory (
 	),
 	fn Write f = (
 		format "speed %\n" Speed to:f
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 )
 struct AccessoryType_AngularDampedAccessory (
@@ -546,7 +588,7 @@ struct AccessoryType_AngularDampedAccessory (
 	),
 	fn Write f = (
 		format "damper %\n" Damper to:f
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 )
 
@@ -614,7 +656,7 @@ struct AccessoryType_Checkpoint (
 		if next != undefined and next != "" then (
 			format "next %\n" next to:f
 		)
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 
 )
@@ -660,7 +702,7 @@ struct AccessoryType_ManagedAccessory (
 		if trigger_particles == true then (
 			format "trigger_particles\n" to:f
 		)
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 )
 
@@ -710,7 +752,7 @@ struct AccessoryType_Powerup (
 		if respawn_if_not_collected_by_human_player > 0 then (
 			format "respawn_if_not_collected_by_human_player %\n" respawn_if_not_collected_by_human_player to:f
 		)
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 )
 
@@ -792,7 +834,7 @@ struct AccessoryType_RigidBodyAnimation (
 		if message_triggered != undefined and message_triggered != "" then(
 			format "message_triggered %\n" message_triggered to:f
 		)
-		if StandardData != undefined then StandardData.Write()
+		if StandardData != undefined then StandardData.Write f
 	)
 )
 struct CustomAccessoryBlock
@@ -885,8 +927,8 @@ struct CustomAccessoryBlock
 	),
 	fn Write f = (
 		format "%\n" Type to:f
-		if Data != undefined then (
-			Data.Write f
+		if CustomData != undefined then (
+			CustomData.Write f
 		)
 	)
 )
@@ -927,6 +969,7 @@ struct AccessoryBreakableBlock
 	random_rotation,				--point2
 	detach_children,				--bool
 	destroy_children,				--bool
+	collision_with_world_will_break_me, --bool
 	fn Read f = (
 
 		Type = ReadNonBlankLine f
@@ -948,6 +991,7 @@ struct AccessoryBreakableBlock
 					"detach_children": detach_children = true
 					"destroy_children": destroy_children = true
 					"sound": sound = splitLine[2]
+					"collision_with_world_will_break_me": collision_with_world_will_break_me = (splitLine[2] as integer) != 0
 					"random_rotation": random_rotation = [splitLine[2] as float, splitLine[3] as float]
 					"replace": (
 						seek f curPos
@@ -972,6 +1016,8 @@ struct AccessoryBreakableBlock
 			format "detach_children\n" to:f
 		if destroy_children == true then
 			format "destroy_children\n" to:f
+		if collision_with_world_will_break_me == false then
+			format "collision_with_world_will_break_me 0\n" to:f
 		if sound != undefined then
 			format "sound %\n" sound to:f 
 		if random_rotation != undefined then
@@ -1004,6 +1050,7 @@ struct AccessoryDynamicsShapeBlock
 				curPos = filepos f
 				curLine = ReadNonBlankLine f
 				if curline == undefined or curline == "" or curLine[1] == "[" or curLine[1] == "<" then (
+					format "skipping to next block % (% to %)\n" curLine curPos (filepos f)
 					seek f curPos
 					keeplooping = false
 				)
@@ -1027,6 +1074,8 @@ struct AccessoryDynamicsShapeBlock
 	(
 		for obj in objects do
 		(
+			local shapeMod = obj.modifiers["Accessory Shape"]
+
 			oldVis = obj.isHidden
 			obj.isHidden = false
 			oldPos = obj.pos
@@ -1034,7 +1083,7 @@ struct AccessoryDynamicsShapeBlock
 				obj.pos = [0,0,0]
 			)
 			oldRot = obj.rotation
-			objType = classof obj
+			objType = classof obj.baseObject
 
 			isAxisAligned = (
 				normXAxis = normalize obj.Transform.row1
@@ -1082,6 +1131,102 @@ struct AccessoryDynamicsShapeBlock
 					appendifunique accShape.points pos
 				)
 			)
+			accShape.CollisionGroups = shapeMod.CollisionGroup
+			append Shapes accShape
+			obj.pos = oldPos
+			obj.rotation = oldRot
+			obj.isHidden = oldVis
+		)
+	), 
+	fn CreateShape2 objects moveToOrigin:false forcePolyhedron:false roundedPolyhedronAmount: =
+	(
+		for obj in objects do
+		(
+			local shapeMod = obj.modifiers["Accessory Shape"]
+
+			oldVis = obj.isHidden
+			obj.isHidden = false
+			oldPos = obj.pos
+			if moveToOrigin then (
+				obj.pos = [0,0,0]
+			)
+			oldRot = obj.rotation
+			objType = classof obj.baseObject
+
+			isAxisAligned = (
+				normXAxis = normalize obj.Transform.row1
+				normXAxis.x == 1 or normXAxis.y == 1 or normXAxis.z == 1
+			)
+			isScaled = obj.scale.x != 1 or obj.scale.y != 1 or obj.scale.z != 1
+			isUniformScaled = obj.scale.x == obj.scale.y and obj.scale.x == obj.scale.z
+			format "%\nisAxisAligned: %\nisScaled: %\nisUniformScaled: %\n" objType isAxisAligned isScaled isUniformScaled
+
+			case shapeMod.CollisionType of (
+				"Polyhedron": (
+					msh = snapshotasmesh obj
+					accShape = AccessoryShape Type:"Polyhedron"
+					
+					numShapeVerts = getNumVerts msh
+					for v=1 to numShapeVerts do
+					(
+						pos = getVert msh v
+						appendifunique accShape.points pos
+					)
+				)
+				"RoundedPolyhedron": (
+					msh = snapshotasmesh obj
+					accShape = AccessoryShape Type:"RoundedPolyhedron"
+					accShape.Radius = RoundedPolyhedronAmount
+					
+					numShapeVerts = getNumVerts msh
+					for v=1 to numShapeVerts do
+					(
+						pos = getVert msh v
+						appendifunique accShape.points pos
+					)
+				)
+				"TicTac": (
+					accShape = AccessoryShape Type:"TicTac"
+					ticTacRadius = obj.scale.x * obj.radius
+					ticTacHeight = obj.scale.x * obj.height
+					if (obj.heighttype == 0) then ticTacHeight = ticTacHeight - ticTacRadius
+					startPos = obj.position + obj.Transform.row3 * ticTacRadius
+					endPos = startPos + obj.Transform.row3 * ticTacHeight
+					append accShape.points startPos
+					append accShape.points endPos
+					accShape.radius = ticTacRadius
+				)
+				"Wireframe": (
+
+					accShape = AccessoryShape Type:"Wireframe"
+					
+					local numShapes = numSplines obj
+					for s=1 to numShapes do
+					(
+						local knotCount = numKnots obj s
+						for k = 1 to knotCount do (
+							p = getKnotPoint obj s k
+							append accShape.points p
+							if k > 1 then (
+								append accShape.indices [accShape.points.count - 1, accShape.points.count]
+							)
+						)
+					)
+				)
+				"AlignedCuboid": (
+					accShape = AccessoryShape Type:"AlignedCuboid"
+					append accShape.Points obj.min
+					append accShape.Points obj.max
+				)
+				"Sphere": (
+					accShape = AccessoryShape Type:"Sphere"
+					append accShape.Points obj.position
+					accShape.Radius = obj.radius * obj.scale.x
+				)
+
+			)
+			
+			accShape.CollisionGroups = shapeMod.CollisionGroup
 			append Shapes accShape
 			obj.pos = oldPos
 			obj.rotation = oldRot
@@ -1128,6 +1273,7 @@ struct AccessoryDynamicsBlock
 				keepLooping = false
 			)
 			else (
+
 				case tolower curLine of (
 					"<lump_name>": lump_name = ReadNonBlankLine f
 					"<centre_of_mass>": centre_of_mass = (ConvertFromCRSpace (StringAsPoint3 (ReadNonBlankLine f)))
@@ -1155,18 +1301,21 @@ struct AccessoryDynamicsBlock
 						if ignore_group == undefined then 
 							ignore_group = #()
 						
-						local keepLooping = true
+						local keepLooping2 = true
 						local curPos2 = filePos f
 						do (
+							curPos2 = filePos f
 							local groupId  = (ReadNonBlankLine f)
-							if(eof f  or groupdId == undefined or groupId[1] == "[" or groupId[1] == "<") then (
-								keepLooping = false
-								seek f curPos
+							if(eof f  or groupId == undefined or groupId[1] == "[" or groupId[1] == "<") then (
+								
+								keepLooping2 = false
+								seek f curPos2
 							)
 							else (
+								
 								append ignore_group (groupId as integer)
 							)
-						) while keepLooping
+						) while keepLooping2
 
 					)
 					"<substance>": sphere_rolling_resistance  = (ReadNonBlankLine f) as integer
@@ -1177,6 +1326,7 @@ struct AccessoryDynamicsBlock
 						append Joints joint 
 					)
 					"<world_joint>": (
+						format "read % at % to %\n" curLine curPos (filePos f)
 						seek f curPos
 						local joint = AccessoryJoint()
 						joint.Read f
@@ -1198,69 +1348,71 @@ struct AccessoryDynamicsBlock
 	),
 	fn Write f =(
 		if lump_name !=undefined then 
-			format "<lump_name>\n%\n" lump_name to:f
+			format "\n<lump_name>\n%\n" lump_name to:f
 		if centre_of_mass !=undefined then (
 			crSpaceCoM = ConvertToCRSpace centre_of_mass
-			format "<centre_of_mass>\n%,%,%\n" crSpaceCoM.x crSpaceCoM.y crSpaceCoM.z to:f
+			format "\n<centre_of_mass>\n%,%,%\n" crSpaceCoM.x crSpaceCoM.y crSpaceCoM.z to:f
 		)
 		if moments !=undefined then (
 			crSpaceMI = ConvertToCRSpace moments noflip:true
-			format "<moments>\n%,%,%\n" crSpaceMI.x crSpaceMI.y crSpaceMI.z to:f
+			format "\n<moments>\n%,%,%\n" crSpaceMI.x crSpaceMI.y crSpaceMI.z to:f
 		)
 		if linear_acceleration !=undefined then (
 			crSpacePoint3 = ConvertToCRSpace linear_acceleration
-			format "<linear_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
+			format "\n<linear_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
 		)
 		if angular_acceleration !=undefined then (
 			crSpacePoint3 = ConvertToCRSpace angular_acceleration
-			format "<angular_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
+			format "\n<angular_acceleration>\n%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
 		)
 		if mass !=undefined then 
-			format "<mass>\n%\n" mass to:f
+			format "\n<mass>\n%\n" mass to:f
 		if solid == true then 
-			format "<solid>\n" to:f
+			format "\n<solid>\n" to:f
 		if inf_mi == true then 
-			format "<inf_mi>\n" to:f
+			format "\n<inf_mi>\n" to:f
 		if inf_mass == true then 
-			format "<inf_mass>\n" to:f
+			format "\n<inf_mass>\n" to:f
 		if drivable_on == true then 
-			format "<drivable_on>\n" to:f
+			format "\n<drivable_on>\n" to:f
 		if part_of_world == true then 
-			format "<part_of_world>\n" to:f
+			format "\n<part_of_world>\n" to:f
 		if stop_sinking_into_ground == true then 
-			format "<stop_sinking_into_ground>\n" to:f
+			format "\n<stop_sinking_into_ground>\n" to:f
 		if ignore_gravity == true then 
-			format "<ignore_gravity>\n" to:f
+			format "\n<ignore_gravity>\n" to:f
 		if ignore_world == true then 
-			format "<ignore_world>\n" to:f
+			format "\n<ignore_world>\n" to:f
 		if buoyant == true then (
-			format "<buoyant>\n%\n" buoyancy to:f
+			format "\n<buoyant>\n%\n" buoyancy to:f
 			crSpacePoint3 = ConvertToCRSpace buoyancy_position
 			format "%,%,%\n" crSpacePoint3.x crSpacePoint3.y crSpacePoint3.z to:f
 		)
 		if buoyancy_relative_to_com == true then 
-			format "<buoyancy_relative_to_com>\n" to:f
+			format "\n<buoyancy_relative_to_com>\n" to:f
 		if sphere_rolling_resistance !=undefined then 
-			format "<sphere_rolling_resistance>\n%\n" sphere_rolling_resistance to:f
+			format "\n<sphere_rolling_resistance>\n%\n" sphere_rolling_resistance to:f
+
+		if Shape != undefined then (
+			format "\n<shape>\n" to:f
+			Shape.Write f
+		)
+
 		if groupIndex !=undefined then 
-			format "<group>\n%\n" groupIndex to:f
+			format "\n<group>\n%\n" groupIndex to:f
 		if ignore_group !=undefined and ignore_group.count > 0 then 
 			(
 				for groupId in ignore_group do (
-					format "<ignore_group>\n%\n" groupId to:f
+					format "\n<ignore_group>\n%\n" groupId to:f
 				)
 			)
-		if Shape != undefined then (
-			format "<shape>\n" to:f
-			Shape.Write f
-		)
 		if Joints != undefined and Joints.count > 0 then (
 			for joint in Joints do (
 				joint.Write f
 			)
 		)
 		if Breakable != undefined then (
-			format "<breakable>" to:f
+			format "\n<breakable>" to:f
 			Breakable.Write f
 		)
 	)
@@ -1306,18 +1458,22 @@ struct AccessoryFileLump
 	),
 	fn Write filename =(
 		f = openfile filename mode:"w"
+		format "Exporting filename\n% customblocks\n" CustomBlocks.count
 		if CustomBlocks.count > 0 then (
 			format "[APP_DATA]\n\n" to:f
 			for block in CustomBlocks do (
+				format "\n<CustomAccessoryType>\n" to:f
 				block.Write f
 			)
 		)
+		format "% dynamicsblock\n" DynamicsBlocks.count
 		if DynamicsBlocks.count > 0 then (
 			format "[DYNAMICS]\n\n" to:f
 			for block in DynamicsBlocks do (
 				block.Write f
 			)
 		)
+		close f
 	)
 
 /*
@@ -1523,10 +1679,12 @@ AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a
 	parameters main rollout:mainaccessoryshaperollout (
 		CollisionType type:#string default:"Polyhedron"
 		Radius type:#float default:0 ui:spn_radius
+		CollisionGroup type:#integer default:0 ui:spn_CollisionGroup
 	)
 	rollout mainaccessoryshaperollout "Accessory" (
 		dropdownlist dpdn_CollisionType items:CollisionShapeTypes default:1
 		spinner spn_radius type:#float range:[0,1000,0]
+		spinner spn_CollisionGroup type:#integer range:[0,1000,0]
 
 		on mainaccessoryshaperollout open do (
 			dpdn_CollisionType.selection = finditem CollisionShapeTypes CollisionType
@@ -1564,21 +1722,24 @@ AccessoryJointWeaknessAttribute = attributes AccessoryJointWeaknessCustAttrib at
 		dropdownlist dpdn_weaknesstype "Type" items:#("(null)","BreakJoint", "RemoveAngularConstraintsForAFrameNoTwist", "RemoveAngularConstraintsForAFrameWithTwistSnap", "ConstraintForceWeaknessCallBack", "ConstraintTorqueWeaknessNoTwistCallBack")
 
 		label lbl_p3_Unknown "Unknown Vector3"
-		spinner spn_p3_Unknown_x "X" type:#float across:3
-		spinner spn_p3_Unknown_y "Y" type:#float across:3
-		spinner spn_p3_Unknown_z "Z" type:#float across:3
+		spinner spn_p3_Unknown_x "X" type:#float across:3 fieldwidth:35
+		spinner spn_p3_Unknown_y "Y" type:#float across:3 fieldwidth:35
+		spinner spn_p3_Unknown_z "Z" type:#float across:3 fieldwidth:35
 
 		spinner spn_strength "Strength" type:#float
 		spinner spn_twistStrength "Twist Strength" type:#float
 
+		on dpdn_weaknesstype selected selectedIndex do (
+			weaknesstype = dpdn_weaknesstype.items[selectedIndex]
+		)
 		on accessoryjointweaknessrollout open do (
 			spn_p3_Unknown_x.value = p3_unknown.x
 			spn_p3_Unknown_y.value = p3_unknown.y
 			spn_p3_Unknown_z.value = p3_unknown.z
 
-			weaknessType = finditem dpdn_weakness.items weaknesstype
-			if weaknessType == 0 then weaknessType = 1
-			dpdn_weakness.selected = weaknessType
+			weaknessTypeIndex = finditem dpdn_weaknesstype.items weaknesstype
+			if weaknessTypeIndex == 0 then weaknessTypeIndex = 1
+			dpdn_weaknesstype.selection = weaknessTypeIndex
 		)
 	)
 )
@@ -1596,33 +1757,33 @@ AccessoryJointConstraintAttribute = attributes AccesoryJointConstraintCustAttrib
 		p3_Unknown2 type:#point3					-- point3
 	)
 	rollout accessoryjointconstratinrollout "Joint Constraint" (
-		spinner spn_i_unknown "Unknown Int" type:#integer
-		spinner spn_strength "Strength" type:#float
-		spinner spn_f_unknown1 "Unknown Float 1" type:#float
+		spinner spn_i_unknown "Unknown Int" type:#integer range:[-100,100,0]
+		spinner spn_strength "Strength" type:#float range:[-10000,10000,0]
+		spinner spn_f_unknown1 "Unknown Float 1" type:#float range:[-10000,10000,0]
 
 		label lbl_minDirection "Min Direction"
-		spinner spn_minDirection_x "X" type:#float across:3
-		spinner spn_minDirection_y "Y" type:#float across:3
-		spinner spn_minDirection_z "Z" type:#float across:3
+		spinner spn_minDirection_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_minDirection_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_minDirection_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
 		label lbl_maxDirection "Max Direction"
-		spinner spn_maxDirection_x "X" type:#float across:3
-		spinner spn_maxDirection_y "Y" type:#float across:3
-		spinner spn_maxDirection_z "Z" type:#float across:3
+		spinner spn_maxDirection_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_maxDirection_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_maxDirection_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
 		spinner spn_f_unknown2 "Unknown Float 2" type:#float
 
 		dropdownlist dpdn_weakness "Weaknesss" items:#("(null)", "BreakJoint")
 
 		label lbl_p3_unknown1 "Unknown Vector3 1"
-		spinner spn_p3_unknown1_x "X" type:#float across:3
-		spinner spn_p3_unknown1_y "Y" type:#float across:3
-		spinner spn_p3_unknown1_z "Z" type:#float across:3
+		spinner spn_p3_unknown1_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_p3_unknown1_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_p3_unknown1_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
 		label lbl_p3_unknown2 "Unknown Vector3 2"
-		spinner spn_p3_unknown2_x "X" type:#float across:3
-		spinner spn_p3_unknown2_y "Y" type:#float across:3
-		spinner spn_p3_unknown2_z "Z" type:#float across:3
+		spinner spn_p3_unknown2_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_p3_unknown2_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_p3_unknown2_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
 		on accessoryjointconstratinrollout open do (
 			spn_minDirection_x.value = minDirection.x
@@ -1643,11 +1804,11 @@ AccessoryJointConstraintAttribute = attributes AccesoryJointConstraintCustAttrib
 
 			case weakness of (
 				"(null)":
-					dpdn_weakness.selected = 1
+					dpdn_weakness.selection = 1
 				"BreakJoint":
-					dpdn_weakness.selected = 2
+					dpdn_weakness.selection = 2
 				default: (
-					dpdn_weakness.selected = 1
+					dpdn_weakness.selection = 1
 					format "Unknown constraint weakness type % in %\n" weakness f
 				)
 			)
@@ -1704,6 +1865,7 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 	parameters main rollout:accessoryjointrollout
 	(
 		jointtype type:#string							--string: world or child
+		jointlabel type:#string ui:txt_label					--string: e.g. joint
 		flags type:#booltab tabsize:32 ui: (chk_flag01,chk_flag02,chk_flag03,chk_flag04,chk_flag05,chk_flag06,chk_flag07,chk_flag08,chk_flag09,chk_flag10,chk_flag11,chk_flag12,chk_flag13,chk_flag14,chk_flag15,chk_flag16,chk_flag17,chk_flag18,chk_flag19,chk_flag20,chk_flag21,chk_flag22,chk_flag23,chk_flag24,chk_flag25,chk_flag26,chk_flag27,chk_flag28,chk_flag29,chk_flag30,chk_flag31,chk_flag32)						-- int
 										-- ????   Constraints?  ????    JointAxis?
 										--   |		|		____/	______/
@@ -1711,86 +1873,95 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 										-- [0000] [0000] [0000] [0000]
 										-------------------------------------------
 		f_Unknown1 type:#float ui:spn_f_unknown1		-- float
-		position type:#point3						-- point3 - in accessory's local space
+		local_position type:#point3						-- point3 - in accessory's local space
+		parent_position type:#point3					-- point3
 		joint_normal type:#point3					-- point3
-		p3_Unknown1 type:#point3					-- point3
 		p3_Unknown2 type:#point3					-- point3
 		p3_Unknown3 type:#point3					-- point3
 		p3_Unknown4 type:#point3					-- point3
 		p3_Unknown5 type:#point3					-- point3
+		p3_Unknown6 type:#point3					-- point3
 		
 	)
 	rollout accessoryjointrollout "Accessory Joint" (
-		dropdownlist dpdn_jointtype "Joint Type" values:#("World", "Child")
+		editText txt_label "Label" labelOnTop:true
+		dropdownlist dpdn_jointtype "Joint Type" items:#("World", "Child")
 		group "Flags" (
-			checkbox chk_flag01 "01" across:3
-			checkbox chk_flag02 "02" across:3
-			checkbox chk_flag03 "03" across:3
-			checkbox chk_flag04 "04" across:3
-			checkbox chk_flag05 "05" across:3
-			checkbox chk_flag06 "06" across:3
-			checkbox chk_flag07 "07" across:3
-			checkbox chk_flag08 "08" across:3
-			checkbox chk_flag09 "09" across:3
-			checkbox chk_flag10 "10" across:3
-			checkbox chk_flag11 "11" across:3
-			checkbox chk_flag12 "12" across:3
-			checkbox chk_flag13 "13" across:3
-			checkbox chk_flag14 "14" across:3
-			checkbox chk_flag15 "15" across:3
-			checkbox chk_flag16 "16" across:3
-			checkbox chk_flag17 "17" across:3
-			checkbox chk_flag18 "18" across:3
-			checkbox chk_flag19 "19" across:3
-			checkbox chk_flag20 "20" across:3
-			checkbox chk_flag21 "21" across:3
-			checkbox chk_flag22 "22" across:3
-			checkbox chk_flag23 "23" across:3
-			checkbox chk_flag24 "24" across:3
-			checkbox chk_flag25 "25" across:3
-			checkbox chk_flag26 "26" across:3
-			checkbox chk_flag27 "27" across:3
-			checkbox chk_flag28 "28" across:3
-			checkbox chk_flag29 "29" across:3
-			checkbox chk_flag30 "30" across:3
-			checkbox chk_flag31 "31" across:3
-			checkbox chk_flag32 "32" across:3
+			checkbox chk_flag01 "01" across:4 labelOnTop:true
+			checkbox chk_flag02 "02" across:4 labelOnTop:true
+			checkbox chk_flag03 "03" across:4 labelOnTop:true
+			checkbox chk_flag04 "04" across:4 labelOnTop:true
+			checkbox chk_flag05 "05" across:4 labelOnTop:true
+			checkbox chk_flag06 "06" across:4 labelOnTop:true
+			checkbox chk_flag07 "07" across:4 labelOnTop:true
+			checkbox chk_flag08 "08" across:4 labelOnTop:true
+			checkbox chk_flag09 "09" across:4 labelOnTop:true
+			checkbox chk_flag10 "10" across:4 labelOnTop:true
+			checkbox chk_flag11 "11" across:4 labelOnTop:true
+			checkbox chk_flag12 "12" across:4 labelOnTop:true
+			checkbox chk_flag13 "13" across:4 labelOnTop:true
+			checkbox chk_flag14 "14" across:4 labelOnTop:true
+			checkbox chk_flag15 "15" across:4 labelOnTop:true
+			checkbox chk_flag16 "16" across:4 labelOnTop:true
+			
+			checkbox chk_flag17 "17" across:4 labelOnTop:true
+			checkbox chk_flag18 "18" across:4 labelOnTop:true
+			checkbox chk_flag19 "19" across:4 labelOnTop:true
+			checkbox chk_flag20 "20" across:4 labelOnTop:true
+			checkbox chk_flag21 "21" across:4 labelOnTop:true
+			checkbox chk_flag22 "22" across:4 labelOnTop:true
+			checkbox chk_flag23 "23" across:4 labelOnTop:true
+			checkbox chk_flag24 "24" across:4 labelOnTop:true
+			checkbox chk_flag25 "25" across:4 labelOnTop:true
+			checkbox chk_flag26 "26" across:4 labelOnTop:true
+			checkbox chk_flag27 "27" across:4 labelOnTop:true
+			checkbox chk_flag28 "28" across:4 labelOnTop:true
+			checkbox chk_flag29 "29" across:4 labelOnTop:true
+			checkbox chk_flag30 "30" across:4 labelOnTop:true
+			checkbox chk_flag31 "31" across:4 labelOnTop:true
+			checkbox chk_flag32 "32" across:4 labelOnTop:true
+			--*/
 		)
 		spinner spn_f_unknown1 "Unknown Float" type:#float
-		label lbl_Position "Position"
-		spinner spn_position_x "X" type:#float across:3
-		spinner spn_position_y "Y" type:#float across:3
-		spinner spn_position_z "Z" type:#float across:3
+		label lbl_Local_Position "Local Position"
+		spinner spn_Local_Position_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Local_Position_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Local_Position_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		label lbl_Parent_Position "Parent Position"
+		spinner spn_Parent_Position_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Parent_Position_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Parent_Position_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		label lbl_Normal "Normal"
-		spinner spn_Normal_x "X" type:#float across:3
-		spinner spn_Normal_y "Y" type:#float across:3
-		spinner spn_Normal_z "Z" type:#float across:3
-		label lbl_unknown1 "Unknown 1"
-		spinner spn_unknown1_x "X" type:#float across:3
-		spinner spn_unknown1_y "Y" type:#float across:3
-		spinner spn_unknown1_z "Z" type:#float across:3
+		spinner spn_Normal_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Normal_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_Normal_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		label lbl_unknown2 "Unknown 2"
-		spinner spn_unknown2_x "X" type:#float across:3
-		spinner spn_unknown2_y "Y" type:#float across:3
-		spinner spn_unknown2_z "Z" type:#float across:3
+		spinner spn_unknown2_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown2_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown2_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		label lbl_unknown3 "Unknown 3"
-		spinner spn_unknown3_x "X" type:#float across:3
-		spinner spn_unknown3_y "Y" type:#float across:3
-		spinner spn_unknown3_z "Z" type:#float across:3
+		spinner spn_unknown3_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown3_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown3_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		label lbl_unknown4 "Unknown 4"
-		spinner spn_unknown4_x "X" type:#float across:3
-		spinner spn_unknown4_y "Y" type:#float across:3
-		spinner spn_unknown4_z "Z" type:#float across:3
+		spinner spn_unknown4_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown4_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown4_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		label lbl_unknown5 "Unknown 5"
-		spinner spn_unknown5_x "X" type:#float across:3
-		spinner spn_unknown5_y "Y" type:#float across:3
-		spinner spn_unknown5_z "Z" type:#float across:3
+		spinner spn_unknown5_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown5_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown5_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		label lbl_unknown6 "Unknown 6"
+		spinner spn_unknown6_x "X" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown6_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
+		spinner spn_unknown6_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
 		on dpdn_jointtype seleced selectedIndex do (
-			joint_type = dpdpn_jointtype.Items[selectedIndex]
+			if dpdpn_jointtype.Items[selectedIndex] == "World" then joint_type = "world_joint"
+			else joint_type = "child_joint"
 		)
 		on accessoryjointrollout open do(
-			if joint_type == "World" then
+			if joint_type == "world_joint" then
 			(
 				dpdn_jointtype.selection = 1
 			)
@@ -1798,17 +1969,17 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 				dpdn_jointtype.selection = 2
 			)
 
-			spn_position_x.value = position.x
-			spn_position_y.value = position.y
-			spn_position_z.value = position.z
+			spn_local_position_x.value = local_position.x
+			spn_local_position_y.value = local_position.y
+			spn_local_position_z.value = local_position.z
+
+			spn_parent_position_x.value = parent_position.x
+			spn_parent_position_y.value = parent_position.y
+			spn_parent_position_z.value = parent_position.z
 
 			spn_normal_x.value = joint_normal.x
 			spn_normal_y.value = joint_normal.y
 			spn_normal_z.value = joint_normal.z
-
-			spn_unknown1_x.value = p3_unknown1.x
-			spn_unknown1_y.value = p3_unknown1.y
-			spn_unknown1_z.value = p3_unknown1.z
 
 			spn_unknown2_x.value = p3_unknown2.x
 			spn_unknown2_y.value = p3_unknown2.y
@@ -1825,6 +1996,10 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 			spn_unknown5_x.value = p3_unknown5.x
 			spn_unknown5_y.value = p3_unknown5.y
 			spn_unknown5_z.value = p3_unknown5.z
+
+			spn_unknown6_x.value = p3_unknown6.x
+			spn_unknown6_y.value = p3_unknown6.y
+			spn_unknown6_z.value = p3_unknown6.z
 		)
 
 		on spn_position_x changed value do (
@@ -1911,6 +2086,18 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 		on spn_unknown5_z changed value do (
 			p3_unknown5.z = value
 		)
+
+		on spn_unknown6_x changed value do (
+			p3_unknown6.x = value
+		)
+
+		on spn_unknown6_y changed value do (
+			p3_unknown6.y = value
+		)
+
+		on spn_unknown6_z changed value do (
+			p3_unknown6.z = value
+		)
 	)
 )
 
@@ -1955,10 +2142,10 @@ AccessoryManagedAccessoryAttribute = attributes AccessoryManagedAccesoryCustAttr
 		dropdownlist dpdn_management_policy "Management Policy" items:#("disappear_on_rest_after_timer","explode_on_timer","weaponized_every_frame")
 		checkbox chk_trigger_particles "Trigger Particles"
 
-		on managedaccessoryrollout open do (
+		on managedaccessoryrollout opene do (
 			selectedManagementPolicy = finditem dpdn_management_policy.items management_policy
 			if selectedManagementPolicy > 0 then (
-				dpdn_management_policy.selected = selectedManagementPolicy
+				dpdn_management_policy.selection = selectedManagementPolicy
 			)
 		)
 		on dpdn_management_policy changed selectedIndex do (
@@ -1977,10 +2164,10 @@ AccessoryNoDataAttribute = attributes AccessorynodataCustAttrib attribid:#(0x15a
 AccessoryangulardampedAttribute = attributes AccessoryangulardampedCustAttrib attribid:#(0x632da2b9, 0x57efe039) version:1
 (
 	parameters main rollout:angulardampedrollout (
-		damping type:#float ui:spn_damping		--Float
+		Damper type:#float ui:spn_damper		--Float
 	)
 	rollout angulardampedrollout "Angular Damped Accessory Data" (
-		spinner spn_damping "Damping" type:#float range:[0,1000000,0]
+		spinner spn_damper "Damping" type:#float range:[0,1000000,0]
 	)
 )
 AccessoryRotatingAccessoryAttribute = attributes AccessoryRotatingAccessoryCustAttrib attribid:#(0x4831d80a, 0x1c838d36) version:1
@@ -1997,10 +2184,12 @@ AccessoryPowerUpAccessoryAttribute = attributes AccessoryPowerUpAccessoryCustAtt
 	parameters main rollout:powerupaccessoryrollout (
 		powerup_type type:#string ui:txt_type		--String
 		respawn_time type:#float ui:spn_respawn_time		--Float
+		simple_rotate type:#float ui:spn_simple_rotate		--Float
 	)
 	rollout powerupaccessoryrollout "Powerup Accessory Data" (
 		edittext txt_type "Powerup Type" labelOnTop:true
 		spinner spn_respawn_time "Respawn Time" type:#float range:[0,1000000,0]
+		spinner spn_simple_rotate "Simple Rotate" type:#float range:[-1000000,1000000,0]
 	)
 )
 AccessoryAnimatedAccessoryAttribute = attributes AccesoryAnimatedAccessoryAttribute attribid:#(0x42661b3c,0x82b5a7e1) version:1
@@ -2051,7 +2240,7 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 		force_target type:#boolean ui:chk_force_target						--bool
 		disable_pinball type:#boolean ui:chk_disable_pinball					--bool
 		vehicle_vfx type:#boolean ui:chk_vehicle_vfx						--bool
-		weapon type:#string ui:txt_weapon				--string
+		weapon type:#boolean ui:chk_weapon				--string
 		AccessoryAudio_Sound1 type:#string ui:txt_AccessoryAudio_Sound1				--String
 		AccessoryAudio_Sound2 type:#string ui:txt_AccessoryAudio_Sound2				--String
 		AccessoryAudio_Type type:#string ui:txt_AccessoryAudio_Type					--String
@@ -2090,7 +2279,7 @@ AccessoryStandardAccessoryAttribute = attributes AccessoryStandardAccessoryCustA
 			checkbox chk_force_target "Always Target"
 			checkbox chk_disable_pinball "Disable Pinball"
 			checkbox chk_vehicle_vfx "Vehicle VFX"
-			edittext txt_weapon "Weapon"
+			checkbox chk_weapon "Weapon"
 			spinner spn_recovery_exclusion_radius "Recovery Exclusion Radius" type:#float range:[0,1000,0]
 			spinner spn_special_flags "Recovery Exclusion Radius" type:#integer range:[0,1,0]
 		)
@@ -2215,15 +2404,18 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 		stop_sinking_into_ground type:#boolean default:false ui:chk_stop_sinking_into_ground
 		ignore_gravity type:#boolean default:false ui:chk_ignore_gravity
 		ignore_world type:#boolean default:false ui:chk_ignore_world
-		ignore_group type:#boolean default:false ui:chk_ignore_group
+		ignore_groups type:#inttab tabSizeVariable:true
+		groupIndex type:#integer ui:spn_groupIndex
 		group type:#intTab tabsizevariable:true
 		buoyant type:#boolean default:false; ui:chk_buoyant
-		buoyancy type:#point3 default:[0,0,0];
+		buoyancy type:#float default:0 ui:spn_buoyancy
+		buoyancy_position type:#point3 default:[0,0,0]
 		buoyancy_relative_to_com type:#boolean default:false
 		sphere_rolling_resistance type:#float default:0 ui:spn_sphere_rolling_resistance
 		substance type:#integer default:0 ui:spn_substance
 		linear_acceleration type:#point3
-		regular_acceleration type:#point3
+		angular_acceleration type:#point3
+		shapelabel type:#string ui:txt_shapelabel
 		collisionshapes type:#maxObjectTab tabsizevariable:true
 
 	)
@@ -2249,7 +2441,7 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			checkbox chk_stop_sinking_into_ground "Dont Sink In Ground" across:2
 			checkbox chk_ignore_gravity "Ignore Gravity" across:2
 			checkbox chk_ignore_world "Ignore World" across:2
-			checkbox chk_ignore_group "Ignore Group"
+			
 		)
 
 		group "Properties" (
@@ -2264,15 +2456,37 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			button btn_SelectCentreOfMassHelper "Select CoM Helper"
 
 			checkbox chk_buoyant "Buoyancy"
+			spinner spn_Buoyancy "Amount" width:110 type:#float range:[0,100000,0]
 			spinner spn_BuoyancyX "X" width:110 type:#float range:[0,100000,0]
 			spinner spn_BuoyancyY "Y" width:110 type:#float range:[0,100000,0]
 			spinner spn_BuoyancyZ "Z" width:110 type:#float range:[0,100000,0]
 
 			spinner spn_substance "Substance Type" type:#integer range:[0,1000,0]
+
 		)
+		group "Acceleration" (
 
+			label lbl_LinearAcceleration "Linear Acceleration"
+			spinner spn_LinearAccelerationX "X" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_LinearAccelerationY "Y" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_LinearAccelerationZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
+			
+			label lbl_AngularAcceleration "Angular Acceleration"
+			spinner spn_AngularAccelerationX "X" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_AngularAccelerationY "Y" across:1 width:110 type:#float range:[0,100000000,0]
+			spinner spn_AngularAccelerationZ "Z" across:1 width:110 type:#float range:[0,100000000,0]
+			
+		)
+		group "Collision Groups" (
+			spinner spn_groupIndex "Collision Group" type:#integer range:[0,256,0]
+			label lbl_ignoreGroups "Ignore Groups"
+			dotNetControl lv_ignoregroups	 "listview" height:150
+			button btn_DeleteIgnoreGroup "Delete"
+			spinner spn_ignoreGroup "" type:#integer range:[0,256,0] across:2
+			button btn_AddIgnoreGroup "Add"
+		)
 		group "Collision Shapes" (
-
+			editText txt_shapelabel "Label"
 			pickbutton pck_AddShape "Add"
 			button btn_DeleteShape "Delete"
 			dotNetControl lv_shapes	 "listview" height:150
@@ -2378,6 +2592,41 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			select ownerObject
 		)
 
+		fn RefreshIgnoreGroupsList = (
+
+			if lv_ignoregroups == null or lv_ignoregroups.items == null then (
+
+				lv_ignoregroups.view  = (dotnetclass "view").details
+				lv_ignoregroups.fullrowselect= true
+				lv_ignoregroups.gridlines = true
+				lv_ignoregroups.multiselect =false
+				lv_ignoregroups.columns.add "Group Index" 140
+			)
+			lv_ignoregroups.Items.clear()
+			for ignoreGroup in ignore_groups do (
+				lvItem = dotnetobject "listviewitem" ignoreGroup
+				lv_ignoregroups.Items.add lvitem
+			)
+		)
+
+		fn AddIgnoreGroup ignoreGroup = (
+			append ignore_groups ignoreGroup
+			RefreshIgnoreGroupsList()
+		)
+
+		on btn_AddIgnoreGroup pressed do (
+			if spn_ignoreGroup.value != undefined and spn_ignoreGroup.value > 0 then (
+				AddIgnoreGroup spn_ignoreGroup.value
+			)
+		)
+		on btn_DeleteIgnoreGroup pressed do (
+			if lv_ignoregroups.SelectedIndices.count > 0 then
+			(
+				selectedIndex = lv_ignoregroups.SelectedIndices.Item[0]
+				deleteItem ignore_groups (selectedIndex+1)
+				RefreshIgnoreGroupsList()
+			)
+		)
 		on btn_GuessMoments pressed do (
 			GuessMoments()
 		)
@@ -2399,15 +2648,72 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			spn_MomentsY.value = Moments.Y
 			spn_MomentsZ.value = Moments.Z
 
-			spn_BuoyancyX.value = Buoyancy.X
-			spn_BuoyancyY.value = Buoyancy.Y
-			spn_BuoyancyZ.value = Buoyancy.Z
+			spn_BuoyancyX.value = buoyancy_position.X
+			spn_BuoyancyY.value = buoyancy_position.Y
+			spn_BuoyancyZ.value = buoyancy_position.Z
+
+			spn_LinearAccelerationX.value = Linear_Acceleration.X
+			spn_LinearAccelerationY.value = Linear_Acceleration.Y
+			spn_LinearAccelerationZ.value = Linear_Acceleration.Z
+
+			spn_AngularAccelerationX.value = Angular_Acceleration.X
+			spn_AngularAccelerationY.value = Angular_Acceleration.Y
+			spn_AngularAccelerationZ.value = Angular_Acceleration.Z
+
 			lv_shapes.view  = (dotnetclass "view").details
 			lv_shapes.fullrowselect= true
 			lv_shapes.gridlines = true
 			lv_shapes.multiselect =false
 			lv_shapes.columns.add "Name" 140
 			refreshShapesList()
+		)
+
+		on spn_BuoyancyX changed value do (
+			buoyancy_position.x = value
+		)
+
+		on spn_BuoyancyY changed value do (
+			buoyancy_position.y = value
+		)
+
+		on spn_BuoyancyZ changed value do (
+			buoyancy_position.z = value
+		)
+
+		on spn_MomentsX changed value do (
+			moments.x = value
+		)
+
+		on spn_MomentsY changed value do (
+			moments.y = value
+		)
+
+		on spn_MomentsZ changed value do (
+			moments.z = value
+		)
+
+		on spn_LinearAccelerationX changed value do (
+			Linear_Acceleration.x = value
+		)
+
+		on spn_LinearAccelerationY changed value do (
+			Linear_Acceleration.y = value
+		)
+
+		on spn_LinearAccelerationZ changed value do (
+			Linear_Acceleration.z = value
+		)
+
+		on spn_AngularAccelerationX changed value do (
+			Angular_Acceleration.x = value
+		)
+
+		on spn_AngularAccelerationY changed value do (
+			Angular_Acceleration.y = value
+		)
+
+		on spn_AngularAccelerationZ changed value do (
+			Angular_Acceleration.z = value
 		)
 	)
 )
@@ -2546,49 +2852,49 @@ AccessoryTXTAttribute = attributes AccessoryTXTCustAttrib attribid:#(0x7904a50e,
 	)
 )
 fn ApplyStandardData dataMod data = (
-	if CollisionAudioEvent != undefined then 
+	if data.CollisionAudioEvent != undefined then 
 			dataMod.CollisionAudioEvent = data.CollisionAudioEvent
-	if CollisionAudioEventHeavy != undefined then 
+	if data.CollisionAudioEventHeavy != undefined then 
 			dataMod.CollisionAudioEventHeavy = data.CollisionAudioEventHeavy
-	if CollisionAudioMinTime != undefined then 
+	if data.CollisionAudioMinTime != undefined then 
 			dataMod.CollisionAudioMinTime = data.CollisionAudioMinTime
-	if CollisionAudioHeavyImpactMagnitude != undefined then 
+	if data.CollisionAudioHeavyImpactMagnitude != undefined then 
 			dataMod.CollisionAudioHeavyImpactMagnitude = data.CollisionAudioHeavyImpactMagnitude
-	if CollisionAudioLump != undefined then 
+	if data.CollisionAudioLump != undefined then 
 			dataMod.CollisionAudioLump = data.CollisionAudioLump
-	if CollisionAudioEventScrape != undefined then 
+	if data.CollisionAudioEventScrape != undefined then 
 			dataMod.CollisionAudioEventScrape = data.CollisionAudioEventScrape
-	if damage_magnifier != undefined then 
+	if data.damage_magnifier != undefined then 
 			dataMod.damage_magnifier = data.damage_magnifier
-	if damage_magnifier_X != undefined then 
+	if data.damage_magnifier_X != undefined then 
 			dataMod.damage_magnifier_X = data.damage_magnifier_X
-	if damage_magnifier_Y != undefined then 
+	if data.damage_magnifier_Y != undefined then 
 			dataMod.damage_magnifier_Y = data.damage_magnifier_Y
-	if damage_magnifier_Z != undefined then 
+	if data.damage_magnifier_Z != undefined then 
 			dataMod.damage_magnifier_Z = data.damage_magnifier_Z
-	if speed_sensitive_damage_magnifier != undefined then 
+	if data.speed_sensitive_damage_magnifier != undefined then 
 			dataMod.speed_sensitive_damage_magnifier = data.speed_sensitive_damage_magnifier
-	if dont_target != undefined then 
+	if data.dont_target != undefined then 
 			dataMod.dont_target = data.dont_target
-	if disable_pinball != undefined then 
+	if data.disable_pinball != undefined then 
 			dataMod.disable_pinball = data.disable_pinball
-	if vehicle_vfx != undefined then 
+	if data.vehicle_vfx != undefined then 
 			dataMod.vehicle_vfx = data.vehicle_vfx
-	if weapon != undefined then 
+	if data.weapon != undefined then 
 			dataMod.weapon = data.weapon
-	if AccessoryAudio_Sound1 != undefined then 
+	if data.AccessoryAudio_Sound1 != undefined then 
 			dataMod.AccessoryAudio_Sound1 = data.AccessoryAudio_Sound1
-	if AccessoryAudio_Sound2 != undefined then 
+	if data.AccessoryAudio_Sound2 != undefined then 
 			dataMod.AccessoryAudio_Sound2 = data.AccessoryAudio_Sound2
-	if AccessoryAudio_Type != undefined then 
+	if data.AccessoryAudio_Type != undefined then 
 			dataMod.AccessoryAudio_Type = data.AccessoryAudio_Type
-	if AccessoryAudio_LumpName != undefined then 
+	if data.AccessoryAudio_LumpName != undefined then 
 			dataMod.AccessoryAudio_LumpName = data.AccessoryAudio_LumpName
-	if force_target != undefined then 
+	if data.force_target != undefined then 
 			dataMod.force_target = data.force_target
-	if recovery_exclusion_radius != undefined then 
+	if data.recovery_exclusion_radius != undefined then 
 			dataMod.recovery_exclusion_radius = data.recovery_exclusion_radius
-	if special_flags != undefined then 
+	if data.special_flags != undefined then 
 			dataMod.special_flags = data.special_flags
 )
 fn AddAccessoryCheckpointAppData obj data:unsupplied = (
@@ -2667,7 +2973,7 @@ fn AddAccessoryPowerupAppData obj data:unsupplied = (
 
 	if data != unsupplied then (
 	if data.type != undefined then 
-		accessoryModifier.type = data.type
+		accessoryModifier.powerup_type = data.type
 	if data.respawn_time != undefined then 
 		accessoryModifier.respawn_time = data.respawn_time
 	if data.simple_rotate != undefined then 
@@ -2801,9 +3107,94 @@ fn AddAccessoryStandardAppData obj data:unsupplied = (
 		ApplyStandardData accessoryModifier data
 	)
 )
+fn AddAccessoryJointWeakness obj weakness1:unsupplied weakness2:unsupplied jointType:"world_joint" = (
+	
+	local modifierName = "World Joint Weakness"
+	if jointType == "child_joint" then (
+		modifierName = "Child Joint Weakness"
+	)
 
+	local weakness1Mod = AddCustomModifier obj (modifierName + "1") AccessoryJointWeaknessAttribute allowMultiple:true
+	local weakness2Mod = AddCustomModifier obj (modifierName + "2") AccessoryJointWeaknessAttribute allowMultiple:true
+	if weakness1 != unsupplied then (
+		weakness1Mod.WeaknessType = weakness1.type
+		if weakness1.p3_Unknown != undefined then
+			weakness1Mod.p3_Unknown = weakness1.p3_Unknown
+		if weakness1.strength != undefined then
+			weakness1Mod.strength = weakness1.strength
+
+		if weakness1.twistStrength != undefined then
+			weakness1Mod.twistStrength = weakness1.twistStrength
+	)
+	if weakness2 != unsupplied then (
+		weakness2Mod.WeaknessType = weakness2.type
+		if weakness2.p3_Unknown != undefined then
+			weakness2Mod.p3_Unknown = weakness2.p3_Unknown
+		if weakness2.strength != undefined then
+			weakness2Mod.strength = weakness2.strength
+
+		if weakness2.twistStrength != undefined then
+			weakness2Mod.twistStrength = weakness2.twistStrength
+	)
+)
+fn AddAccessoryJointConstraint obj constraint:unsupplied jointType:"world_joint" = (
+	local modifierName = "World Joint Constraint"
+	if jointType == "child_joint" then (
+		modifierName = "Child Joint Constraint"
+	)
+	local constraintMod = AddCustomModifier obj modifierName AccessoryJointConstraintAttribute allowMultiple:true
+	
+	if constraint != unsupplied then (
+		constraintMod.i_Unknown = constraint.i_Unknown
+		constraintMod.strength = constraint.strength
+		constraintMod.f_Unknown1 = constraint.f_Unknown1
+		constraintMod.minDirection = constraint.minDirection
+		constraintMod.maxDirection = constraint.maxDirection
+		constraintMod.f_Unknown2 = constraint.f_Unknown2
+		constraintMod.weakness = constraint.weakness
+		constraintMod.p3_Unknown1 = constraint.p3_Unknown1
+		constraintMod.p3_unknown2 = constraint.p3_unknown2
+	)
+)
+fn AddAccessoryJoint obj jointType:"world_joint" joint:unsupplied = (
+	format "Adding joint to %\n" obj.name
+	if jointType == "world_joint" then (
+		jointMod = AddCustomModifier obj "Accessory World Joint" AccessoryJointAttribute allowMultiple:true
+	)
+	else (
+		jointMod = AddCustomModifier obj "Accessory Child Joint" AccessoryJointAttribute allowMultiple:true
+	)
+	if joint != unsupplied then (
+		jointMod.jointlabel = joint.label
+		jointMod.jointtype = joint.type
+		for i = 1 to 32 do (
+			jointMod.flags[i] = bit.get joint.flags i
+		)
+		jointMod.f_Unknown1 = joint.f_Unknown1
+		jointMod.local_position = joint.local_position
+		jointMod.parent_position = joint.parent_position
+		jointMod.joint_normal = joint.joint_normal
+		jointMod.p3_Unknown2 = joint.p3_Unknown2
+		jointMod.p3_Unknown3 = joint.p3_Unknown3
+		jointMod.p3_Unknown4 = joint.p3_Unknown4
+		jointMod.p3_Unknown5 = joint.p3_Unknown5
+		jointMod.p3_Unknown6 = joint.p3_Unknown6
+
+		for i = 1 to joint.numConstraints do (
+			AddAccessoryJointConstraint obj constraint:joint.Constraints[i]
+		)
+
+		if joint.hasWeakness != undefined and joint.hasWeakness then (
+			AddAccessoryJointWeakness obj weakness1:joint.weakness1 weakness2:joint.weakness2
+		)
+	)
+)
 fn AddAccessoryJoints obj joints = (
 
+	local jointMod = undefined
+	for i=1 to joints.count do (
+		AddAccessoryJoint obj jointType:joints[i].type joint:joints[i]
+	)
 )
 
 fn AddAccessoryShapes obj shapeData = (
@@ -2895,6 +3286,16 @@ fn AddAccessoryShapes obj shapeData = (
 					shapeObj.pos = [0,0,0]
 				)
 			)
+			"wireframe": (
+				local splShape = SplineShape
+				for i = 1 to curShape.indices do (
+					addNewSpline splShape
+					local p1 = curShape.indices[i].x as integer
+					local p2 = curShape.indices[i].y as integer
+					addKnot splShape i #corner #line curShape.points[p1 + 1]
+					addKnot splShape i #corner #line curShape.points[p2 + 1]
+				)
+			)
 			"roundedpolyhedron": (
 
 				local points = #()
@@ -2923,6 +3324,7 @@ fn AddAccessoryShapes obj shapeData = (
 		shapeNum += 1
 		shapeMod = AddAccessoryShapeModifier shapeObj
 		shapeMod.CollisionType = curShape.type
+		shapeMod.CollisionGroup = curShape.CollisionGroups
 		if curShape.radius != undefined then
 			shapeMod.radius = curShape.radius
 		append obj.modifiers["Accessory Dynamics"].collisionshapes (NodeTransformMonitor node:shapeObj forwardTransformChangeMsgs:false)
@@ -2959,7 +3361,9 @@ fn AddAccessoryBreakableModifier obj data:unsupplied = (
 		if data.detach_children != undefined then 
 			accessoryModifier.detach_children = data.detach_children
 		if data.destroy_children != undefined then 
-			accessoryModifier.destroy_children = data.destroy_children	
+			accessoryModifier.destroy_children = data.destroy_children
+		if data.collision_with_world_will_break_me != undefined then 
+			accessoryModifier.collision_with_world_will_break_me = data.collision_with_world_will_break_me	
 		for replacement in data.replacements do (
 			if replacement.Axis == undefined then accessoryModifier.replace = replacement.Replacement
 			else (
@@ -3043,7 +3447,7 @@ fn AddAccessoryDynamicsModifier obj data:unsupplied = (
 
 		if data.ignore_group != undefined then (
 			for ignoreGroup in data.ignore_group do (
-				append accessoryModifier.ignore_group ignoreGroup
+				append accessoryModifier.ignore_groups ignoreGroup
 
 			)
 		)
@@ -3087,12 +3491,12 @@ fn AddAccessoryDynamicsModifier obj data:unsupplied = (
 		)
 
 		if data.Shape != undefined then (
+			accessoryModifier.shapelabel = data.Shape.label
 			AddAccessoryShapes obj data.Shape
 		)
 		if data.Joints != undefined then (
-			for joint in data.Joints do (
-				AddAccessoryJoints obj joint
-			)
+				AddAccessoryJoints obj data.joints
+			
 		)
 		if data.Breakable != undefined then (
 			AddAccessoryBreakableModifier obj data:data.Breakable
@@ -3167,7 +3571,7 @@ fn ImportAccessoryTXT file obj = (
 			)
 			default: format "Unknown custom accessory type in %:\n\t\t%\n" f curLine
 		)
-		accMod = AddAccessoryTXTModifier obj
+		--accMod = AddAccessoryTXTModifier obj
 	)
 	for dynamicsblock in accessoryData.DynamicsBlocks do (
 		local dynamicsObj = obj
@@ -3178,4 +3582,460 @@ fn ImportAccessoryTXT file obj = (
 		local dynamicsMod = AddAccessoryDynamicsModifier dynamicsObj data:dynamicsblock
 	)
 	accessoryData
+)
+
+fn GetStandardAppData obj dataMod = (
+	local data = AccessoryType_StandardAppData()
+	if dataMod.CollisionAudioEvent != undefined then 
+			data.CollisionAudioEvent = dataMod.CollisionAudioEvent
+	if dataMod.CollisionAudioEventHeavy != undefined then 
+			data.CollisionAudioEventHeavy = dataMod.CollisionAudioEventHeavy
+	if dataMod.CollisionAudioMinTime != undefined then 
+			data.CollisionAudioMinTime = dataMod.CollisionAudioMinTime
+	if dataMod.CollisionAudioHeavyImpactMagnitude != undefined then 
+			data.CollisionAudioHeavyImpactMagnitude = dataMod.CollisionAudioHeavyImpactMagnitude
+	if dataMod.CollisionAudioLump != undefined then 
+			data.CollisionAudioLump = dataMod.CollisionAudioLump
+	if dataMod.CollisionAudioEventScrape != undefined then 
+			data.CollisionAudioEventScrape = dataMod.CollisionAudioEventScrape
+	if dataMod.damage_magnifier != undefined then 
+			data.damage_magnifier = dataMod.damage_magnifier
+	if dataMod.damage_magnifier_X != undefined then 
+			data.damage_magnifier_X = dataMod.damage_magnifier_X
+	if dataMod.damage_magnifier_Y != undefined then 
+			data.damage_magnifier_Y = dataMod.damage_magnifier_Y
+	if dataMod.damage_magnifier_Z != undefined then 
+			data.damage_magnifier_Z = dataMod.damage_magnifier_Z
+	if dataMod.speed_sensitive_damage_magnifier != undefined then 
+			data.speed_sensitive_damage_magnifier = dataMod.speed_sensitive_damage_magnifier
+	if dataMod.dont_target != undefined then 
+			data.dont_target = dataMod.dont_target
+	if dataMod.disable_pinball != undefined then 
+			data.disable_pinball = dataMod.disable_pinball
+	if dataMod.vehicle_vfx != undefined then 
+			data.vehicle_vfx = dataMod.vehicle_vfx
+	if dataMod.weapon != undefined then 
+			data.weapon = dataMod.weapon
+	if dataMod.AccessoryAudio_Sound1 != undefined then 
+			data.AccessoryAudio_Sound1 = dataMod.AccessoryAudio_Sound1
+	if dataMod.AccessoryAudio_Sound2 != undefined then 
+			data.AccessoryAudio_Sound2 = dataMod.AccessoryAudio_Sound2
+	if dataMod.AccessoryAudio_Type != undefined then 
+			data.AccessoryAudio_Type = dataMod.AccessoryAudio_Type
+	if dataMod.AccessoryAudio_LumpName != undefined then 
+			data.AccessoryAudio_LumpName = dataMod.AccessoryAudio_LumpName
+	if dataMod.force_target != undefined then 
+			data.force_target = dataMod.force_target
+	if dataMod.recovery_exclusion_radius != undefined then 
+			data.recovery_exclusion_radius = dataMod.recovery_exclusion_radius
+	if dataMod.special_flags != undefined then 
+			data.special_flags = dataMod.special_flags
+	data
+)
+fn GetAnimationAppData obj dataMod = (
+	local data = AccessoryType_RigidBodyAnimation()
+	if dataMod.anim != undefined then 
+		data.anim = dataMod.anim
+	if dataMod.looping != undefined then 
+		data.looping = dataMod.looping
+	if dataMod.hit_to_trigger != undefined then 
+		data.hit_to_trigger = dataMod.hit_to_trigger
+	if dataMod.time_offset != undefined then 
+		data.time_offset = dataMod.time_offset
+	if dataMod.max_acceleration != undefined then 
+		data.max_acceleration = dataMod.max_acceleration
+	if dataMod.max_angular_acceleration != undefined then 
+		data.max_angular_acceleration = dataMod.max_angular_acceleration
+	if dataMod.max_force != undefined then 
+		data.max_force = dataMod.max_force
+	if dataMod.max_force_linear != undefined then 
+		data.max_force_linear = dataMod.max_force_linear
+	if dataMod.break_factor != undefined then 
+		data.break_factor = dataMod.break_factor
+	if dataMod.stop_factor != undefined then 
+		data.stop_factor = dataMod.stop_factor
+	if dataMod.message_triggered != undefined then 
+		data.message_triggered = dataMod.message_triggered
+	data.StandardData = GetStandardAppData obj dataMod
+
+	data
+)
+
+fn GetPowerupAppData obj dataMod = (
+	local data = AccessoryType_Powerup()
+
+	if dataMod.respawn_time != undefined then 
+		data.respawn_time = dataMod.respawn_time
+	if dataMod.powerup_type != undefined then
+		data.type = dataMod.powerup_type
+	if dataMod.simple_rotate != undefined then
+		data.simple_rotate = dataMod.simple_rotate
+	data.StandardData = GetStandardAppData obj dataMod
+)
+
+fn GetRotatingAppData obj dataMod = (
+	local data = AccessoryType_RotatingAccessory()
+
+	if dataMod.speed != undefined then 
+		data.speed = dataMod.speed
+
+	data.StandardData = GetStandardAppData obj dataMod
+)
+
+fn GetAngularDampedAppData obj dataMod = (
+	local data = AccessoryType_AngularDampedAccessory()
+
+	if dataMod.Damper != undefined then 
+		data.Damper = dataMod.Damper
+		
+	data.StandardData = GetStandardAppData obj dataMod
+)
+fn GetManagedAppData obj dataMod = (
+	local data = AccessoryType_ManagedAccessory()
+
+	if dataMod.break_fuse != undefined then 
+		data.break_fuse = dataMod.break_fuse
+	if dataMod.management_policy != undefined then 
+		data.management_policy = dataMod.management_policy
+	if dataMod.trigger_particles != undefined then 
+		data.trigger_particles = dataMod.trigger_particles
+		
+	data.StandardData = GetStandardAppData obj dataMod
+)
+fn GetCheckpointAppData obj dataMod = (
+	local data = AccessoryType_Checkpoint()
+
+	if dataMod.radius != undefined then 
+		data.radius = dataMod.radius
+	if dataMod.top != undefined then 
+		data.top = dataMod.top
+	if dataMod.bottom != undefined then 
+		data.bottom = dataMod.bottom
+	if dataMod.left != undefined then 
+		data.left = dataMod.left
+	if dataMod.right != undefined then 
+		data.right = dataMod.right
+	if dataMod.next != undefined then 
+		data.next = dataMod.next
+	if dataMod.deactivated != undefined then 
+		data.deactivated = dataMod.deactivated
+		
+	data.StandardData = GetStandardAppData obj dataMod
+)
+fn GetAccessoryAppDataBlock obj = (
+	local customAccBlocks = #()
+	for appDataModifier in obj.modifiers do (
+		local customAccBlock = CustomAccessoryBlock()
+
+		customAccBlock.CustomData = case appDataModifier.name of (
+			"Standard Accessory Data": (
+				customAccBlock.type = "standardaccessory"
+				GetStandardAppData obj appDataModifier
+			)
+			"Starting Grid Accessory": (
+				customAccBlock.type = "startinggrid"
+				GetStandardAppData obj appDataModifier
+			)
+			"Trailer Spawn Accessory": (
+				customAccBlock.type = "trailerspawn"
+				GetStandardAppData obj appDataModifier
+			)
+			"Multiplayer Spawn Accessory": (
+				customAccBlock.type = "multiplayerspawn"
+				GetStandardAppData obj appDataModifier
+			)
+			"Cop Spawn Accessory": (
+				customAccBlock.type = "copspawn"
+				GetStandardAppData obj appDataModifier
+			)
+			"Conveyor Accessory": (
+				customAccBlock.type = "conveyoraccessory"
+				GetStandardAppData obj appDataModifier
+			)
+			"Bicycle Accessory": (
+				customAccBlock.type = "bicycle"
+				GetStandardAppData obj appDataModifier
+			)
+			"Exploding Accessory": (
+				customAccBlock.type = "explodingaccessory"
+				GetStandardAppData obj appDataModifier
+			)
+			"Rocking Accessory Data": (
+				customAccBlock.type = "rockingaccessory"
+				GetAnimationAppData obj appDataModifier
+			)
+			"Animated Accessory Data": (
+				customAccBlock.type = "rigidbodyanimation"
+				GetAnimationAppData obj appDataModifier
+			)
+			"Powerup Accessory Data": (
+				customAccBlock.type = "powerup"
+				GetPowerupAppData obj appDataModifier
+			)
+			"Rotating Accessory Data": (
+				customAccBlock.type = "rotatingaccessory"
+				GetRotatingAppData obj appDataModifier
+			)
+			"Angular Damped Accessory Data": (
+				customAccBlock.type = "angulardampedaccessory"
+				GetAngularDampedAppData obj appDataModifier
+			)
+			"Managed Accessory Data": (
+				customAccBlock.type = "managedaccessory"
+				GetManagedAppData obj appDataModifier
+			)
+			"Checkpoint Accessory Data": (
+				customAccBlock.type = "checkpoint"
+				GetCheckpointAppData obj appDataModifier
+			)
+			default: (
+				undefined
+			)
+		)
+		if customAccBlock.CustomData != undefined then
+			append customAccBlocks customAccBlock
+	)
+	customAccBlocks
+)
+fn GetShapesFromModifier obj collisionshapes shapeLabel = (
+	local shapes = #()
+	for shape in collisionshapes do (
+		if shape.node != undefined and (isDeleted shape.node) == false then (
+			append shapes shape.node
+		)
+	)
+	local shapesBlock = AccessoryDynamicsShapeBlock()
+	shapesBlock.label = shapeLabel
+	shapesBlock.CreateShape2 shapes
+	shapesBlock
+)
+fn GetBreakable obj dataMod = (
+	local data = AccessoryBreakableBlock()
+
+	data.Type = dataMod.Type
+	if dataMod.break_impulse != undefined then (
+		data.break_impulse = dataMod.break_impulse
+	)
+	if dataMod.explode_force != undefined then (
+		data.explode_force = dataMod.explode_force
+	)
+
+	if dataMod.trigger_particles == true then (
+		data.trigger_particles = true
+	)
+	if dataMod.detach_children == true then (
+		data.detach_children = true
+	)
+	if dataMod.destroy_children == true then (
+		data.destroy_children = true
+	)
+	if dataMod.collision_with_world_will_break_me != true then (
+		data.collision_with_world_will_break_me = false
+	)
+	if dataMod.sound != undefined and (trimright (trimleft dataMod.sound)) != "" then (
+		data.sound = dataMod.sound
+	)
+	if dataMod.random_rotation_min != 0 or dataMod.random_rotation_max != 0 then (
+		data.random_rotation = [dataMod.random_rotation_min, dataMod.random_rotation_max]
+	)
+
+	if dataMod.replace != undefined and (trimleft (trimright dataMod.replace)) != undefined then (
+		local replacement = AccessoryBreakableReplacement()
+		replacement.Axis = undefined
+		replacement.Replacement = dataMod.replace
+		append data.Replacements replacement
+	)
+
+	if dataMod.directional_replacements.count > 0 then (
+		for i = 1 to dataMod.directional_replacements.count do (
+			local replacement = AccessoryBreakableReplacement()
+			replacement.Axis = dataMod.directional_replacements_direction[i]
+			replacement.Replacement = dataMod.directional_replacements[i]
+			append data.Replacements replacement
+		)
+	)
+
+	data
+)
+fn GetJointFromModifier obj jointMod = (
+	local jointData = AccessoryJoint()
+	local constraintModName = undefined
+	local weaknessModName = undefined
+	if jointMod.name == "Accessory World Joint" then (
+		jointData.type = "world_joint"
+		constraintModName = "World Joint Constraint"
+		weaknessModName = "World Joint Weakness"
+	)
+	else (
+		jointData.type = "child_joint"
+		constraintModName = "Child Joint Constraint"
+		weaknessModName = "Child Joint Weakness"
+	)
+	jointData.flags = 0
+	for i = 1 to 32 do (
+		if jointMod.flags[i] == true then (
+			jointData.flags = bit.or jointData.flags (bit.shift 1 (i-1))
+		)
+	)
+	jointData.label = jointMod.jointlabel
+	jointData.f_Unknown1 = jointMod.f_Unknown1
+	jointData.local_position = jointMod.local_position
+	jointData.parent_position = jointMod.parent_position
+	jointData.joint_normal = jointMod.joint_normal
+	jointData.p3_Unknown2 = jointMOd.p3_Unknown2
+	jointData.p3_Unknown3 = jointMOd.p3_Unknown3
+	jointData.p3_Unknown4 = jointMOd.p3_Unknown4
+	jointData.p3_Unknown5 = jointMOd.p3_Unknown5
+	jointData.p3_Unknown6 = jointMOd.p3_Unknown6
+
+	jointData.constraints = #()
+	for constraintMod in obj.modifiers where constraintMod.name == constraintModName do (
+		local constraintData = AccessoryJoint_Constraint()
+		constraintData.i_Unknown = constraintMod.i_Unknown
+		constraintData.strength = constraintMod.strength
+		constraintData.f_unknown1 = constraintMod.f_unknown1
+		constraintData.minDirection = constraintMod.minDirection
+		constraintData.maxDirection = constraintMod.maxDirection
+		constraintData.f_Unknown2 = constraintMod.f_Unknown2
+		constraintData.weakness = constraintMod.weakness
+		constraintData.p3_Unknown1 = constraintMod.p3_Unknown1
+		constraintData.p3_Unknown2 = constraintMod.p3_Unknown2
+		append jointData.constraints constraintData
+	)
+
+	if obj.modifiers[weaknessModName + "1"] != undefined then (
+		local weakness1Mod = obj.modifiers[weaknessModName + "1"]
+		local weakness1 = AccessoryJoint_Weakness()
+		weakness1.type = weakness1Mod.WeaknessType
+		weakness1.p3_Unknown = weakness1Mod.p3_Unknown
+		weakness1.strength = weakness1Mod.strength
+		weakness1.twistStrength = weakness1Mod.twistStrength
+		jointData.hasWeakness = true
+		jointData.weakness1 = weakness1
+	)
+
+	if obj.modifiers[weaknessModName + "2"] != undefined then (
+		local weakness2Mod = obj.modifiers[weaknessModName + "2"]
+		local weakness2 = AccessoryJoint_Weakness()
+		weakness2.type = weakness2Mod.WeaknessType
+		weakness2.p3_Unknown = weakness2Mod.p3_Unknown
+		weakness2.strength = weakness2Mod.strength
+		weakness2.twistStrength = weakness2Mod.twistStrength
+		jointData.hasWeakness = true
+		jointData.weakness2 = weakness2
+	)
+	jointData
+)
+
+fn GetDynamicsBlock obj = (
+	local data = undefined
+	if obj.modifiers["Accessory Dynamics"] != undefined then (
+		local dataMod = obj.modifiers["Accessory Dynamics"]
+		data = AccessoryDynamicsBlock()
+
+		data.lump_name = obj.name
+		if dataMod.moments != undefined and dataMod.moments != [0,0,0] then
+			data.moments = dataMod.moments
+
+		if dataMod.mass != undefined and dataMod.mass != 0 then
+			data.mass = dataMod.mass
+
+		if dataMod.solid == true then
+			data.solid = true
+
+		if dataMod.inf_mi == true then
+			data.inf_mi = true
+
+		if dataMod.inf_mass == true then
+			data.inf_mass = true
+
+		if dataMod.drivable_on == true then
+			data.drivable_on = true
+
+		if dataMod.part_of_world == true then
+			data.part_of_world = true
+
+		if dataMod.stop_sinking_into_ground == true then
+			data.stop_sinking_into_ground = true
+
+		if dataMod.ignore_gravity == true then
+			data.ignore_gravity = true
+
+		if dataMod.ignore_world == true then
+			data.ignore_world = true
+
+		if dataMod.groupIndex != undefined and dataMod.groupIndex != 0 then
+			data.groupIndex = dataMod.groupIndex
+
+		if dataMod.ignore_groups != undefined and datamod.ignore_groups.count > 0 then (
+			data.ignore_group = #()
+			for ignoreGroup in dataMod.ignore_groups do (
+				append data.ignore_group ignoreGroup
+			)
+		)
+
+		if dataMod.buoyant == true then (
+			data.buoyant = true
+
+			if dataMod.buoyancy != undefined then (
+				data.buoyancy = dataMod.buoyancy
+			)
+		)
+
+		if dataMod.buoyancy_position != undefined then (
+			data.buoyancy_position = dataMod.buoyancy_position
+		)
+		if dataMod.buoyancy_relative_to_com == true then
+			data.buoyancy_relative_to_com= true
+
+		if dataMod.sphere_rolling_resistance != undefined and dataMod.sphere_rolling_resistance != 0 then
+			data.sphere_rolling_resistance = dataMod.sphere_rolling_resistance
+
+		if dataMod.substance != undefined then 
+			data.substance = dataMod.substance
+
+		if dataMod.linear_acceleration != undefined and dataMod.linear_acceleration != [0,0,0] then
+			data.linear_acceleration = dataMod.linear_acceleration
+
+		if dataMod.angular_acceleration != undefined and dataMod.angular_acceleration != [0,0,0] then
+			data.angular_acceleration = dataMod.angular_acceleration
+
+		if dataMod.CentreOfMassHelper != undefined and dataMod.CentreOfMassHelper.node != undefined and (isDeleted dataMod.CentreOfMassHelper.node) == false then (
+			in coordsys obj (
+				data.centre_of_mass = dataMod.CentreOfMassHelper.node.pos
+			)
+		)
+		if dataMod.collisionshapes != undefined and dataMod.collisionshapes.count > 0 then (
+			data.Shape = GetShapesFromModifier obj dataMod.collisionshapes dataMod.shapelabel
+		)
+		data.Joints = #()
+		for jointMod in obj.modifiers do (
+			if jointMod.name == "Accessory World Joint" or jointMod.name == "Accessory Child Joint" then (
+				append data.Joints (GetJointFromModifier obj jointMod)
+			)
+		)
+
+		if obj.modifiers["Accessory Breakable"] != undefined then (
+			data.Breakable = GetBreakable obj obj.modifiers["Accessory Breakable"]
+		)
+	)
+	data
+)
+fn ExportAccessoryTXT file rootObj = (
+	local accFile = AccessoryFileLump()
+
+	accFile.CustomBlocks = GetAccessoryAppDataBlock rootObj
+	local objs = #(rootObj) + GetAllChildren rootObj
+
+
+	for obj in objs do (
+		local dynBlock = (GetDynamicsBlock obj)
+
+		if dynBlock != undefined then
+			append accFile.DynamicsBlocks dynBlock
+	)
+
+	accFile.Write file
+
+	accFile
 )

@@ -1,4 +1,18 @@
+PedFileSpawnTypes = #(
+	"Point",
+	"Line",
+	"Radius",
+	"Rectangle",
+	"Material"
+)
 
+PedFileSpawnSpecAttribute = attributes PedFileSpawnSpec_Def attribID:#(0x3f78e276, 0x54cd3c7) version:1
+(
+	parameters main rollout:PetFileSpawnSpecRollout (
+		SpecType type:#string default:"Radius"
+		
+	)
+)
 struct PedFile_SpawnSpec
 (
 	Type,

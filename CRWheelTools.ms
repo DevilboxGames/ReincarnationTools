@@ -109,3 +109,32 @@ fn SaveWheelLUA obj wheelfolder = (
 		close f
 	)
 )
+fn ExportFullWheel file rootObject = (
+	exportTexturesChecked = true
+	exportMatsChecked = true
+	exportMTLChecked = false
+	exportOctreeChecked = false
+	global MaterialsToExport
+	MaterialsToExport=#()
+	mdl_path = getFilenamePath file
+	selectedModel = selection[1]
+	ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+	ExportCNT file selectedModel
+	ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+	SaveWheelLUA rootObject mdl_path
+
+	local wheelMod = obj.modifiers["Complicated Wheel"]
+
+	if wheelMod != undefined and wheelMod.PunctureStage_Object != undefined and wheelModifier.PunctureStage_Object.Count > 0 then (
+
+		for t = 1 to wheelMod.PunctureStage_Object.count do (
+			local tyreModel = wheelMod.PunctureStage_Object[t].node
+			local TyreName = wheelMod.PunctureStage_Mesh[t]
+			select tyreModel
+			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			ExportCNT (mdl_path + TyreName + ".cnt") tyreModel
+			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			
+		)
+	)
+)

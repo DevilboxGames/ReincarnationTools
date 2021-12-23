@@ -1753,6 +1753,7 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		SkidmarkWidth type:#float default:1.0 ui:spn_SkidmarkWidth
 		PunctureStage_Value type:#inttab tabSizeVariable:true
 		PunctureStage_Mesh type:#stringtab tabSizeVariable:true
+		PunctureStage_Object type:#maxObjectTab tabSizeVariable:true
 		TyreMaterial type:#string default:"TYRE" ui:txt_TyreMaterial
 		TyrePuncturedMaterial type:#string default:"TYRE_PUNCTURED" ui:txt_TyrePuncturedMaterial
 		TyreDerimmedMaterial type:#string default:"TYRE_PUNCTURED" ui:txt_TyreDerimmedMaterial
@@ -1921,12 +1922,14 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		checkbox chk_UseSkidmarkWidth "" default:false across:2
 		spinner spn_SkidmarkWidth "SkidmarkWidth" type:#float default:false
 
-		group "Puncture Stages" (
+		group "Tyre Puncture Stages" (
 			spinner spn_PunctureStage_Value "Stage" labelOnTop:true fieldwidth: 70 across:2
-			edittext txt_PunctureStage_Mesh "CNT" labelOnTop:true fieldwidth: 130 across:2
+			edittext txt_PunctureStage_Mesh "CNT Name" labelOnTop:true fieldwidth: 130 across:2
+			pickbutton pck_PunctureStage_Object "Tyre Mesh" labelOnTop:true 
 			button but_AddToPunctureStage "Add"
 			dotnetcontrol lv_PunctureStages "listview" height: 100
 			button but_DeleteFromPunctureStage "Delete Selected"
+			button but_SelectPuncturedStage "Selected Object"
 		)
 		edittext txt_TyreMaterial "TyreMaterial" type:#string default:"default_tyre"
 		edittext txt_TyrePuncturedMaterial "TyrePuncturedMaterial" type:#string default:"default_tyre"
@@ -1961,10 +1964,12 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 			if stageIndex == 0 then (
 				append PunctureStage_Value stage
 				append PunctureStage_Mesh cnt
+				append PunctureStage_Object (nodeTransformMonitor node:pck_PunctureStage_Object.object forwardTransformChangeMsgs:false)
 			)
 			else (
 				insertItem stage PunctureStage_Value stageIndex
 				insertItem cnt PunctureStage_Mesh stageIndex
+				insertItem (nodeTransformMonitor node:pck_PunctureStage_Object.object forwardTransformChangeMsgs:false) PunctureStage_Object stageIndex
 			)
 		)
 		on but_DeleteFromPunctureStage pressed do (
@@ -1973,6 +1978,16 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 				lv_PunctureStages.Items.removeat selectedIndex
 				deleteItem PunctureStage_Mesh (selectedIndex + 1)
 				deleteItem PunctureStage_Value (selectedIndex + 1)
+				deleteItem PunctureStage_Object (selectedIndex + 1)
+			)
+		)
+		on but_SelectPuncturedStage pressed do (
+			if lv_PunctureStages.SelectedIndices.count > 0 then (
+				selectedIndex = lv_PunctureStages.SelectedIndices[0] + q
+
+				if PunctureStage_Object.Count >= selectedIndex and PuncturedStage_Object[selectedIndex] != undefined and PuncturedStage_Object[selectedIndex].Node != undefined then (
+					select PuncturedStage_Object[selectedIndex].node
+				)
 			)
 		)
 	)

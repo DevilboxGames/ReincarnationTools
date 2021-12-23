@@ -175,13 +175,13 @@ fn StringIsFloat str =
 fn StringIsPoint3 str = 
 (
 	
-	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+,[-]?[0-9]+\.[0-9]+$"
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^[-]?[0-9]+\.[0-9]+[\s]*,[\s]*[-]?[0-9]+\.[0-9]+[\s]*,[\s]*[-]?[0-9]+\.[0-9]+$"
 	rx.isMatch str
 )
 fn StringAsPoint3 str = 
 (
 	
-	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+)$"
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+)[\s]*,[\s]*([-]?[0-9]+\.[0-9]+)[\s]*,[\s]*([-]?[0-9]+\.[0-9]+)$"
 	matches = rx.Match str
 	
 	 [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float, matches.Groups.Item[3].Value as float]
@@ -189,7 +189,7 @@ fn StringAsPoint3 str =
 fn StringAsPoint2 str = 
 (
 	
-	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+),([-]?[0-9]+\.[0-9]+)$"
+	rx =  dotnetobject "System.Text.RegularExpressions.Regex" "^([-]?[0-9]+\.[0-9]+)[\s]*,[\s]*([-]?[0-9]+\.[0-9]+)"
 	matches = rx.Match str
 	
 	 [matches.Groups.Item[1].Value as float, matches.Groups.Item[2].Value as float]

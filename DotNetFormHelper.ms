@@ -44,7 +44,36 @@ struct DotNetFormHelper (
 	NextControlPosition,
 	Items = #(),
 	CurrentItem,
+	fn SetBorderstyle control style = (
 
+		control.borderstyle = case style of (
+			"FixedSingle": (dotnetclass "System.Windows.Forms.BorderStyle").FixedSingle
+			"Fixed3D": (dotnetclass "System.Windows.Forms.BorderStyle").Fixed3D
+			default: (dotnetclass "System.Windows.Forms.BorderStyle").Fixed3D
+		)
+	),
+	fn SetFont control fontName fontSize bold:false italic:false underline:false strikethrough:false sizeUnit:"Point" = (
+		local sizeUnitValue = case sizeUnit of (
+			"Pixel": (dotnetclass "System.Drawing.GraphicsUnit").Pixel
+			default: (dotnetclass "System.Drawing.GraphicsUnit").Point
+		)
+		local fontStyleClass = (dotnetclass "System.Drawing.FontStyle")
+		local fontStyle = fontStyleClass.Regular
+		if bold == true then (
+			fontstyle = dotNet.combineEnums fontstyle fontStyleClass.Bold
+		)
+		if italic == true then (
+			fontstyle = dotNet.combineEnums fontstyle fontStyleClass.Italic
+		)
+		if underline == true then (
+			fontstyle = dotNet.combineEnums fontstyle fontStyleClass.Underline
+		)
+		if strikethrough == true then (
+			fontstyle = dotNet.combineEnums fontstyle fontStyleClass.Strikethrough
+		)
+
+		control.font = (dotNetObject "System.Drawing.Font" fontName fontSize fontStyle sizeUnitValue 0)
+	),
 	fn AddControl controlType size:[200,10] margin:[10,10] = (
 		if Items.Count > 0 then (
 			local control = dotNetObject controlType
@@ -53,7 +82,7 @@ struct DotNetFormHelper (
 			control.Size = dotnetobject "System.Drawing.Size" size.x size.y
 			control.Location = dotnetobject "System.Drawing.Point" controlPosition.x controlPosition.y
 
-			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control
+			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control MarginTop:margin.y MarginBottom:margin.y MarginLeft:margin.x MarginRight:margin.x
 			append CurrentItem.Children controlItem
 			ParentControl.Controls.Add control
 		)

@@ -27,7 +27,7 @@ format "Looking in folder %\n" (inputPath+"Accessories\\")
 		local accessoryTxtPath = (dotnetclass "System.IO.Path").Combine filePath "accessory.txt"
 
 		local accessoryTxt = ImportAccessoryTXT accessoryTxtPath rootMesh
-		if outputPath != unsupplied then (
+		if outputPath != unsupplied and accessoryTxt != undefined then (
 			select rootMesh
 			local destination = outputPath + (substring filePath inputPath.count filePath.count)
 			makedir destination
@@ -43,11 +43,11 @@ format "Looking in folder %\n" (inputPath+"Accessories\\")
 		)
 			numProcessed = numProcessed+1
 
-			--if numProcessed > 500 then return 0
+			--if numProcessed > 855 then return 0
 		
 	)
 )
 
 
 
-ProcessAllAccessories "D:\\Steam\\steamapps\\common\\Carmageddon Max Damage\\Data_Core\\Content\\" outputPath:"D:\\Work\\ReincarnationTools\\MaxScriptTools\\text_exports\\accessories" skipto:852
+ProcessAllAccessories "D:\\Steam\\steamapps\\common\\Carmageddon Max Damage\\Data_Core\\Content\\" outputPath:"D:\\Work\\ReincarnationTools\\MaxScriptTools\\text_exports\\accessories"-- skipto:970

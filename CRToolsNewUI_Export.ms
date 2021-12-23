@@ -306,7 +306,20 @@ fn ExportCarCrashSoundsConfigClicked sender arg = (
 )
 
 fn ExportWheelClicked sender arg = (
+	if (selection as array).count == 0 then
+	(
+		messageBox "Please select the wheel rim object to export" title:"No objects selected!"
+	)
+	else if (selection as array).count > 1 then
+	(
+		messageBox "Please select JUST the rim object to export" title:"Too many objects selected!"
+	)
+	else
+	(
 
+		file = GetSaveFileName caption:"Save Wheel" filename:"rim.cnt" types:"Wheel (Rim.CNT)|rim.cnt"
+		ExportFullWheel file selection[1]
+	)
 )
 
 
@@ -367,5 +380,35 @@ fn ExportAccessoryClicked sender arg = (
 
 		file = GetSaveFileName filename:"accessory.txt" caption:"Save Accessory TXT As" types:"Accessory TXT (Accessory.TXT)|accessory.txt;accessory.txt"
 		ExportAccessoryTXT file selection[1]
+	)
+)
+fn ExportFullAccessoryClicked sender arg = (
+	if (selection as array).count == 0 then
+	(
+		messageBox "Please select the root object to export (e.g. the accessory root)" title:"No objects selected!"
+	)
+	else if (selection as array).count > 1 then
+	(
+		messageBox "Please select JUST the root object to export (e.g. the accessory base)" title:"Too many objects selected!"
+	)
+	else
+	(
+		cnt_name = GetSaveFileName caption:"Save Accessory.CNT As" types:"Accessory.CNT(Accessory.CNT)|accessory.cnt"
+		if cnt_name != undefined do
+		(
+			exportTexturesChecked = true
+			exportMatsChecked = true
+			exportMTLChecked = false
+			exportOctreeChecked = false
+			global MaterialsToExport
+			MaterialsToExport=#()
+			mdl_path = getFilenamePath cnt_name
+			selectedModel = selection[1]
+			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			ExportCNT cnt_name selectedModel
+			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			local accessoryTxtPath = mdl_path+"accessory.txt"
+			ExportAccessoryTXT accessoryTxtPath selection[1]
+		)	
 	)
 )

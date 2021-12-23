@@ -1,5 +1,7 @@
 fileIn "DotNetFormHelper.ms"
 fileIn "CRToolsSettings.ms"
+fileIn "CRToolsNewUI_Common.ms"
+fileIn "CRToolsNewUI_Cars.ms"
 fileIn "CRToolsNewUI_Import.ms"
 fileIn "CRToolsNewUI_Export.ms"
 
@@ -16,37 +18,76 @@ wnd
 fn SetToolMode_Car args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local uicontent = dotnetobject "System.Windows.Forms.Label"
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	layoutHelper.BeginVerticalGroup marginTop:0 marginBottom:20
+
+	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
 	uicontent.text = "Car Mode"
-	CRToolsUI.controls.add uicontent
+	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	AddHierarchyToolsUI layoutHelper
+	AddCarToolsUI layoutHelper
+	
+	layoutHelper.EndVerticalGroup()
+
 )
 fn SetToolMode_Wheel args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local uicontent = dotnetobject "System.Windows.Forms.Label"
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	layoutHelper.BeginVerticalGroup()
+
+	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
 	uicontent.text = "Wheel Mode"
-	CRToolsUI.controls.add uicontent
+	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+
+	AddHierarchyToolsUI layoutHelper
+	
+	layoutHelper.EndVerticalGroup()
+
 )
 fn SetToolMode_Level args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local uicontent = dotnetobject "System.Windows.Forms.Label"
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	layoutHelper.BeginVerticalGroup()
+
+	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
 	uicontent.text = "Level Mode"
-	CRToolsUI.controls.add uicontent
+	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	AddHierarchyToolsUI layoutHelper
+
+	
+	layoutHelper.EndVerticalGroup()
+
 )
 fn SetToolMode_Accessory args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local uicontent = dotnetobject "System.Windows.Forms.Label"
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	layoutHelper.BeginVerticalGroup()
+
+	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
 	uicontent.text = "Accessory Mode"
-	CRToolsUI.controls.add uicontent
+	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+
+	AddHierarchyToolsUI layoutHelper
+	
+	layoutHelper.EndVerticalGroup()
+
 )
 fn SetToolMode_Ped args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local uicontent = dotnetobject "System.Windows.Forms.Label"
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	layoutHelper.BeginVerticalGroup()
+
+	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20]
 	uicontent.text = "Ped Mode"
-	CRToolsUI.controls.add uicontent
+	AddHierarchyToolsUI layoutHelper
+
+	
+	layoutHelper.EndVerticalGroup()
+
 )
 
 fn ShowImportOptions = (
@@ -313,7 +354,10 @@ fn CreateMenu uiForm = (
 	SetClickHandler exportLevelPostProcessScripts ExportLevelPostProcessScriptsClicked
 
 	local exportAccessory = exportSubMenu.MenuItems.Add("Export &Accessory")
-	SetClickHandler exportAccessory ExportAccessoryClicked
+	local exportFullAccessory = exportAccessory.MenuItems.Add("Export Fiull&Accessory")
+	local exportAccessoryTXT = exportAccessory.MenuItems.Add("Save &Accessory.TXT")
+	SetClickHandler exportFullAccessory ExportFullAccessoryClicked
+	SetClickHandler exportAccessoryTXT ExportAccessoryClicked
 
 	local exportPed = exportSubMenu.MenuItems.Add("Export &Ped")
 	local exportPedToDo = exportPed.MenuItems.Add("===ToDo===")
@@ -403,7 +447,11 @@ fn CreateNewUI =
 	--ToolsStartup()
 			
 	CRToolsUI = dotNetObject "System.Windows.Forms.Form"
-	
+
+	CRToolsUi.width = 420
+	CRToolsUI.height = 600
+	CRToolsUI.autosize = true
+	CRToolsUI.autoscroll = true
 	local currentScriptFileName = getThisScriptFilename()
 	local currentScriptFolder = getFilenamePath currentScriptFileName
 	local iconBmp = dotnetobject "System.Drawing.Bitmap" (currentScriptFolder + "\\UI\\ToolsIcon.png") 
@@ -416,6 +464,6 @@ fn CreateNewUI =
 --CRToolsUI.Owner = (controlClass.FromHandle maxHandlePointer)
 	callbacks.removeScripts #selectionSetChanged id:#crtoolschangehandler
 	callbacks.addScript #selectionSetChanged "SelectedNodeChangeHandler()" id:#crtoolschangehandler
-	
+	SetToolMode_Car undefined
 	CRToolsUI
 )

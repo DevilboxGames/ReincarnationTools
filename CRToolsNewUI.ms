@@ -1,7 +1,14 @@
+fn SetToolMode_Car args = ()
+fn SetToolMode_Wheel args = ()
+fn SetToolMode_Level args = ()
+fn SetToolMode_Accessory args = ()
+fn SetToolMode_Ped args = ()
+
 fileIn "DotNetFormHelper.ms"
 fileIn "CRToolsSettings.ms"
 fileIn "CRToolsNewUI_Common.ms"
 fileIn "CRToolsNewUI_Cars.ms"
+fileIn "CRToolsNewUI_Wheels.ms"
 fileIn "CRToolsNewUI_Import.ms"
 fileIn "CRToolsNewUI_Export.ms"
 
@@ -19,11 +26,11 @@ fn SetToolMode_Car args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup marginTop:0 marginBottom:20
-
-	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	uicontent.text = "Car Mode"
-	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
+	AddModeButtons layoutHelper "Car"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+	--uicontent.text = "Car Mode"
+	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 	AddHierarchyToolsUI layoutHelper
 	AddCarToolsUI layoutHelper
 	
@@ -34,13 +41,14 @@ fn SetToolMode_Wheel args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup()
-
-	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	uicontent.text = "Wheel Mode"
-	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+	AddModeButtons layoutHelper "Wheel"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+	--uicontent.text = "Wheel Mode"
+	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 
 	AddHierarchyToolsUI layoutHelper
+	AddWheelToolsUI layoutHelper
 	
 	layoutHelper.EndVerticalGroup()
 
@@ -49,11 +57,12 @@ fn SetToolMode_Level args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup()
+	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	uicontent.text = "Level Mode"
-	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	AddModeButtons layoutHelper "Level"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+	--uicontent.text = "Level Mode"
+	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 	AddHierarchyToolsUI layoutHelper
 
 	
@@ -64,11 +73,12 @@ fn SetToolMode_Accessory args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup()
+	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	uicontent.text = "Accessory Mode"
-	layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	AddModeButtons layoutHelper "Accessory"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+	--uicontent.text = "Accessory Mode"
+	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 
 	AddHierarchyToolsUI layoutHelper
 	
@@ -79,10 +89,11 @@ fn SetToolMode_Ped args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup()
+	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20]
-	uicontent.text = "Ped Mode"
+	AddModeButtons layoutHelper "Ped"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20]
+	--uicontent.text = "Ped Mode"
 	AddHierarchyToolsUI layoutHelper
 
 	
@@ -452,6 +463,9 @@ fn CreateNewUI =
 	CRToolsUI.height = 600
 	CRToolsUI.autosize = true
 	CRToolsUI.autoscroll = true
+	--local tooltip = dotNetObject "System.Windows.Forms.ToolTip"
+	--tooltip.name = "fornToolTip"
+	--CRToolsUI.Controls.Add tooltip
 	local currentScriptFileName = getThisScriptFilename()
 	local currentScriptFolder = getFilenamePath currentScriptFileName
 	local iconBmp = dotnetobject "System.Drawing.Bitmap" (currentScriptFolder + "\\UI\\ToolsIcon.png") 

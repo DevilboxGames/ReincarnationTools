@@ -3031,10 +3031,14 @@ fn LoadVehicleConfig obj folderName = (
 	if ((dotnetClass "System.IO.Path").GetFilename cfgPath) == "" then 
 		cfgPath = (folderName+"vehicle_setup.cfg")
 
+
+	local splitPath = filterstring cfgPath "\\"
+	local carName = splitPath[splitPath.count - 1]
+
 	if (dotnetClass "System.IO.File").Exists cfgPath then (
 		local cfgMod = GetVehilceCFGModifier obj
 		cfg = (dotNetClass "ToxicRagers.CarmageddonReincarnation.Formats.VehicleSetupConfig").Load cfgPath
-
+		cfgMod.CarName = carName
 		if cfg.AIScript != undefined then
 			cfgMod.AIScript = cfg.AIScript
 
@@ -3079,12 +3083,14 @@ fn LoadVehicleConfig obj folderName = (
 			)
 			*/
 			local itterator = matMap.Substitutions.GetEnumerator()
+			local tmpMatBox = box()
 			while itterator.MoveNext() do (
 				local key = itterator.current.Key
 				local val = itterator.current.Value
-				
+				tmpMatBox.material =  (GetMaterialFromMT2 folderName val importTextures:true)
 				replacements = replacements + key+":"+val+";"
 			)
+			delete tmpMatBox
 			append cfgMod.MatReplacements replacements
 		)
 
@@ -3190,30 +3196,46 @@ fn LoadVehicleConfig obj folderName = (
 			local attachment = cfg.Attachments.Item[i]
 			case attachment.Type of (
 				(attachTypeClass.ExhaustParticles): (
-					cfgMod.ExhaustParticleVFX = attachment.Exhaust.VFX
-					cfgMod.ExhaustParticleUnderwaterVFX = attachment.Exhaust.UnderwaterVFX
-					cfgMod.ExhaustAnchor = attachment.Exhaust.Anchor
-					cfgMod.ExhaustNeutralMultiplier = attachment.Exhaust.NeutralMultiplier
+					if attachment.Exhaust.VFX !=undefined then
+						cfgMod.ExhaustParticleVFX = attachment.Exhaust.VFX
+					if attachment.Exhaust.UnderwaterVFX != undefined then
+						cfgMod.ExhaustParticleUnderwaterVFX = attachment.Exhaust.UnderwaterVFX
+					if attachment.Exhaust.Anchor != undefined then
+						cfgMod.ExhaustAnchor = attachment.Exhaust.Anchor
+					if attachment.Exhaust.Anchor !=undefined then
+						cfgMod.ExhaustNeutralMultiplier = attachment.Exhaust.NeutralMultiplier
 				)
 				(attachTypeClass.DynamicsFmodEngine): (
-					cfgMod.FMODEngine_RPMSmooth = attachment.FModEngine.RPMSmooth
-					cfgMod.FMODEngine_OnLoadSmooth = attachment.FModEngine.OnLoadSmooth
-					cfgMod.FMODEngine_OffLoadSmooth = attachment.FModEngine.OffLoadSmooth
-					cfgMod.FMODEngine_LoadMin = attachment.FModEngine.LoadMin
-					cfgMod.FMODEngine_MaxSpeed = attachment.FModEngine.MaxSpeed
-					cfgMod.FMODEngine_MinRevs = attachment.FModEngine.MinRevs
-					cfgMod.FMODEngine_MaxRevs = attachment.FModEngine.MaxRevs
-					cfgMod.FMODEngine = attachment.FModEngine.Engine
+					if attachment.FModEngine.RPMSmooth != undefined then
+						cfgMod.FMODEngine_RPMSmooth = attachment.FModEngine.RPMSmooth
+					if attachment.FModEngine.OnLoadSmooth != undefined then
+						cfgMod.FMODEngine_OnLoadSmooth = attachment.FModEngine.OnLoadSmooth
+					if attachment.FModEngine.OffLoadSmooth != undefined then
+						cfgMod.FMODEngine_OffLoadSmooth = attachment.FModEngine.OffLoadSmooth
+					if attachment.FModEngine.LoadMin != undefined then
+						cfgMod.FMODEngine_LoadMin = attachment.FModEngine.LoadMin
+					if attachment.FModEngine.MaxSpeed != undefined then
+						cfgMod.FMODEngine_MaxSpeed = attachment.FModEngine.MaxSpeed
+					if attachment.FModEngine.MinRevs != undefined then
+						cfgMod.FMODEngine_MinRevs = attachment.FModEngine.MinRevs
+					if attachment.FModEngine.MaxRevs != undefined then
+						cfgMod.FMODEngine_MaxRevs = attachment.FModEngine.MaxRevs
+					if attachment.FModEngine.Engine != undefined then
+						cfgMod.FMODEngine = attachment.FModEngine.Engine
 				)
 				(attachTypeClass.Horn): (
-					cfgMod.HornSound = attachment.Horn
+					if attachment.Horn != undefined then
+						cfgMod.HornSound = attachment.Horn
 				)
 				(attachTypeClass.ReverseLightSound): (
-					cfgMod.ReverseLightSound = attachment.ReverseLightSound
+					if attachment.ReverseLightSound != undefined then
+						cfgMod.ReverseLightSound = attachment.ReverseLightSound
 				)
 				(attachTypeClass.ContinuousSound): (
-					cfgMod.ContinuousSound = attachment.ContinuousSound
-					cfgMod.ContinuousSound_Lump = attachment.ContinuousSoundLump
+					if attachment.ContinuousSound != undefined then
+						cfgMod.ContinuousSound = attachment.ContinuousSound
+					if attachment.ContinuousSoundLump != undefined then
+						cfgMod.ContinuousSound_Lump = attachment.ContinuousSoundLump
 				)
 
 			)
@@ -3222,17 +3244,24 @@ fn LoadVehicleConfig obj folderName = (
 			local wheelModule = cfg.WheelModules.Item[i]
 			case wheelModule.Type of (
 				(wheelModuleTypeClass.SkidMarks): (
-					cfgMod.SkidMarksImage = wheelModule.SkidMarkImage
-					cfgMod.OnlyTrails = wheelModule.OnlyTrails
+					if wheelModule.SkidMarkImage != undefined then
+						cfgMod.SkidMarksImage = wheelModule.SkidMarkImage
+					if wheelModule.OnlyTrails != undefined then
+						cfgMod.OnlyTrails = wheelModule.OnlyTrails
 				)
 				(wheelModuleTypeClass.TyreParticles): (
-					cfgMod.TyreParticlesVFX = wheelModule.TyreParticleVFX
+					if wheelModule.TyreParticleVFX != undefined then
+						cfgMod.TyreParticlesVFX = wheelModule.TyreParticleVFX
 				)
 				(wheelModuleTypeClass.SkidNoise): (
-					cfgMod.SkidNoises = wheelModule.SkidNoiseSound
-					cfgMod.ScrapeIndex = wheelModule.ScrapeSoundIndex
-					cfgMod.Volume = wheelModule.Volume
-					cfgMod.UseScrapeSounds = wheelModule.UseScrapeSounds
+					if wheelModule.SkidNoiseSound != undefined then
+						cfgMod.SkidNoises = wheelModule.SkidNoiseSound
+					if wheelModule.ScrapeSoundIndex != undefined then
+						cfgMod.ScrapeIndex = wheelModule.ScrapeSoundIndex
+					if wheelModule.Volume != undefined then
+						cfgMod.Volume = wheelModule.Volume
+					if wheelModule.UseScrapeSounds != undefined then
+						cfgMod.UseScrapeSounds = wheelModule.UseScrapeSounds
 				)
 			)
 		)

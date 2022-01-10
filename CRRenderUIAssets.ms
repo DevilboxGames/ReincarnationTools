@@ -112,7 +112,7 @@ fn RenderTopViewMobile file outputsize:[720,360] carRoot: = (
 	delete lit
 	delete ground
 )
-fn RenderThreeQuarterView file outputsize:[240,240] selfIllum:100.0 carRoot: = (
+fn RenderThreeQuarterView file outputsize:[240,240] selfIllum:100.0 closeUp:false carRoot: light1Value:180 light2Value:180 light1Multiplier:1.0 light2Multiplier:0.25= (
 	StopNullNodesRendering()
 	makeDir (getFilenamePath file)
 
@@ -122,19 +122,31 @@ fn RenderThreeQuarterView file outputsize:[240,240] selfIllum:100.0 carRoot: = (
 	select carRoot
 
 	for obj in selection do (selectmore obj.children )
+	for obj in selection where (superClassOf obj) != GeometryClass do ( deselect obj)
 	carSize  = distance $.min $.max
 
+	if closeUp then (
+
+		t = InvLerp 13.8565	18.0733 carSize
 	
-	t = InvLerp 6.57049 11.0073 carSize
+		cam = Freecamera()
+		cam.rotation = (quat 0.538985 0.196175 0.280167 0.769751)
+		cam.pos = Lerp  [3.99924,-5.2245,3.08177] [6.02309,-7.63649,4.22792] t 
+
+	)
+	else (
+
+		t = InvLerp 6.57049 11.0073 carSize
 	
-	cam = Freecamera()
-	cam.rotation = (quat 0.538985 0.196175 0.280167 0.769751)
-	cam.pos = Lerp [6.19895,-7.84599,4.3273] [10.0652,-12.4536,6.51653] t --[6.19895,-7.84599,4.3273]
-	lit = Directionallight pos:[0,0,0] rotation:(EulerAngles 25 5 0) castshadows:true raytracedShadows:true
+		cam = Freecamera()
+		cam.rotation = (quat 0.538985 0.196175 0.280167 0.769751)
+		cam.pos = Lerp [6.19895,-7.84599,4.3273] [10.0652,-12.4536,6.51653] t --[6.19895,-7.84599,4.3273]
+	)
+	lit = Directionallight pos:[0,0,0] rotation:(EulerAngles 25 5 0) castshadows:true raytracedShadows:true value:light1Value multiplier:light1Multiplier
 	lit.shadowGenerator = Adv__Ray_Traced()
 	lit.pos = [-10,50,50]
 	lit.shadow_density = 0.25
-	lit2 = Omnilight pos:[3.2,-5,5] multiplier:0.25
+	lit2 = Omnilight pos:[3.2,-5,5] multiplier:light2Multiplier value:light2Value
 	ground = plane width:1000 length:1000 material:(MatteShadow())
 
 	sceneStateMgr.Capture "Pre34ViewGeneration" #{1..10}

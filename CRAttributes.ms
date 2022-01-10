@@ -617,7 +617,7 @@ refreshLayerList()
 ***** CNT ATTRIBUTES
 *********************************/
 
-CNTTypes = #("MODL","NULL","LITg","SKIN","shrb","VFXI")
+CNTTypes = #("MODL","NULL","LITg","SKIN","shrb","VFXI", "IGNORE", "CNT")
 CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) version:1
 (
 	parameters main rollout:CNTAttributeParams
@@ -627,6 +627,8 @@ CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) ve
 		NodeType type:#string default:"MODL"
 		FileName type:#string ui:uiFileName default:""
 		BakeScaleIntoMesh type:#boolean ui:uiBakeScaleIntoMesh default: false
+		OverridePath type:#boolean ui:chk_OverridePath default: false
+		Path type:#string ui:txt_Path default:""
 		
 	)
 	rollout CNTAttributeParams "CNT Hierarchy Params"
@@ -635,6 +637,27 @@ CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) ve
 		--edittext uiNodeType2 "Node Type (string)" labelOnTop:true
 		edittext uiFileName "Content Filename" labelOnTop:true
 		checkbox uiBakeScaleIntoMesh "Bake Scale into Mesh"
+		checkbox chk_OverridePath "Override Path?"
+		edittext txt_Path "Path" across:2
+		button btn_BrowseFolder "Browse" across:2
+
+		on CNTAttributeParams open do (
+			txt_Path.enabled = OverridePath
+			btn_BrowseFolder.enabled = OverridePath
+		)
+		on chk_OverridePath changed val do (	
+			txt_Path.enabled = true
+			btn_BrowseFolder.enabled = true
+		)
+		on btn_BrowseFolder pressed do (
+			folderSelectDialog = dotnetobject "CMDControls.FolderSelectDialog"
+			if FileName != undefined and FileName != "" and ((dotNetClass "System.IO.Directory").Exists FileName) then (
+				folderSelectDialog.InitialDirectory = FileName
+			)
+			if folderSelectDialog.ShowDialog() and folderSelectDialog.FileName != undefined then (
+				FileName = folderSelectDialog.FileName
+			)
+		)
 		on uiNodeType selected i do 
 		(
 			NodeTypeID = uiNodeType.selection
@@ -1049,6 +1072,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 (
 	parameters main rollout:VehicleCFGMainRollout
 	(
+		CarName type:#string ui:txt_CarName default:""
 		AIScript type:#string ui:txt_AIScript default:""
 		MaxCompression type:#float ui:spn_MaxCompression
 		MaxExtension type:#float ui:spn_MaxExtension
@@ -1067,6 +1091,7 @@ VehicleSetupCFGAttribute = attributes VehicleSetupCFG_Def attribID:#(0x340cef1c,
 	rollout VehicleCFGMainRollout "Vehicle CFG"
 	(
 
+		edittext txt_CarName "Car Folder Name" labelOnTop:true
 		edittext txt_AIScript "AI Script" labelOnTop:true
 		spinner spn_TopSpeed "Top Speed" range:[0,500,1] type:#integer
 		spinner spn_To60Time "0-60 Time (secs)" range:[0,50,0.1] type:#float
@@ -1751,6 +1776,7 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		ScrollTyreTiles type:#integer default:1 ui:spn_ScrollTyreTiles
 		UseSkidmarkWidth type:#boolean default:false ui:chk_UseSkidmarkWidth
 		SkidmarkWidth type:#float default:1.0 ui:spn_SkidmarkWidth
+		BaseTyre_Object tyoe:##maxObject
 		PunctureStage_Value type:#inttab tabSizeVariable:true
 		PunctureStage_Mesh type:#stringtab tabSizeVariable:true
 		PunctureStage_Object type:#maxObjectTab tabSizeVariable:true
@@ -1915,29 +1941,33 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 			Wheels_MaxExtensionRate type:#float default:2.0 ui:spn_Wheels_MaxExtensionRate
 	)
 	
-	rollout ComplicatedWheelRollout "ComplicatedWheelRollout"
+	rollout ComplicatedWheelRollout "Wheel Settings"
 	(
 		checkbox chk_RotateTyre "RotateTyre" default:false
 		spinner spn_ScrollTyreTiles "ScrollTyreTiles" type:#integer default:false
 		checkbox chk_UseSkidmarkWidth "" default:false across:2
 		spinner spn_SkidmarkWidth "SkidmarkWidth" type:#float default:false
+		pickbutton pck_BaseTyre_Object "Base Tyre"
 
 		group "Tyre Puncture Stages" (
-			spinner spn_PunctureStage_Value "Stage" labelOnTop:true fieldwidth: 70 across:2
-			edittext txt_PunctureStage_Mesh "CNT Name" labelOnTop:true fieldwidth: 130 across:2
+			spinner spn_PunctureStage_Value "Stage" labelOnTop:true fieldwidth: 70 
+			edittext txt_PunctureStage_Mesh "CNT Name" labelOnTop:true fieldwidth: 130 
 			pickbutton pck_PunctureStage_Object "Tyre Mesh" labelOnTop:true 
 			button but_AddToPunctureStage "Add"
 			dotnetcontrol lv_PunctureStages "listview" height: 100
 			button but_DeleteFromPunctureStage "Delete Selected"
 			button but_SelectPuncturedStage "Selected Object"
 		)
-		edittext txt_TyreMaterial "TyreMaterial" type:#string default:"default_tyre"
-		edittext txt_TyrePuncturedMaterial "TyrePuncturedMaterial" type:#string default:"default_tyre"
-		edittext txt_TyreDerimmedMaterial "TyreDerimmedMaterial" type:#string default:"default_tyre"
-		edittext txt_TyreDetachedMaterial "TyreDetachedMaterial" type:#string default:"default_tyre"
+		edittext txt_TyreMaterial "TyreMaterial" type:#string default:"default_tyre" labelOnTop:true
+		edittext txt_TyrePuncturedMaterial "TyrePuncturedMaterial" type:#string default:"default_tyre" labelOnTop:true
+		edittext txt_TyreDerimmedMaterial "TyreDerimmedMaterial" type:#string default:"default_tyre" labelOnTop:true
+		edittext txt_TyreDetachedMaterial "TyreDetachedMaterial" type:#string default:"default_tyre" labelOnTop:true
 
 		on ComplicatedWheelRollout open do (
 
+			if BaseTyre_Object != undefined and BaseTyre_Object.node != undefined and (isDeleted BaseTyre_Object.node) == falss then (
+				pck_BaseTyre_Object.object = BaseTyre_Object.node
+			)
 			lv_PunctureStages.view  = (dotnetclass "view").details
 			lv_PunctureStages.fullrowselect= true
 			lv_PunctureStages.gridlines = true
@@ -1946,12 +1976,15 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 			lv_PunctureStages.columns.add "CNT" 135
 			for i=1 to PunctureStage_Value.count do
 			(
-				lvItem = dotnetobject "listviewitem" PunctureStage_Value[i]
+				lvItem = dotnetobject "listviewitem" (PunctureStage_Value[i] as string)
 				lvitem.subitems.add PunctureStage_Mesh[i]
 				lv_PunctureStages.Items.add lvitem
 			)
 		)
 
+		on pck_BaseTyre_Object picked obj = (
+			BaseTyre_Object = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
+		)
 		on but_AddToPunctureStage pressed do (
 			stage = spn_PunctureStage_Value.value
 			cnt = txt_PunctureStage_Mesh.text
@@ -1974,7 +2007,7 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		)
 		on but_DeleteFromPunctureStage pressed do (
 			if lv_PunctureStages.SelectedIndices.count > 0 then (
-				selectedIndex = lv_PunctureStages.SelectedIndices[0]
+				selectedIndex = lv_PunctureStages.SelectedIndices.Item[0]
 				lv_PunctureStages.Items.removeat selectedIndex
 				deleteItem PunctureStage_Mesh (selectedIndex + 1)
 				deleteItem PunctureStage_Value (selectedIndex + 1)
@@ -1983,105 +2016,117 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		)
 		on but_SelectPuncturedStage pressed do (
 			if lv_PunctureStages.SelectedIndices.count > 0 then (
-				selectedIndex = lv_PunctureStages.SelectedIndices[0] + q
+				selectedIndex = lv_PunctureStages.SelectedIndices.Item[0] + 1
 
-				if PunctureStage_Object.Count >= selectedIndex and PuncturedStage_Object[selectedIndex] != undefined and PuncturedStage_Object[selectedIndex].Node != undefined then (
-					select PuncturedStage_Object[selectedIndex].node
+				if PunctureStage_Object.Count >= selectedIndex and PunctureStage_Object[selectedIndex] != undefined and PunctureStage_Object[selectedIndex].Node != undefined then (
+					select PunctureStage_Object[selectedIndex].node
 				)
 			)
 		)
 	)
-	rollout ComplicatedWheelWeaponsRollout "ComplicatedWheelWeaponsRollout"
+	rollout ComplicatedWheelWeaponsRollout "Weapons Settings"
 	(
-		checkbox chk_HasBlades "HasBlades" default:false
-		checkbox chk_HasDistinctBlades "HasDistinctBlades" default:false
-		spinner spn_BladeRadius "BladeRadius" type:#float default:1
-		checkbox chk_HasSimpleWeapon "HasSimpleWeapon" default:false
-		spinner spn_SimpleWeapon "SimpleWeapon" type:#float default:1
-		checkbox chk_HasVehicleWeapon "HasVehicleWeapon" default:false
-		edittext txt_VehicleWeaponScript "VehicleWeaponScript" type:#string default:"Vehicle_TyreRipper"
-		edittext txt_VehicleWeaponVariable "VehicleWeaponVariable" type:#string default:"WHEEL_SPEED"
-		spinner spn_VehicleWeaponMultiplier "VehicleWeaponMultiplier" type:#float default:0.1
-		spinner spn_VehicleWeaponMin "VehicleWeaponMin" type:#float default:1
-		spinner spn_VehicleWeaponMax "VehicleWeaponMax" type:#float default:3.0
-		checkbox chk_HasPedWeapon "HasPedWeapon" default:false
-		edittext txt_PedWeaponScript "PedWeaponScript" type:#string default:"Ped_Explode"
-		edittext txt_PedWeaponVariable "PedWeaponVariable" type:#string default:"WHEEL_SPEED"
-		spinner spn_PedWeaponMultiplier "PedWeaponMultiplier" type:#float default:0.1
-		spinner spn_PedWeaponMin "PedWeaponMin" type:#float default:1
-		spinner spn_PedWeaponMax "PedWeaponMax" type:#float default:3.0
-		checkbox chk_HasAccessoryWeapon "HasAccessoryWeapon" default:false
-		edittext txt_AccessoryWeaponScript "AccessoryWeaponScript" type:#string default:"Accessory_Rip_X"
-		edittext txt_AccessoryWeaponVariable "AccessoryWeaponVariable" type:#string default:"WHEEL_SPEED"
-		spinner spn_AccessoryWeaponMultiplier "AccessoryWeaponMultiplier" type:#float default:0.1
-		spinner spn_AccessoryWeaponMin "AccessoryWeaponMin" type:#float default:1
-		spinner spn_AccessoryWeaponMax "AccessoryWeaponMax" type:#float default:3.0
+		group "Blades" (
+			checkbox chk_HasBlades "Has Blades" default:false
+			checkbox chk_HasDistinctBlades "Has Distinct Blades" default:false
+			spinner spn_BladeRadius "Blade Radius" type:#float default:1
+		)
+		group "Simple Weapon" (
+			checkbox chk_HasSimpleWeapon "Has Simple Weapon" default:false
+			spinner spn_SimpleWeapon "Damage Factor" type:#float default:1
+		)
+		group "Vehicle Weapon" (
+			checkbox chk_HasVehicleWeapon "Enabled" default:false
+			edittext txt_VehicleWeaponScript "Weapon Script" type:#string default:"Vehicle_TyreRipper" labelOnTop:true
+			edittext txt_VehicleWeaponVariable "Base Variable" type:#string default:"WHEEL_SPEED" labelOnTop:true
+			spinner spn_VehicleWeaponMultiplier "Multiplier" type:#float default:0.1 
+			spinner spn_VehicleWeaponMin "Min Value" type:#float default:1
+			spinner spn_VehicleWeaponMax "Max Value" type:#float default:3.0
+		)
+
+		group "Ped Weapon" (
+			checkbox chk_HasPedWeapon "Enabled" default:false
+			edittext txt_PedWeaponScript "Weapon Script" type:#string default:"Ped_Explode" labelOnTop:true
+			edittext txt_PedWeaponVariable "Base Variable" type:#string default:"WHEEL_SPEED" labelOnTop:true
+			spinner spn_PedWeaponMultiplier "Multiplier" type:#float default:0.1
+			spinner spn_PedWeaponMin "Min Value" type:#float default:1
+			spinner spn_PedWeaponMax "Max Value" type:#float default:3.0
+		)
+
+		group "Accessory Weapon" (
+			checkbox chk_HasAccessoryWeapon "Enabled" default:false
+			edittext txt_AccessoryWeaponScript "Weapon Script" type:#string default:"Accessory_Rip_X" labelOnTop:true
+			edittext txt_AccessoryWeaponVariable "Base Variable" type:#string default:"WHEEL_SPEED" labelOnTop:true
+			spinner spn_AccessoryWeaponMultiplier "nMultiplier" type:#float default:0.1
+			spinner spn_AccessoryWeaponMin "Min Value" type:#float default:1
+			spinner spn_AccessoryWeaponMax "Max Value" type:#float default:3.0
+		)
 	)
-	rollout ComplicatedWheelForceFactorsRollout "ComplicatedWheelForceFactorsRollout"
+	rollout ComplicatedWheelForceFactorsRollout "Force Factors"
 	(
-		spinner spn_WheelBoundsXFactor "WheelBoundsXFactor" type:#float default:1.2
-		spinner spn_WheelBoundsYZFactor "WheelBoundsYZFactor" type:#float default:1.1
-		spinner spn_WheelDamageMaxRandom "WheelDamageMaxRandom" type:#float default:5.0
-		spinner spn_WheelDamageWeldThreshold "WheelDamageWeldThreshold" type:#float default:0.1
-		spinner spn_TyreDamageWeldThreshold "TyreDamageWeldThreshold" type:#float default:0.01
-		spinner spn_TyreDamageWeldMax "TyreDamageWeldMax" type:#float default:0.7
+		spinner spn_WheelBoundsXFactor "Bounds X" type:#float default:1.2
+		spinner spn_WheelBoundsYZFactor "Bounds YZ" type:#float default:1.1
+		spinner spn_WheelDamageMaxRandom "Damage Max Random" type:#float default:5.0
+		spinner spn_WheelDamageWeldThreshold "Wheel Weld Threshold" type:#float default:0.1
+		spinner spn_TyreDamageWeldThreshold "Tyre Weld Threshold" type:#float default:0.01
+		spinner spn_TyreDamageWeldMax "Tyre Weld Max" type:#float default:0.7
 	)
-	rollout ComplicatedWheelPositionalFactorsRollout "ComplicatedWheelPositionalFactorsRollout"
+	rollout ComplicatedWheelPositionalFactorsRollout "Position Factors"
 	(
-		spinner spn_PuncturedHeightPercentage "PuncturedHeightPercentage" type:#float default:20.0
-		spinner spn_DerimmedHeightPercentage "DerimmedHeightPercentage" type:#float default:60.0
-		spinner spn_DerimmedTyrePenetrationPercentage "DerimmedTyrePenetrationPercentage" type:#float default:20.0
-		spinner spn_DerimmedTyreTopPenetrationPercentage "DerimmedTyreTopPenetrationPercentage" type:#float default:20.0
+		spinner spn_PuncturedHeightPercentage "Popped Height %" type:#float default:20.0
+		spinner spn_DerimmedHeightPercentage "Derim Height %" type:#float default:60.0
+		spinner spn_DerimmedTyrePenetrationPercentage "Derim Penetration %" type:#float default:20.0
+		spinner spn_DerimmedTyreTopPenetrationPercentage "Derim Top Penetration %" type:#float default:20.0
 	)
-	rollout ComplicatedWheelPhysicsFactorsRollout "ComplicatedWheelPhysicsFactorsRollout"
+	rollout ComplicatedWheelPhysicsFactorsRollout "Physics Factors"
 	(
 		
-			spinner spn_Punctured_RollingResistance "Punctured_RollingResistance" type:#float default:0.1
-			spinner spn_Punctured_FrictionFactor "Punctured_FrictionFactor" type:#float default:0.8
-			spinner spn_Derimmed_RollingResistance "Derimmed_RollingResistance" type:#float default:0.1
-			spinner spn_Derimmed_FrictionFactor "Derimmed_FrictionFactor" type:#float default:0.6
-			spinner spn_TyreDetached_RollingResistance "TyreDetached_RollingResistance" type:#float default:0.1
-			spinner spn_TyreDetached_FrictionFactor "TyreDetached_FrictionFactor" type:#float default:0.4
-			spinner spn_SteeringBroken_RollingResistance "SteeringBroken_RollingResistance" type:#float default:0.05
-			spinner spn_SteeringBroken_FrictionFactor "SteeringBroken_FrictionFactor" type:#float default:0.75
-			spinner spn_Damaged_Tyre_Rim_Offset "Damaged_Tyre_Rim_Offset" type:#float default:0.01
-			spinner spn_Damage_WheelOnTime "Damage_WheelOnTime" type:#float default:0.5
+			spinner spn_Punctured_RollingResistance "Pop Roll Resistance" type:#float default:0.1
+			spinner spn_Punctured_FrictionFactor "Pop FrictionF actor" type:#float default:0.8
+			spinner spn_Derimmed_RollingResistance "Derim Roll Resistance" type:#float default:0.1
+			spinner spn_Derimmed_FrictionFactor "Derim Friction Factor" type:#float default:0.6
+			spinner spn_TyreDetached_RollingResistance "Detached Roll Resistance" type:#float default:0.1
+			spinner spn_TyreDetached_FrictionFactor "Datached Friction Factor" type:#float default:0.4
+			spinner spn_SteeringBroken_RollingResistance "Steer Broke Roll Resistance" type:#float default:0.05
+			spinner spn_SteeringBroken_FrictionFactor "Steer Broken FrictionFactor" type:#float default:0.75
+			spinner spn_Damaged_Tyre_Rim_Offset "Tyre Rim Offset" type:#float default:0.01
+			spinner spn_Damage_WheelOnTime "Wheel On Time" type:#float default:0.5
 	)
-	rollout ComplicatedWheelPhysicsDerimmedTyreEffectsRollout "ComplicatedWheelPhysicsDerimmedTyreEffectsRollout"
+	rollout ComplicatedWheelPhysicsDerimmedTyreEffectsRollout "Derimmed Tyre Effects"
 	(
 		
-			spinner spn_Derimmed_MaxSpinSpeedBeforeSlipping "Derimmed_MaxSpinSpeedBeforeSlipping" type:#float default:1.0
-			spinner spn_Derimmed_SpinSpeedSlipPower "Derimmed_SpinSpeedSlipPower" type:#float default:0.3333
-			spinner spn_Derimmed_SlipAngleFactor "Derimmed_SlipAngleFactor" type:#float default:0.75
-			spinner spn_Derimmed_MinSpeedForYWobble "Derimmed_MinSpeedForYWobble" type:#float default:3.0
-			spinner spn_Derimmed_MaxSpeedForYWobble "Derimmed_MaxSpeedForYWobble" type:#float default:30.0
-			spinner spn_Derimmed_YWobbleMaxAmplitude "Derimmed_YWobbleMaxAmplitude" type:#float default:10.0
-			spinner spn_Derimmed_YWobbleMaxRate "Derimmed_YWobbleMaxRate" type:#float default:10.0
-			spinner spn_Derimmed_YWobbleMaxAngle "Derimmed_YWobbleMaxAngle" type:#float default:20.0
-			spinner spn_Derimmed_MaxZSpeed "Derimmed_MaxZSpeed" type:#float default:10.0
-			spinner spn_Derimmed_ZShiftFactor "Derimmed_ZShiftFactor" type:#float default:0.3
-			spinner spn_Derimmed_MaxXSpeed "Derimmed_MaxXSpeed" type:#float default:3.0
-			spinner spn_Derimmed_MinXShift "Derimmed_MinXShift" type:#float default:0.3
-			spinner spn_Derimmed_MaxXShift "Derimmed_MaxXShift" type:#float default:0.7
+			spinner spn_Derimmed_MaxSpinSpeedBeforeSlipping "MaxSpinSpeedBeforeSlipping" type:#float default:1.0
+			spinner spn_Derimmed_SpinSpeedSlipPower "SpinSpeedSlipPower" type:#float default:0.3333
+			spinner spn_Derimmed_SlipAngleFactor "SlipAngleFactor" type:#float default:0.75
+			spinner spn_Derimmed_MinSpeedForYWobble "MinSpeedForYWobble" type:#float default:3.0
+			spinner spn_Derimmed_MaxSpeedForYWobble "MaxSpeedForYWobble" type:#float default:30.0
+			spinner spn_Derimmed_YWobbleMaxAmplitude "YWobbleMaxAmplitude" type:#float default:10.0
+			spinner spn_Derimmed_YWobbleMaxRate "YWobbleMaxRate" type:#float default:10.0
+			spinner spn_Derimmed_YWobbleMaxAngle "YWobbleMaxAngle" type:#float default:20.0
+			spinner spn_Derimmed_MaxZSpeed "MaxZSpeed" type:#float default:10.0
+			spinner spn_Derimmed_ZShiftFactor "ZShiftFactor" type:#float default:0.3
+			spinner spn_Derimmed_MaxXSpeed "MaxXSpeed" type:#float default:3.0
+			spinner spn_Derimmed_MinXShift "MinXShift" type:#float default:0.3
+			spinner spn_Derimmed_MaxXShift "MaxXShift" type:#float default:0.7
 	)
-	rollout ComplicatedWheelBentAxlesRollout "ComplicatedWheelBentAxlesRollout"
+	rollout ComplicatedWheelBentAxlesRollout "Bent Axle Settings"
 	(
 		
-			spinner spn_BentAxle_MaxAngle "BentAxle_MaxAngle" type:#float default:10.0
-			spinner spn_BentAxle_XOffset "BentAxle_XOffset" type:#float default:0.05
-			spinner spn_BentAxle_DerimmedTyreFactor "BentAxle_DerimmedTyreFactor" type:#float default:0.5
+			spinner spn_BentAxle_MaxAngle "Max Angle" type:#float default:10.0
+			spinner spn_BentAxle_XOffset "X Offset" type:#float default:0.05
+			spinner spn_BentAxle_DerimmedTyreFactor "Derimmed Tyre Factor" type:#float default:0.5
 	)
-	rollout ComplicatedWheelDamagedWheelPhysics "ComplicatedWheelDamagedWheelPhysics"
+	rollout ComplicatedWheelDamagedWheelPhysics "Damaged Wheel Physics"
 	(
 		
-			spinner spn_Physics_TyreMass "Physics_TyreMass" type:#float default:5.0
-			spinner spn_Physics_TyreRestitution "Physics_TyreRestitution" type:#float default:1.5
-			spinner spn_Physics_TyreDetachUpOffset "Physics_TyreDetachUpOffset" type:#float default:0.25
-			spinner spn_Physics_TyreDetachUpThrust "Physics_TyreDetachUpThrust" type:#float default:3.0
-			spinner spn_Physics_TyreDetachOutThrust "Physics_TyreDetachOutThrust" type:#float default:3.0
-			spinner spn_Physics_RimMass "Physics_RimMass" type:#float default:15.0
-			spinner spn_Wheels_MaxCompressionRate "Wheels_MaxCompressionRate" type:#float default:4.0
-			spinner spn_Wheels_MaxExtensionRate "Wheels_MaxExtensionRate" type:#float default:2.0
+			spinner spn_Physics_TyreMass "Tyre Mass" type:#float default:5.0
+			spinner spn_Physics_TyreRestitution "Tyre Restitution" type:#float default:1.5
+			spinner spn_Physics_TyreDetachUpOffset "Tyre Detach UpOffset" type:#float default:0.25
+			spinner spn_Physics_TyreDetachUpThrust "Tyre Detach UpThrust" type:#float default:3.0
+			spinner spn_Physics_TyreDetachOutThrust "Tyre Detach OutThrust" type:#float default:3.0
+			spinner spn_Physics_RimMass "Rim Mass" type:#float default:15.0
+			spinner spn_Wheels_MaxCompressionRate "Max Compression Rate" type:#float default:4.0
+			spinner spn_Wheels_MaxExtensionRate "Max Extension Rate" type:#float default:2.0
 	)
 )
 

@@ -90,6 +90,10 @@ fn ImportCNTMenuClicked sender arg=
 \* ==================================== */
 
 fn ImportWheelClicked sender arg = (
+	local wheelFilename = GetOpenFileName caption:"Open Wheel Rim" types:"Open Wheel Rim (rim.cnt)|rim.cnt"
+	if wheelFilename != undefined then (
+		ImportFullWheel wheelFilename
+	)
 )
 
 fn ImportCarStructureClicked sender arg = (

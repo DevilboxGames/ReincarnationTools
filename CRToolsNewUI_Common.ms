@@ -1,5 +1,77 @@
 
+fn AddModeButtons layoutHelper selectedMode = (
 
+	local currentScriptFileName = getThisScriptFilename()
+	local currentScriptFolder = getFilenamePath currentScriptFileName
+	layoutHelper.BeginHorizontalGroup margintop:0 marginbottom:0 marginright:10 marginLeft:10
+	(
+		local carModeButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[50,50]
+		carModeButton.text = ""
+		carModeButton.backgroundimagelayout = (dotnetclass "ImageLayout").Stretch
+		if selectedMode == "Car" then (
+			carModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\CarIcon-selected.png")
+		)
+		else (
+			carModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\CarIcon.png")
+		)
+		carModeButton.name = "carModeButton"
+
+		SetClickHandler carModeButton SetToolMode_Car
+
+		local WheelModeButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[50,50]
+		WheelModeButton.text = ""
+		WheelModeButton.backgroundimagelayout = (dotnetclass "ImageLayout").Stretch
+		if selectedMode == "Wheel" then (
+		WheelModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\WheelIcon-selected.png")
+		)
+		else (
+		WheelModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\WheelIcon.png")
+		)
+		WheelModeButton.name = "WheelModeButton"
+
+		SetClickHandler WheelModeButton SetToolMode_Wheel
+
+		local LevelModeButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[50,50]
+		LevelModeButton.text = ""
+		LevelModeButton.backgroundimagelayout = (dotnetclass "ImageLayout").Stretch
+		if selectedMode == "Level" then (
+		LevelModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\LevelIcon-selected.png")
+		)
+		else (
+		LevelModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\LevelIcon.png")
+		)
+		LevelModeButton.name = "LevelModeButton"
+
+		SetClickHandler LevelModeButton SetToolMode_Level
+
+		local AccessoryModeButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[50,50]
+		AccessoryModeButton.text = ""
+		AccessoryModeButton.backgroundimagelayout = (dotnetclass "ImageLayout").Stretch
+		if selectedMode == "Accessory" then (
+		AccessoryModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\AccessoryIcon-selected.png")
+		)
+		else (
+		AccessoryModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\AccessoryIcon.png")
+		)
+		AccessoryModeButton.name = "AccessoryModeButton"
+
+		SetClickHandler AccessoryModeButton SetToolMode_Accessory
+
+		local PedModeButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[50,50]
+		PedModeButton.text = ""
+		PedModeButton.backgroundimagelayout = (dotnetclass "ImageLayout").Stretch
+		if selectedMode == "Ped" then (
+		PedModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\PedIcon-selected.png")
+		)
+		else (
+		PedModeButton.backgroundImage = (dotnetclass "System.Drawing.Image").FromFile (currentScriptFolder+"\\UI\\PedIcon.png")
+		)
+		PedModeButton.name = "PedModeButton"
+
+		SetClickHandler PedModeButton SetToolMode_Ped
+	)
+	layoutHelper.EndHorizontalGroup()
+)
 fn AddHierarchyToolsUI parentLayoutHelper = (
 
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 150]

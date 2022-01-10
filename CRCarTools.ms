@@ -278,6 +278,9 @@ fn SetupCarStructureButton_Pressed sender arg =
 		AddStructureCharacteristicsModifier selection[1]
 		AddVehilceCFGModifier selection[1]
 		AddStructurePartModifier selection[1] doChildren:true
+		AddStandardDamageUnits selection[1]
+		AddVehicleSetupLUAModifier selection[1]
+		AddHandlingSetupLUAModifier selection[1]
 	)
 )
 

@@ -2320,19 +2320,23 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 
 fn GatherMDLs nodes exportHierarchy =
 (
-	
+	global cnts
 	global models
 
 	modelFilenames = #()
 	msg = ""
 	for model in nodes do
 	(
-			if exportHierarchy == true do
-			(
-				GatherMDLs model.children exportHierarchy
-			)
-			isACNT = IsObjectACNT model
-		if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg")) then
+		isACNT = IsObjectACNT model
+		if exportHierarchy == true  and isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "IGNORE" do
+		(
+			GatherMDLs model.children exportHierarchy
+		)
+		if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "CNT" then
+		(
+			append cnts model
+		)
+		elsr if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg")) then
 		(
 			if (finditem models model) == 0 and (finditem modelFilenames model.modifiers["CNT Hierarchy"].filename) == 0 do
 			(
@@ -2352,91 +2356,6 @@ fn GatherMDLs nodes exportHierarchy =
 		messageBox ("The following objects are not set as CNT Nodes and will not be exported:\n\n"+msg) title:"Some objects won't be exported"
 	)
 	--PrintArrayInFull models "Models Found"
-)
-
-fn ExportLight folder_name nodeToExport exportGobo:false =
-(
-	light_name = nodeToExport.name
-	light_name = nodeToExport.modifiers["CNT Hierarchy"].FileName
-
-	
-	light_name = folder_name+light_name+".light"
-	
-	lightObj = CRLight()
-	lightObj.SetFromLight nodeToExport
-	lightObj.SaveLight light_name
-
-	if exportGobo then
-	(
-		bitmapFileName = undefined
-		if lightObj.GoboTexture != undefined and (classof lightObj.GoboTexture) == bitmaptexture then
-		(
-			bitmapFileName = lightObj.GoboTexture.filename
-		)
-		if bitmapFileName!=undefined do
-		(
-			
-			ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
-			ConvertTDX.Convert bitmapFileName folder_name 5
-		)
-	)
-)
-fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false nodes:undefined =
-(
-	global materials = #()
-	global models = #()
-	modelsDone = #()
-	global MaterialsToExport
-	MaterialsToExport=#()
-	
-	--local nodes
-	if exportSelected == true then
-	(
-		nodes = selection
-	)
-	else if nodes == undefined or nodes.count < 1 do
-	(
-		nodes = for model in objects where model.ishidden == false collect model
-	)
-	
-	GatherMDLs nodes exportHierarchy
-	
-	
-	for mat in scenematerials do
-	(
-		if classof mat == standardmaterial do
-		(
-			--if finditem materials mat == 0 do append materials mat
-		)
-		if classof mat == multimaterial do
-		(
-			for i = 1000 to mat.numsubs do
-			(
-				submat = getsubmtl mat i
-				if submat != undefined then (
-				if submat.name == "crTools_NullNodeMaterial_X" or submat.name == "crTools_NullNodeMaterial_Y" or submat.name == "crTools_NullNodeMaterial_Z" then i = mat.numsubs + 1
-					if finditem materials submat == 0 do append materials submat
-				)
-			)
-		)
-	)
-	count = 0
-	for i=1 to models.count do
-	(
-		nodeToExport = models[i]
-		
-			if nodeToExport.modifiers["CNT Hierarchy"].NodeType == "LITg" then
-			(
-				ExportLight folder_name nodeToExport
-				
-			)
-			else
-			(
-				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
-			)
-			gc()
-		
-	)
 )
 
 fn ExportCNTModel f model =
@@ -2641,7 +2560,7 @@ fn ExportCNTModel f model =
 			)
 			
 		)
-		else 
+		else if nodeType != "IGNORE" and nodeType != "CNT"
 		(
 			writestring2 f "NULL"
 		)
@@ -2651,7 +2570,9 @@ fn ExportCNTModel f model =
 		writelong f model.children.count
 		for child in model.children do
 		(
-			ExportCNTModel f child
+			if (IsObjectACNT child) == false or (child.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and child.modifiers["CNT Hierarchy"].NodeType != "CNT") then (
+				ExportCNTModel f child
+			)
 		)
 	)
 	if model.children.count < 1 do
@@ -2666,6 +2587,92 @@ fn ExportCNTModel f model =
 		writelong f 0
 	)
 )
+fn ExportLight folder_name nodeToExport exportGobo:false =
+(
+	light_name = nodeToExport.name
+	light_name = nodeToExport.modifiers["CNT Hierarchy"].FileName
+
+	
+	light_name = folder_name+light_name+".light"
+	
+	lightObj = CRLight()
+	lightObj.SetFromLight nodeToExport
+	lightObj.SaveLight light_name
+
+	if exportGobo then
+	(
+		bitmapFileName = undefined
+		if lightObj.GoboTexture != undefined and (classof lightObj.GoboTexture) == bitmaptexture then
+		(
+			bitmapFileName = lightObj.GoboTexture.filename
+		)
+		if bitmapFileName!=undefined do
+		(
+			
+			ConvertTDX = dotnetClass "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
+			ConvertTDX.Convert bitmapFileName folder_name 5
+		)
+	)
+)
+fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false nodes:undefined =
+(
+	global materials = #()
+	global models = #()
+	global cnts = #()
+	modelsDone = #()
+	global MaterialsToExport
+	MaterialsToExport=#()
+	
+	--local nodes
+	if exportSelected == true then
+	(
+		nodes = selection
+	)
+	else if nodes == undefined or nodes.count < 1 do
+	(
+		nodes = for model in objects where model.ishidden == false collect model
+	)
+	
+	GatherMDLs nodes exportHierarchy
+	
+	
+	for mat in scenematerials do
+	(
+		if classof mat == standardmaterial do
+		(
+			--if finditem materials mat == 0 do append materials mat
+		)
+		if classof mat == multimaterial do
+		(
+			for i = 1000 to mat.numsubs do
+			(
+				submat = getsubmtl mat i
+				if submat != undefined then (
+				if submat.name == "crTools_NullNodeMaterial_X" or submat.name == "crTools_NullNodeMaterial_Y" or submat.name == "crTools_NullNodeMaterial_Z" then i = mat.numsubs + 1
+					if finditem materials submat == 0 do append materials submat
+				)
+			)
+		)
+	)
+	count = 0
+	for i=1 to models.count do
+	(
+		nodeToExport = models[i]
+		
+			if nodeToExport.modifiers["CNT Hierarchy"].NodeType == "LITg" then
+			(
+				ExportLight folder_name nodeToExport
+				
+			)
+			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE"
+			(
+				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
+			)
+			gc()
+		
+	)
+)
+
  
 fn ExportCNT cnt_name model =
 (

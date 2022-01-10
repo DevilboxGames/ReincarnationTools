@@ -120,10 +120,15 @@ fn buildcarmaindicesarray m = (
 )
 
 fn StopNullNodesRendering = (
-	for obj in objects where IsObjectANullCNT obj do ( 
+	for obj in objects where (classof obj.baseObject) != CarmaHelper_WheelPlaceholder and (classof obj.baseObject) != CarmaHelper_AccessoryPlaceholder and (IsObjectANullCNT obj or (classof obj.baseObject) == CarmaHelper_JointHelper)  do ( 
 		obj.castShadows=false
 		obj.primaryVisibility=false
 	)
+)
+
+fn ReplaceWheelsWithTempMeshes = (
+
+
 )
 
 fn ScatterObjectsOnMesh target objects count countIsPerArea:false = (
@@ -1067,4 +1072,73 @@ fn IsObjectAPedBonesList obj =
 fn SetMeshVertColoursToGrey obj = (
 	verts = obj.verts as bitarray
 	for v in verts do setVertColor obj v (color 127 127 127)
+)
+
+fn BeginEditMesh obj = (
+
+	mods = #()
+	for m in obj.modifiers do (
+		append mods m
+	)
+	for m in mods do(
+		deletemodifier obj m
+	)
+	
+	mods
+)
+fn EndEditMesh obj mods = (
+	for m in mods do(
+		addmodifier obj m
+	)
+	
+
+)
+fn RotatePivotOnly obj rotation = (
+	local rotValInv=inverse (rotation as quat)
+	animate off in coordsys local obj.rotation*=RotValInv
+	obj.objectoffsetpos*=RotValInv
+	obj.objectoffsetrot*=RotValInv
+)
+fn scaleMesh obj scale = (
+	oldMods = BeginEditMesh obj
+	numVerts = getNumVerts obj
+	in coordsys obj (
+	for i =1 to numverts do (
+		v = getvert obj i
+		v = v * scale
+		setvert obj i v
+	)
+	)	
+	update obj
+	EndEditMesh obj oldMods
+)
+
+fn flipMesh obj = (
+	oldMods = BeginEditMesh obj
+	numVerts = getNumVerts obj
+	in coordsys obj (
+	for i =1 to numverts do (
+		v = getvert obj i
+		v.x = -v.x
+		setvert obj i v
+	)
+	
+	numfaces = getnumfaces obj
+	for i = 1 to numfaces do (
+		f = getface obj i
+		v1 = f.x
+		f.x = f.y
+		f.y = v1
+		setface obj i f
+		tvf = gettvface obj i
+		v1 = tvf.x
+		tvf.x = tvf.y
+		tvf.y = v1
+		settvface obj i tvf
+	)
+	
+	)	
+	update obj
+	EndEditMesh obj oldMods
+	
 )

@@ -20,5 +20,5 @@ fn AddWheelToolsUI parentLayoutHelper = (
 		SetClickHandler addWheelModifierButton OnCreateNullClicked
 
 	)
-	layoutHelper.EndHorizontalGroup()
+	layoutHelper.BeginVerticalGroup()
 )

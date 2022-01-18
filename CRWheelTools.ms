@@ -35,7 +35,7 @@ fn NornalizeWheelSize rim tyreWidth: 0.335 tyreRadius: 0.709 = (
 				--RotatePivotOnly obj (EulerAngles 0 0 180)
 				--obj.scale.x = obj.scale.x * -1
 				WorldAlignPivot obj
-				obj,rotation = (eulerangles 0 0 180) as quat
+				obj.rotation = (eulerangles 0 0 180) as quat
 				WorldAlignPivot obj
 				obj.rotation = (eulerangles 0 0 180) as quat
 			)

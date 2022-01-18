@@ -26,7 +26,7 @@ fn ExportMDLMenuClicked sender arg =
 			mdl_path = getFilenamePath mdl_name
 			global MaterialsToExport
 			MaterialsToExport=#()
-			ExportMDLMesh mdl_path selection[1] forcedFilename:mdl_name exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:createOctree
+			ExportMDLMesh mdl_path selection[1] forcedFilename:mdl_name exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked
 			messageBox ("Export MDL to "+mdl_name+" completed!") title:"Export Finished!"
 			gc()
@@ -101,10 +101,18 @@ fn ExportCNTMenuClicked sender arg =
 	)
 	else
 	(
-		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt"
+		local selectedCnt = selection[1]
+		local cntFileName = unsupplied
+		if (IsObjectACNT selectedCnt) and selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
+			cntFileName = selectedCnt.modifiers["CNT Hierarchy"].fileName + ".cnt"
+		)
+		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" filename: cntFileName
 		if cnt_name != undefined do
 		(
-			ExportCNT cnt_name selection[1]
+			if (IsObjectACNT selectedCnt) and (selectedCnt.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
+				selectedCnt = selectedCnt.children[1]
+			)
+			ExportCNT cnt_name selectedCnt
 			messageBox ("Export CNT Hierarchy to "+cnt_name+" completed!") title:"Export Finished!"
 			gc()
 		)
@@ -123,18 +131,31 @@ fn ExportFullHierarchyMenuClicked sender arg =
 	)
 	else
 	(
-		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt"
+		selectedModel = selection[1]
+		local cntFileName = unsupplied
+
+		if (IsObjectACNT selectedModel) and selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
+			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName + ".cnt"
+		)
+
+		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" filename:cntFileName
 		if cnt_name != undefined do
 		(
 			exportTexturesChecked = true
 			exportMatsChecked = true
 			exportMTLChecked = false
 			exportOctreeChecked = false
+			
 			global MaterialsToExport
 			MaterialsToExport=#()
+			
 			mdl_path = getFilenamePath cnt_name
-			selectedModel = selection[1]
-			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			
+			if (IsObjectACNT selectedModel) and (selectedModel.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
+				selectedModel = selectedModel.children[1]
+			)
+
+			ExportMDL mdl_path false true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked nodes:#(selectedModel)
 			ExportCNT cnt_name selectedModel
 			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			--PrintArrayInFull = "MaterialsToExport"

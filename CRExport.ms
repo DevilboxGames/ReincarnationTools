@@ -738,7 +738,7 @@ fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" diff
 	)
 
 	
-	xmlDoc.Save (folder+materialName+".MT2")
+	xmlDoc.Save ((dotnetclass "System.IO.Path").Combine folder (materialName+".MT2"))
 	
 	free xmlDoc
 	free xmlRoot
@@ -793,7 +793,7 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 			--format "Exporting mat %" mtlName
 			if funsizeExport then (
 				--format " as MTL\n"
-				ExportMTLMaterial (outputFolder+mtlName+".mtl") actualMat
+				ExportMTLMaterial ((dotnetclass "System.IO.Path").Combine outputFolder (mtlName+".mtl")) actualMat
 			)
 			else  (
 				--format " as MT2\n"
@@ -919,9 +919,10 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	)
 	else
 	(
-		mdl_name = folder_name+model_name+".mdl"
+		mdl_name = (dotnetclass "System.IO.Path").Combine folder_name (model_name+".mdl")
 		outputFolder = folder_name
 	)
+	format "Exporting % to %\n\t passed in folder_name: %\n\n" mdl_name model.name folder_name
 	mdl_file = openfile mdl_name mode:"w"
 	close mdl_file
 	
@@ -2328,272 +2329,301 @@ fn GatherMDLs nodes exportHierarchy =
 	for model in nodes do
 	(
 		isACNT = IsObjectACNT model
-		if exportHierarchy == true  and isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "IGNORE" do
+
+
+		if exportHierarchy == true  and isACNT and (model.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and model.modifiers["CNT Hierarchy"].NodeType != "CNT") do
 		(
 			GatherMDLs model.children exportHierarchy
 		)
-		if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "CNT" then
+		if isACNT and model.modifiers["CNT Hierarchy"].NodeType == "CNT" then
 		(
 			append cnts model
 		)
-		elsr if (isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg")) then
+		else if isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg") then
 		(
 			if (finditem models model) == 0 and (finditem modelFilenames model.modifiers["CNT Hierarchy"].filename) == 0 do
 			(
 				--format "Found model \"%\" which is a %\n" model.name (classof model)
-				append models model
-				append modelFilenames model.modifiers["CNT Hierarchy"].filename
+
+				local modelInstances = #()
+				InstanceMgr.GetInstances model &modelInstances
+				if (for modelInstance in modelInstances where (finditem models modelInstance) > 0 collect modelInstance).count == 0 then (
+					append models model
+					append modelFilenames model.modifiers["CNT Hierarchy"].filename
+				)
 			)
 			
 		)
 		else if (isACNT == false  and classof model != dummy and (classof model == editable_mesh or classof model == editable_poly or superclassof model == geometryclass)) then
-			(
-				msg += model.name+"\n"
-			)
+		(
+			msg += model.name+"\n"
+		)
 	)
 	if msg != "" then
 	(
 		messageBox ("The following objects are not set as CNT Nodes and will not be exported:\n\n"+msg) title:"Some objects won't be exported"
 	)
-	--PrintArrayInFull models "Models Found"
+	PrintArrayInFull models "Models Found"
 )
 
 fn ExportCNTModel f model =
 (
-	--format "Saving node % to CNT\n" model.name
-	model_name = model.name
-	model_name_length =  model_name.count
-	
-	if (IsObjectACNT model) == true then
-	(
-		if model.modifiers["CNT Hierarchy"].FileName != "" then model_file_name = model.modifiers["CNT Hierarchy"].FileName
-		else model_file_name = model_name
-	)
-	else
-	(
-		model_file_name = model_name
-	)
-	model_file_name_length =  model_file_name.count
-	
-	mdlnl_div4 = model_name_length / 4
-	mdlnl_plus1 = 0
-	if (mod model_name_length 4) > 0 do
-	(
-		mdlnl_plus1=1
-	)
-	mdlnl_added = mdlnl_div4 + mdlnl_plus1
-	model_name_padding = (mdlnl_added * 4) - model_name_length
-	
-	
-	mdlnl_div4 = model_file_name_length / 4
-	mdlnl_plus1 = 0
-	if (mod model_file_name_length 4) > 0 do
-	(
-		mdlnl_plus1=1
-	)
-	mdlnl_added = mdlnl_div4 + mdlnl_plus1
-	model_file_name_padding = (mdlnl_added * 4) - model_file_name_length
-	
-	writelong f model_name_length #unsigned
-	writestring2 f model_name
-	for i = 1 to model_name_padding do
-	(
-		writebyte f 0 #unsigned
-	)
-		writebyte f 0 #unsigned
-		writefloat f 0.0
+	if (IsObjectACNT model) and model.modifiers["CNT Hierarchy"].NodeType == "CNT" or model.modifiers["CNT Hierarchy"].NodeType == "IGNORE" then (
 
-
-		oldtm = copy model.transform
-	if (IsObjectACNT model) and model.modifiers["CNT Hierarchy"].NodeType == "LITg" then model.transform = matrix3 oldtm.row1 oldtm.row3 -oldtm.row2 oldtm.row4
-	oldScale = model.scale
-	oldRotation = model.rotation
-	oldPosition = model.position
-	oldEulerAngles = oldRotation as EulerAngles
-	oldEulerAngles.x = -oldEulerAngles.x
-	oldEulerAngles.y = oldEulerAngles.y
-	oldEulerAngles.z = -oldEulerAngles.z
-	model.rotation = oldEulerAngles as quat
-	if (IsObjectACNT model) == true and model.modifiers["CNT Hierarchy"].BakeScaleIntoMesh == true then model.scale = [1,1,1]
-	
-	model.position = oldPosition
-	tm = copy model.transform
-
-	--format "old pos: %, new pos: %\n" oldPosition model.position;
-	model.rotation = oldRotation
-	model.scale = oldScale
-	
-	model.position = oldPosition
-	model.transform = oldtm
-	--tm = (model.rotation as matrix3) * (transMatrix model.position) 
-
-
-	numAxisNegativeScale = 0
-	mirroredTransformScale = [1,1,1]
-	
-	
-	if tm.scalepart.x < 0 do
-	(
-		numAxisNegativeScale = numAxisNegativeScale + 1
-		mirroredTransformScale.x = -1
 	)
-	if tm.scalepart.y < 0 do
-	(
-		numAxisNegativeScale = numAxisNegativeScale + 1
-		mirroredTransformScale.y = -1
-	)
-	if tm.scalepart.z < 0 do
-	(
-		numAxisNegativeScale = numAxisNegativeScale + 1
-		mirroredTransformScale.z = -1
-	)
-	tm = scale tm mirroredTransformScale false
-	if model.parent != undefined do
-	(
-		--format "====This has a parent! %\n" model.parent.name
-		oldParentScale= model.parent.scale
-		model.parent.scale = [1,1,1]
-		tm = tm * (inverse model.parent.transform)
-		model.parent.scale = oldParentScale
-	)
-	tm = matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0])
-	--tm = matrix3 [tm[1].x,tm[1].z,-tm[1].y] [tm[3].x,tm[3].z,-tm[3].y] [tm[2].x,tm[2].z,-tm[2].y] [tm[4].x,tm[4].z,-tm[4].y]
+	else (
+		--format "Saving node % to CNT\n" model.name
+		model_name = model.name
+		model_name_length =  model_name.count
 		
-	--format "old tm: %, new tm: %\n" oldtm tm;
-		writefloat f tm.row1.x
-		writefloat f tm.row1.y
-		writefloat f tm.row1.z
-		writefloat f tm.row2.x
-		writefloat f tm.row2.y
-		writefloat f tm.row2.z
-		writefloat f tm.row3.x
-		writefloat f tm.row3.y
-		writefloat f tm.row3.z
-		writefloat f tm.row4.x
-		writefloat f tm.row4.y
-		writefloat f -tm.row4.z
-	--writestring cnt_file "["+(model.transform.row1.x as string)+", "+(model.transform.row1.y as string)+", "+(model.transform.row1.z as string)+"]"
-	--writestring cnt_file "["+(model.transform.row2.x as string)+", "+(model.transform.row2.y as string)+", "+(model.transform.row2.z as string)+"]"
-	--writestring cnt_file "["+(model.transform.row3.x as string)+", "+(model.transform.row3.y as string)+", "+(model.transform.row3.z as string)+"]"
-	--writestring cnt_file "["+(model.transform.row4.x as string)+", "+(model.transform.row4.y as string)+", "+(model.transform.row4.z as string)+"]"
-	
-	if (IsObjectACNT model) == false then
-	(
-		if classof model == dummy then
+		if (IsObjectACNT model) == true then
 		(
-			writestring2 f "NULL"
-		)
-		else if classof model == editable_mesh or classof model == editable_poly or superclassof model  == geometryclass then
-		(
-			writestring2 f "NULL"
-			/*writestring2 f "MODL"
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
-			(
-				writebyte f 0
-			)*/
+			if model.modifiers["CNT Hierarchy"].FileName != "" then model_file_name = model.modifiers["CNT Hierarchy"].FileName
+			else model_file_name = model_name
 		)
 		else
 		(
-			format "ERROR! Model is not editable_poly or editable_mesh or a geometryclass! Class is: %\n Setting it to null node\n" (classof model)
-			writestring2 f "NULL"
+			model_file_name = model_name
 		)
-	)
-	else
-	(
-		nodeType = model.modifiers["CNT Hierarchy"].NodeType
-		if nodeType == "MODL" then
+		model_file_name_length =  model_file_name.count
+		
+		mdlnl_div4 = model_name_length / 4
+		mdlnl_plus1 = 0
+		if (mod model_name_length 4) > 0 do
 		(
-			writestring2 f "MODL"
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
+			mdlnl_plus1=1
+		)
+		mdlnl_added = mdlnl_div4 + mdlnl_plus1
+		model_name_padding = (mdlnl_added * 4) - model_name_length
+		
+		
+		mdlnl_div4 = model_file_name_length / 4
+		mdlnl_plus1 = 0
+		if (mod model_file_name_length 4) > 0 do
+		(
+			mdlnl_plus1=1
+		)
+		mdlnl_added = mdlnl_div4 + mdlnl_plus1
+		model_file_name_padding = (mdlnl_added * 4) - model_file_name_length
+		
+		writelong f model_name_length #unsigned
+		writestring2 f model_name
+		for i = 1 to model_name_padding do
+		(
+			writebyte f 0 #unsigned
+		)
+			writebyte f 0 #unsigned
+			writefloat f 0.0
+
+
+			oldtm = copy model.transform
+		if (IsObjectACNT model) and model.modifiers["CNT Hierarchy"].NodeType == "LITg" then model.transform = matrix3 oldtm.row1 oldtm.row3 -oldtm.row2 oldtm.row4
+		oldScale = model.scale
+		oldRotation = model.rotation
+		oldPosition = model.position
+		oldEulerAngles = oldRotation as EulerAngles
+		oldEulerAngles.x = -oldEulerAngles.x
+		oldEulerAngles.y = oldEulerAngles.y
+		oldEulerAngles.z = -oldEulerAngles.z
+		model.rotation = oldEulerAngles as quat
+		if (IsObjectACNT model) == true and model.modifiers["CNT Hierarchy"].BakeScaleIntoMesh == true then model.scale = [1,1,1]
+		
+		model.position = oldPosition
+		tm = copy model.transform
+
+		--format "old pos: %, new pos: %\n" oldPosition model.position;
+		model.rotation = oldRotation
+		model.scale = oldScale
+		
+		model.position = oldPosition
+		model.transform = oldtm
+		--tm = (model.rotation as matrix3) * (transMatrix model.position) 
+
+
+		numAxisNegativeScale = 0
+		mirroredTransformScale = [1,1,1]
+		
+		
+		if tm.scalepart.x < 0 do
+		(
+			numAxisNegativeScale = numAxisNegativeScale + 1
+			mirroredTransformScale.x = -1
+		)
+		if tm.scalepart.y < 0 do
+		(
+			numAxisNegativeScale = numAxisNegativeScale + 1
+			mirroredTransformScale.y = -1
+		)
+		if tm.scalepart.z < 0 do
+		(
+			numAxisNegativeScale = numAxisNegativeScale + 1
+			mirroredTransformScale.z = -1
+		)
+		tm = scale tm mirroredTransformScale false
+		if model.parent != undefined do
+		(
+			--format "====This has a parent! %\n" model.parent.name
+			oldParentScale= model.parent.scale
+			model.parent.scale = [1,1,1]
+			tm = tm * (inverse model.parent.transform)
+			model.parent.scale = oldParentScale
+		)
+		tm = matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0] * tm * inverse(matrix3 [-1,0,0] [0,0,1] [0,1,0] [0,0,0])
+		--tm = matrix3 [tm[1].x,tm[1].z,-tm[1].y] [tm[3].x,tm[3].z,-tm[3].y] [tm[2].x,tm[2].z,-tm[2].y] [tm[4].x,tm[4].z,-tm[4].y]
+			
+		--format "old tm: %, new tm: %\n" oldtm tm;
+			writefloat f tm.row1.x
+			writefloat f tm.row1.y
+			writefloat f tm.row1.z
+			writefloat f tm.row2.x
+			writefloat f tm.row2.y
+			writefloat f tm.row2.z
+			writefloat f tm.row3.x
+			writefloat f tm.row3.y
+			writefloat f tm.row3.z
+			writefloat f tm.row4.x
+			writefloat f tm.row4.y
+			writefloat f -tm.row4.z
+		--writestring cnt_file "["+(model.transform.row1.x as string)+", "+(model.transform.row1.y as string)+", "+(model.transform.row1.z as string)+"]"
+		--writestring cnt_file "["+(model.transform.row2.x as string)+", "+(model.transform.row2.y as string)+", "+(model.transform.row2.z as string)+"]"
+		--writestring cnt_file "["+(model.transform.row3.x as string)+", "+(model.transform.row3.y as string)+", "+(model.transform.row3.z as string)+"]"
+		--writestring cnt_file "["+(model.transform.row4.x as string)+", "+(model.transform.row4.y as string)+", "+(model.transform.row4.z as string)+"]"
+		
+		if (IsObjectACNT model) == false then
+		(
+			if classof model == dummy then
 			(
-				writebyte f 0 #unsigned
+				writestring2 f "NULL"
 			)
-		)
-		else if nodeType == "SKIN" then
-		(
-			writestring2 f "SKIN"
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
+			else if classof model == editable_mesh or classof model == editable_poly or superclassof model  == geometryclass then
 			(
-				writebyte f 0 #unsigned
+				writestring2 f "NULL"
+				/*writestring2 f "MODL"
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0
+				)*/
 			)
-		)
-		else if nodeType == "LITg" then
-		(
-			writestring2 f "LITg"
-			writelong f 3
-			
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
+			else
 			(
-				writebyte f 0 #unsigned
+				format "ERROR! Model is not editable_poly or editable_mesh or a geometryclass! Class is: %\n Setting it to null node\n" (classof model)
+				writestring2 f "NULL"
 			)
-			
 		)
-		else if nodeType == "VFXI" then
+		else
 		(
-			writestring2 f "VFXI"
-			
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
+			nodeType = model.modifiers["CNT Hierarchy"].NodeType
+			if nodeType == "MODL" then
 			(
-				writebyte f 0 #unsigned
+				writestring2 f "MODL"
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0 #unsigned
+				)
 			)
-			
-		)
-		else if nodeType == "shrb" then
-		(
-			writestring2 f "shrb"
-			
-			writelong f model_file_name_length #unsigned
-			writestring2 f model_file_name
-			for j = 1 to model_file_name_padding do
+			else if nodeType == "SKIN" then
 			(
-				writebyte f 0 #unsigned
+				writestring2 f "SKIN"
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0 #unsigned
+				)
 			)
+			else if nodeType == "LITg" then
+			(
+				writestring2 f "LITg"
+				writelong f 3
+				
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0 #unsigned
+				)
+				
+			)
+			else if nodeType == "VFXI" then
+			(
+				writestring2 f "VFXI"
+				
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0 #unsigned
+				)
+				
+			)
+			else if nodeType == "shrb" then
+			(
+				writestring2 f "shrb"
+				
+				writelong f model_file_name_length #unsigned
+				writestring2 f model_file_name
+				for j = 1 to model_file_name_padding do
+				(
+					writebyte f 0 #unsigned
+				)
+				
+			)
+			else if nodeType != "IGNORE" and nodeType != "CNT" then
+			(
+				writestring2 f "NULL"
+			)
+		)
+
+		local childrenToExport = for child in model.children where (IsObjectACNT child) == false or (child.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and child.modifiers["CNT Hierarchy"].NodeType != "CNT") collect child
+
+		if childrenToExport.count > 0 do
+		(
 			
-		)
-		else if nodeType != "IGNORE" and nodeType != "CNT"
-		(
-			writestring2 f "NULL"
-		)
-	)
-	if model.children.count > 0 do
-	(
-		writelong f model.children.count
-		for child in model.children do
-		(
-			if (IsObjectACNT child) == false or (child.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and child.modifiers["CNT Hierarchy"].NodeType != "CNT") then (
-				ExportCNTModel f child
+			writelong f childrenToExport.count
+			for child in childrenToExport do
+			(
+				ExportCNTModel f child	
 			)
 		)
-	)
-	if model.children.count < 1 do
-	(
-		writelong f 0
-	)
-	if ActiveOctree != undefined then (
-		writelong f 1
-		ActiveOctree.Save f
-	)
-	else (
-		writelong f 0
+		if childrenToExport.count < 1 do
+		(
+			writelong f 0
+		)
+		if ActiveOctree != undefined then (
+			writelong f 1
+			ActiveOctree.Save f
+		)
+		else (
+			writelong f 0
+		)
 	)
 )
+
+fn ExportCNT cnt_name model =
+(
+	
+	cnt_file = openfile cnt_name mode:"w"
+	close cnt_file
+	
+	f = fopen cnt_name "wb"
+	writeCNTheader f
+	
+	ExportCNTModel f model
+	
+	fclose f
+)
+
 fn ExportLight folder_name nodeToExport exportGobo:false =
 (
 	light_name = nodeToExport.name
 	light_name = nodeToExport.modifiers["CNT Hierarchy"].FileName
 
 	
-	light_name = folder_name+light_name+".light"
+	light_name = (dotNetClass "System.IO.Path").Combine folder_name (light_name+".light")
 	
 	lightObj = CRLight()
 	lightObj.SetFromLight nodeToExport
@@ -2664,29 +2694,41 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 				ExportLight folder_name nodeToExport
 				
 			)
-			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE"
+			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE" then
 			(
 				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
 			)
 			gc()
 		
 	)
+
+	local oldMaterialsToExport = MaterialsToExport
+	local oldModels = Models
+	local oldCnts = Cnts
+	MaterialsToExport = #()
+	Models = #()
+	if exportHierarchy then (
+		local cntsToExport = copy cnts #noMap
+		local cntFolder = folder_name
+		for cnt in cntsToExport do (
+			if cnt.modifiers["CNT Hierarchy"].OverridePath then (
+				cntFolder = cnt.modifiers["CNT Hierarchy"].Path
+			) 
+			local cntFilePath = (dotnetClass "System.IO.Path").Combine cntFolder (cnt.modifiers["CNT Hierarchy"].filename+".cnt")
+			selectedModel = cnt.children[1]
+			ExportMDL cntFolder false true nodes:#(selectedModel) exportMats:exportMats exportTextures:exportTexture funsizeExport:funsizeExport createOctree:createOctree
+			ExportCNT cntFilePath selectedModel
+			ExportMaterialsAndTextures cntFolder exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport createOctree:createOctree
+			
+		)
+	)
+	MaterialsToExport = oldMaterialsToExport
+	Models = oldModels
+	Cnts = oldCnts
+	OK
 )
 
  
-fn ExportCNT cnt_name model =
-(
-	
-	cnt_file = openfile cnt_name mode:"w"
-	close cnt_file
-	
-	f = fopen cnt_name "wb"
-	writeCNTheader f
-	
-	ExportCNTModel f model
-	
-	fclose f
-)
 
 
 fn ExportMDLButtonPressed sender arg =
@@ -2752,10 +2794,18 @@ fn ExportCNTButtonPressed sender arg =
 	)
 	else
 	(
-		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt"
+		local selectedCnt = selection[1]
+		local cntFileName = unsupplied
+		if (IsObjectACNT selectedCnt) and selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
+			cntFileName = selectedCnt.modifiers["CNT Hierarchy"].fileName + ".cnt"
+		)
+		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" fileName:cntFileName
 		if cnt_name != undefined do
 		(
-			ExportCNT cnt_name selection[1]
+			if (IsObjectACNT selectedCnt) and (selectedCnt.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
+				selectedCnt = selectedCnt.children[1]
+			)
+			ExportCNT cnt_name selectedCnt
 			messageBox ("Export CNT Hierarchy to "+cnt_name+" completed!") title:"Export Finished!"
 			gc()
 		)
@@ -2773,7 +2823,13 @@ fn ExportFullHierarchyButtonPressed sender arg =
 	)
 	else
 	(
-		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt"
+			format "Blah:%\n" (selectedModel.modifiers["CNT Hierarchy"].NodeType)
+		selectedModel = selection[1]
+		local cntFileName = unsupplied
+		if (IsObjectACNT selectedModel) and selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
+			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName + ".cnt"
+		)
+		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" fileName:cntFileName
 		if cnt_name != undefined do
 		(
 			exportTexturesChecked = sender.parent.controls.Item["ExportTexturesCheckbox"].checked
@@ -2783,8 +2839,10 @@ fn ExportFullHierarchyButtonPressed sender arg =
 			global MaterialsToExport
 			MaterialsToExport=#()
 			mdl_path = getFilenamePath cnt_name
-			selectedModel = selection[1]
-			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			if (IsObjectACNT selectedModel) and (selectedModel.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
+				selectedModel = selectedModel.children[1]
+			)
+			ExportMDL mdl_path false true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked nodes:#(selectedModel)
 			ExportCNT cnt_name selectedModel
 			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			--PrintArrayInFull = "MaterialsToExport"

@@ -111,7 +111,7 @@ fn CR_SetupCarToolsTab tabPage =
 	
 	CreateWheelButton = dotnetobject "button"
 	CreateWheelButton.name="CreateWheelButton"
-	CreateWheelButton.Text = "Create"
+	CreateWheelButton.Text = "Create"		
 	SetControlLayout CreateWheelButton (DN_ControlLayout Left: (WheelSelectBox.Right+5) Top: (WheelSelectBox.Top-2) Width: 100 Height:25)
 	WheelToolsGroup.controls.Add CreateWheelButton
 	

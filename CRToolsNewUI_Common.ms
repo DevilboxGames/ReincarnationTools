@@ -74,36 +74,58 @@ fn AddModeButtons layoutHelper selectedMode = (
 )
 fn AddHierarchyToolsUI parentLayoutHelper = (
 
-	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 150]
+	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 250] margin:[100,0]
 
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
-	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:0 OutterMarginRight:0
 	layoutHelper.BeginVerticalGroup align:"center"  marginTop:3 marginRight:3 marginBottom:3 marginLeft:3
 	(
 
-		local SetupHierarchyLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[150,20] margin:[0,0]
-		SetupHierarchyLabel.text = "NULL Nodes:"
-		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:15 marginBottom:3 marginLeft:15
+		local cntNodesLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[150,20] margin:[0,0]
+		cntNodesLabel.text = "NULL Nodes:"
+		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:0 marginBottom:3 marginLeft:0
 		(
-			local createNullButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			local createNullButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[100,20] margin:[0,0]
 			createNullButton.text = "Create NULL"
 			createNullButton.name = "createNullButton"
 			fn OnCreateNullClicked btn ev = (
 				undo "Create NULL Node" on
 				(
+					local selectedObj = selection[1]
 					trans = matrix3 1
-					if selection[1] != undefined do trans = selection[1].transform
-					CreateNewNULLNode trans "NewNullNode" selectAndFocus:true
+					if selectedObj != undefined do trans = selectedObj.transform
+					local newNull = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true
+					if selectedObj != undefined do newNull.parent = selectedObj
 				)
 			)
 			SetClickHandler createNullButton OnCreateNullClicked
 
 
-			local convertToNullButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			local insertNullAsParent = layoutHelper.AddControl "System.Windows.Forms.Button" size:[130,20] margin:[0,0]
+			insertNullAsParent.text = "Insert As Parent"
+			insertNullAsParent.name = "insertNullAsParent"
+			fn OnInsertNullAsParentCLicked btn ev = (
+				undo "Insert NULL as Parent" on
+				(
+					
+					trans = matrix3 1
+					local selectedObj = selection[1]
+					if sselectedObj != undefined do trans = sselectedObj.transform
+					local newNull = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true
+					if sselectedObj != undefined do (
+						newNull.parent = sselectedObj.parent
+						sselectedObj.parent = newNull
+					)
+				)
+			)
+			SetClickHandler insertNullAsParent OnInsertNullAsParentCLicked
+
+
+			local convertToNullButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[130,20] margin:[0,0]
 			convertToNullButton.text = "Convert To NULL"
 			convertToNullButton.name = "convertToNullButton"
 			fn OnConvertToNullClicked btn ev = (
-				undo "Convert To Wheel Node" on
+				undo "Convert To NULL Node" on
 				(
 					for obj in (selection as array) do
 					(
@@ -121,6 +143,87 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 				)
 			)
 			SetClickHandler convertToNullButton OnConvertToNullClicked
+		)
+		layoutHelper.EndHorizontalGroup()
+
+		local SetupHierarchyLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20] margin:[0,0]
+		SetupHierarchyLabel.text = "CNT & Ignore Contain Nodes:"
+		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:15 marginBottom:3 marginLeft:15
+		(
+			local createCntNode = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			createCntNode.text = "Create CNT"
+			createCntNode.name = "createCntNode"
+			fn OnCreateCntContainerClicked btn ev = (
+				undo "Create CNT Container Node" on
+				(
+					trans = matrix3 1
+					local selectedObj = selection[1]
+					if selectedObj != undefined do trans = selectedObj.transform
+					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"CNT"
+
+					if selectedObj != undefined do cnt.parent = selection[1] 
+				)
+			)
+			SetClickHandler createCntNode OnCreateCntContainerClicked
+
+
+			local insertCntAboveButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			insertCntAboveButton.text = "Insert CNT as Parent"
+			insertCntAboveButton.name = "insertCntAboveButton"
+			fn OnInsertCntAboveClicked btn ev = (
+				undo "Convert To Wheel Node" on
+				(
+					local selectedObj = selection[1]
+					trans = matrix3 1
+					if selectedObj != undefined do trans = selectedObj.transform
+					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"CNT"
+
+					if selectedObj != undefined do (
+						cnt.parent = selection[1].parent
+						selection
+					)
+				)
+			)
+			SetClickHandler insertCntAboveButton OnInsertCntAboveClicked
+		)
+		layoutHelper.EndHorizontalGroup()
+		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:15 marginBottom:3 marginLeft:15
+		(
+			local createIgnoreNode = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			createIgnoreNode.text = "Create CNT"
+			createIgnoreNode.name = "createIgnoreNode"
+			fn OnCreateIgnoreContainerClicked btn ev = (
+				undo "Create CNT Container Node" on
+				(
+					trans = matrix3 1
+					local selectedObj = selection[1]
+					if selectedObj != undefined do trans = selectedObj.transform
+					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"IGNORE"
+
+					if selectedObj != undefined do cnt.parent = selection[1] 
+				)
+			)
+			SetClickHandler createIgnoreNode OnCreateIgnoreContainerClicked
+
+
+			local insertIgnoreAboveButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
+			insertIgnoreAboveButton.text = "Insert CNT as Parent"
+			insertIgnoreAboveButton.name = "insertIgnoreAboveButton"
+			fn OnInsertIgnoreAboveClicked btn ev = (
+				undo "Convert To Wheel Node" on
+				(
+					local selectedObj = selection[1]
+					trans = matrix3 1
+					if selectedObj != undefined do trans = selectedObj.transform
+					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"IGNORE"
+
+					if selectedObj != undefined do (
+						cnt.parent = selection[1].parent
+						selection
+					)
+				)
+			)
+			SetClickHandler insertIgnoreAboveButton OnInsertIgnoreAboveClicked
 		)
 		layoutHelper.EndHorizontalGroup()
 

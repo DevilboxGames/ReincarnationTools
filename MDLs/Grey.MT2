@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<Material>
+  <BasedOffOf Name="simple_base" />
+  <DoubleSided Value="TRUE" />
+  <Texture Alias="DiffuseColour" FileName="NOTEXTURE" />
+</Material>

@@ -651,11 +651,11 @@ CNTAttribute = attributes CNTCustAttribute attribID:#(0x7a3a974d, 0x58ce73ad) ve
 		)
 		on btn_BrowseFolder pressed do (
 			folderSelectDialog = dotnetobject "CMDControls.FolderSelectDialog"
-			if FileName != undefined and FileName != "" and ((dotNetClass "System.IO.Directory").Exists FileName) then (
-				folderSelectDialog.InitialDirectory = FileName
+			if Path != undefined and Path != "" and ((dotNetClass "System.IO.Directory").Exists Path) then (
+				folderSelectDialog.InitialDirectory = Path
 			)
 			if folderSelectDialog.ShowDialog() and folderSelectDialog.FileName != undefined then (
-				FileName = folderSelectDialog.FileName
+				Path = folderSelectDialog.FileName
 			)
 		)
 		on uiNodeType selected i do 
@@ -1776,7 +1776,7 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 		ScrollTyreTiles type:#integer default:1 ui:spn_ScrollTyreTiles
 		UseSkidmarkWidth type:#boolean default:false ui:chk_UseSkidmarkWidth
 		SkidmarkWidth type:#float default:1.0 ui:spn_SkidmarkWidth
-		BaseTyre_Object tyoe:##maxObject
+		--BaseTyre_Object tyoe:#maxObject
 		PunctureStage_Value type:#inttab tabSizeVariable:true
 		PunctureStage_Mesh type:#stringtab tabSizeVariable:true
 		PunctureStage_Object type:#maxObjectTab tabSizeVariable:true
@@ -1982,7 +1982,7 @@ ComplicatedWheelAttribute = attributes ComplicatedWheel_Def attribID:#(0x3f78e27
 			)
 		)
 
-		on pck_BaseTyre_Object picked obj = (
+		on pck_BaseTyre_Object picked obj do (
 			BaseTyre_Object = nodeTransformMonitor node:obj forwardTransformChangeMsgs:false
 		)
 		on but_AddToPunctureStage pressed do (

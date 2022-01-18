@@ -25,7 +25,7 @@ wnd
 fn SetToolMode_Car args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
 	AddModeButtons layoutHelper "Car"
 	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
@@ -35,7 +35,7 @@ fn SetToolMode_Car args = (
 	AddCarToolsUI layoutHelper
 	
 	layoutHelper.EndVerticalGroup()
-
+	layoutHelper.PrintDebugTree()
 )
 fn SetToolMode_Wheel args = (
 	global CRToolsUI
@@ -312,7 +312,7 @@ fn CreateMenu uiForm = (
 	local exportCnt = exportSubMenu.MenuItems.Add("Export &CNT")
 	SetClickHandler exportCnt ExportCntMenuClicked
 	
-	local exportFullCnt = exportSubMenu.MenuItems.Add("Export &CNT")
+	local exportFullCnt = exportSubMenu.MenuItems.Add("Export &CNT && MDLs")
 	SetClickHandler exportFullCnt ExportFullHierarchyMenuClicked
 
 	local exportSettings = exportSubMenu.MenuItems.Add("Export &Settings")

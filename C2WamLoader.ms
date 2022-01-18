@@ -390,31 +390,7 @@ fn SetToHingeJoint joint weakness = (
 
 )
 
-fn BeginEditMesh obj = (
 
-	mods = #()
-	for m in obj.modifiers do (
-		append mods m
-	)
-	for m in mods do(
-		deletemodifier obj m
-	)
-	
-	mods
-)
-fn EndEditMesh obj mods = (
-	for m in mods do(
-		addmodifier obj m
-	)
-	
-
-)
-fn RotatePivotOnly obj rotation = (
-	local rotValInv=inverse (rotation as quat)
-	animate off in coordsys local obj.rotation*=RotValInv
-	obj.objectoffsetpos*=RotValInv
-	obj.objectoffsetrot*=RotValInv
-)
 
 fn flipWheel obj = (
 	oldMods = BeginEditMesh obj

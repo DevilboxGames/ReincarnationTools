@@ -42,6 +42,7 @@ struct DotNetFormHelper (
 	LastControl,
 	LastControlPosition,
 	NextControlPosition,
+	AutoSize = true,
 	Items = #(),
 	CurrentItem,
 	fn SetBorderstyle control style = (
@@ -84,6 +85,7 @@ struct DotNetFormHelper (
 
 			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control MarginTop:margin.y MarginBottom:margin.y MarginLeft:margin.x MarginRight:margin.x
 			append CurrentItem.Children controlItem
+
 			ParentControl.Controls.Add control
 		)
 		else (
@@ -125,12 +127,26 @@ struct DotNetFormHelper (
 			local height = 0
 			local width = 0
 			for i = 1 to CurrentItem.Children.Count do (
-				width = amax width CurrentItem.Children[i].Width
+				width = amax width (CurrentItem.Children[i].Width + CurrentItem.Children[i].MarginLeft + CurrentItem.Children[i].MarginRight)
 				height += CurrentItem.Children[i].Height +  CurrentItem.Children[i].MarginTop +  CurrentItem.Children[i].MarginBottom
 			)
 			CurrentItem.Height = height
 			CurrentItem.Width = width
+
 			CurrentItem = CurrentItem.Parent
+			if AutoSize == true then (
+				local totalHeight = 0
+				local totalWidth = 0
+
+				for item in items do (
+					totalWidth = amax totalWidth (item.Width + item.MarginLeft + item.MarginRight)
+					totalHeight = totalHeight + (item.height + item.MarginTop + item.MarginBottom)
+				)
+				ParentControl.height= totalHeight
+				ParentControl.width= totalWidth
+
+				format "Setting % size to [%,%]\n" ParentControl ParentControl.width ParentControl.height
+			)
 		)
 		else (
 			format "========================================\n== ERROR: Tried to end vertical group without matching starting group\n"
@@ -177,11 +193,39 @@ struct DotNetFormHelper (
 			CurrentItem.Height = height
 			CurrentItem.Width = width
 			CurrentItem = CurrentItem.Parent
+			if AutoSize == true then (
+				local totalHeight = 0
+				local totalWidth = 0
+
+				for item in items do (
+					totalWidth = amax totalWidth (item.Width + item.MarginLeft + item.MarginRight)
+					totalHeight = totalHeight + (item.height + item.MarginTop + item.MarginBottom)
+				)
+				ParentControl.height= totalHeight
+				ParentControl.width= totalWidth
+				format "Setting % size to [%,%]\n" ParentControl totalWidth totalHeight
+			)
 		)
 		else (
 			format "========================================\n== ERROR: Tried to end horizontal group without matching starting group\n"
 		)
-	)
+	),
 
+	fn PrintDebugItemTree item depth:1 = (
+		for i=1 to depth do format "\t"
+		format "%: % children" item.Type item.children.count
+		if item.type == "Control" then format " - %" item.control.name
+		format "\n"
+		for i = 1 to item.Children.count do (
+			PrintDebugItemTree item.Children[i] depth:(depth+1)
+		)
+	),
+
+	fn PrintDebugTree = (
+
+		for i = 1 to items.count do (
+			PrintDebugItemTree item[i] depth:1
+		)
+	)
 
 )

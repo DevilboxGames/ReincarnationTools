@@ -63,6 +63,12 @@ fn Funsize_AddTextToXML filename carname driverName driverWastedName driverDescr
 	XmlDoc.Save(filename)
 )
 
+fn Funsize_AddTextToTextTXT filename carname drivename carFullName = (
+	f = fopen f "r"
+	skipToString f "START of opponent names"
+	fclose f
+)
+
 fn Funsize_ExportHUDScript FunsizeDataPath carname hudModifier = (
 	hudScript = StringStream ""
 	hudImage = "image[\"damage\\\\"+carname+"\"]"
@@ -295,12 +301,21 @@ fn Funsize_ExportCarTXTFile filename carRoot = (
 	if carModifier.DynamicsText != undefined and carModifier.DynamicsText != "" then (
 		format "<console>\n%\n\n" carModifier.DynamicsText to:carTXT
 	)
+	if carModifier.RideHeightEnabled then (
+		format "<RideHeight>\n%\n\n" carModifier.RideHeight to:carTXT
+	)
 	if carModifier.CollisionShapes != undefined and  carModifier.CollisionShapes.count > 0 then (
-		local shapeGenerator = AccessoryFileLump()
+		--local shapeGenerator = AccessoryFileLump()
 
-		shapeGenerator.CreateShape (for obj in carModifier.CollisionShapes collect obj.node) roundedPolyhedronAmount:0.150000
+		--shapeGenerator.CreateShape (for obj in carModifier.CollisionShapes collect obj.node) roundedPolyhedronAmount:0.150000
 
-		format "%\n\n<ShapeCheckSum>\n-1\n\n" (shapeGenerator.OutputShapeString()) to:carTXT 
+		format "<Shape>\n" to:carTXT
+		local shapesBlock = AccessoryDynamicsShapeBlock()
+		shapesBlock.label = "(default label)"
+		shapesBlock.CreateShape2 (for obj in carModifier.CollisionShapes collect obj.node)
+		shapesBlock.Write carTXT
+		format "\n\n<ShapeCheckSum>\n-1\n\n" to:carTXT
+		--format "%\n\n<ShapeCheckSum>\n-1\n\n" (shapeGenerator.OutputShapeString()) to:carTXT 
 	)
 
 	if carModifier.MaxBodyworkCrushEnabled then
@@ -314,8 +329,8 @@ fn Funsize_ExportCarTXTFile filename carRoot = (
 )
 
 fn ExportFunsizeCar carRoot nolaunch: false onlyAllowCars: = (
-	global FunsizeLaunchInfo
-	FunsizeDataPath = FunsizeLaunchInfo.DataFolder
+	global CarmaSettings
+	FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
 	--for mat in scenematerials do format "%: %\n" mat.name (classof mat)
 	ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:true
 	carModifier = carRoot.modifiers["Funsize Car"]
@@ -335,9 +350,9 @@ fn ExportFunsizeCar carRoot nolaunch: false onlyAllowCars: = (
 	--for mat in MaterialsToExport do format "%, %\n" mat[2].name mat[2].mat_flags
 	ExportMaterialsAndTextures carFolder exportMats:true exportTextures:true funsizeExport:true createOctree:false
 	RenderMobileUIAssets carModifier.CarName FunsizeDataPath
-	global FunsizeLaunchInfo
+	
 
-	if FunsizeLaunchInfo.AutoBuild and nolaunch == false then (
+	if CarmaSettings.FunsizeSettings.AutoBuild and nolaunch == false then (
 		PackObb()
 	)
 )

@@ -30,6 +30,8 @@ fn MatIsMTL Mat = (
 fn MatIsC1MAT Mat = (
 	(isProperty mat "mat_ambient")
 )
+
+
 fn AddMTLtoMat mat = (
 	if (MatIsMTL mat) == false then (
 		if MatIsC1MAT mat then (

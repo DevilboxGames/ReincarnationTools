@@ -44,6 +44,18 @@ fn RenameDuplicateParts = (
 		)
 	)
 )
+
+fn getFilesRecursive root pattern =
+(
+dir_array = GetDirectories (root+"/*")
+for d in dir_array do
+  join dir_array (GetDirectories (d+"/*"))
+my_files = #()
+for f in dir_array do
+  join my_files (getFiles (f + pattern))
+my_files
+)
+
 fn GetFolderName filepath = (
 	pathParts = filterstring (getFilenamePath filepath) "\\/"
 	pathParts[pathParts.count]

@@ -65,7 +65,7 @@ fn SetControlLayout ctrl Layout =
 	if Layout.ForeColor != undefined then ctrl.forecolor = Layout.ForeColor
 )
 
-fn SetClickHandler ctrl func =
+fn SetClickHandlerOld ctrl func =
 (
 	
 	dotNet.setLifetimeControl ctrl #dotnet

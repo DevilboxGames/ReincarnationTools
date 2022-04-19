@@ -74,7 +74,8 @@ fn AddModeButtons layoutHelper selectedMode = (
 )
 fn AddHierarchyToolsUI parentLayoutHelper = (
 
-	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 250] margin:[100,0]
+	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 220] margin:[100,0]
+	panel.name = "HierarchyToolsPanel"
 
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:0 OutterMarginRight:0

@@ -44,6 +44,10 @@ struct MTLLayer
 	LayerFlags,			--UInt8
 	fn Save f = 
 	(
+		if Version_Minor == undefined or Version_Major == undefined then (
+			Version_Major = 5
+			Version_Minor = 0
+		)
 		if MapName == undefined then MapName = ""
 		if MapName.count != MapNameLength then MapNameLength = MapName.count
 

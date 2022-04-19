@@ -1,5 +1,6 @@
-	filein "ReincarnationTools.ms"
+	filein "BeelzebubTools.ms"
 
+tdrCarsFolder = "d:\\TDRAssets\\Cars2\\"
 forceDummyNull = true
 
 fn CreateModelFromMshs mshs = (
@@ -121,8 +122,18 @@ fn LoadMshsFile filename = (
 
 fn LoadTxFile filename = (
 	txClass = dotnetClass "ToxicRagers.TDR2000.Formats.TX"
+	if (dotNetClass "System.IO.File").Exists filename == false then (
+		global tdrCarsFolder
+		local  texturesFound = getFilesRecursive tdrCarsFolder ((dotNetClass "System.IO.Path").getfilename filename)
+		if texturesFound.count > 0 then (
+			filename = texturesFound[1]
+		)
+		else filename == undefined
 
-	txClass.Load filename
+	)
+	if filename != undefined then (
+		txClass.Load filename
+	)
 )
 
 fn LoadHieFile filename hFilename = (
@@ -528,8 +539,8 @@ fn RenderThisCar saveFolder carName carRoot selfIllum:75.0= (
 				
 )
 fn RenderAllTDRCars saveFolder startIndex:1 = (
-	carsFolder = "D:\\TDRAssets\\CARS\\"
-	carFolders = getDirectories "D:\\TDRAssets\\CARS\\*"
+	carsFolder = "D:\\TDRAssets\\CARS2\\"
+	carFolders = getDirectories "D:\\TDRAssets\\CARS2\\*"
 	numCars = carFolders.count
 	errors= StringStream ""
 	numErrors = 0
@@ -583,8 +594,8 @@ fn RenderAllTDRCars saveFolder startIndex:1 = (
 	format "converted % cars with % errors\n%\n" numConverted numErrors (errors as string)
 )
 fn TestAllTDRCars startIndex:1 = (
-	carsFolder = "D:\\TDRAssets\\CARS\\"
-	carFolders = getDirectories "D:\\TDRAssets\\CARS\\*"
+	carsFolder = "D:\\TDRAssets\\CARS2\\"
+	carFolders = getDirectories "D:\\TDRAssets\\CARS2\\*"
 	numCars = carFolders.count
 	errors= StringStream ""
 	numErrors = 0

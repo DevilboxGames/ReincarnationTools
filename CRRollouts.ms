@@ -30,7 +30,7 @@ rollout carma_reincarnation_dockfloater "Carmageddon Reincarnation Tools" width:
 		)
 	)
 )
-MaxTextureResolutionOptions = #("8192", "4096","2048","1024","512","256","128","64")
+global MaxTextureResolutionOptions = #("8192", "4096","2048","1024","512","256","128","64")
 rollout carma_reincarnation_settings "Settings"
 (
 	global CarmaSettings, FunsizeLaunchInfo

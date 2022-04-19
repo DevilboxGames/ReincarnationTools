@@ -49,9 +49,10 @@ AddRollout carma_reincarnation_about crToolsFloater
 -- */
 --try(CloseUI())catch()
 	
-	
-
-DisableWindowsGhosting = DisableProcessWindowsGhosting()
+if DisableWindowsGhostingApplied != true then (
+	DisableWindowsGhostingApplied = true
+	DisableWindowsGhosting = DisableProcessWindowsGhosting()
+)
 
 if DisableWindowsGhosting != null then
 	DisableWindowsGhosting.DisableProcessWindowsGhosting()

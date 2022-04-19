@@ -4740,7 +4740,8 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 				local nextPhysProp = PhysicsProperties[PhysicsPropertyIndices.count + 1]
 				local wheelindex = -1
 				for i = 1 to 4 do (
-					if (findString nextPhysProp StructPhysicsPropertyWheelPrefix[i]) then (
+					local physPropNamePos = (findString nextPhysProp StructPhysicsPropertyWheelPrefix[i])
+					if physPropNamePos > 0 then (
 						wheelIndex = i - 1
 					)
 				)

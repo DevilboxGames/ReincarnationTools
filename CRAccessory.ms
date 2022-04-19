@@ -19,7 +19,7 @@ struct AccessoryShape
 	Type,
 	Points = #(),
 	Indices = #(),
-	Radius,
+	Radius, 
 	Part,
 	CollisionGroups,
 	fn Read f = (
@@ -31,6 +31,11 @@ struct AccessoryShape
 				radius = (f.ReadLine()) as float
 			)
 			"alignedcuboid": (
+				append points (ConvertFromCRSpace (StringAsPoint3 (f.ReadLine())))
+				append points (ConvertFromCRSpace (StringAsPoint3 (f.ReadLine())))
+			)
+			"roundedalignedcuboid": (
+				radius = (f.ReadLine()) as float
 				append points (ConvertFromCRSpace (StringAsPoint3 (f.ReadLine())))
 				append points (ConvertFromCRSpace (StringAsPoint3 (f.ReadLine())))
 			)
@@ -99,6 +104,13 @@ struct AccessoryShape
 			"alignedcuboid": (
 				pos1 = ConvertToCRSpace points[1]
 				pos2 = ConvertToCRSpace points[2]
+				format "%,%,%\n" (amin pos1.x pos2.x) (amin pos1.y pos2.y) (amin pos1.z pos2.z) to:f
+				format "%,%,%\n" (amax pos1.x pos2.x) (amax pos1.y pos2.y) (amax pos1.z pos2.z) to:f
+			)
+			"roundedalignedcuboid": (
+				pos1 = ConvertToCRSpace points[1]
+				pos2 = ConvertToCRSpace points[2]
+				format "%\n" (radius as string) to:f
 				format "%,%,%\n" (amin pos1.x pos2.x) (amin pos1.y pos2.y) (amin pos1.z pos2.z) to:f
 				format "%,%,%\n" (amax pos1.x pos2.x) (amax pos1.y pos2.y) (amax pos1.z pos2.z) to:f
 			)
@@ -377,8 +389,8 @@ struct AccessoryJoint (
 		format "%\n" numConstraints to:f
 
 
-		for i=1 to numConstraints do (
-			constraint.Write f
+		for i=1 to constraints.count do (
+			constraints[i].Write f
 		)
 		if hasWeakness != undefined and hasWeakness then (
 			format "weakness\n" to:f
@@ -1186,7 +1198,7 @@ struct AccessoryDynamicsShapeBlock
 				"RoundedPolyhedron": (
 					msh = snapshotasmesh obj
 					accShape = AccessoryShape Type:"RoundedPolyhedron"
-					accShape.Radius = RoundedPolyhedronAmount
+					accShape.Radius = shapeMod.Radius
 					
 					numShapeVerts = getNumVerts msh
 					for v=1 to numShapeVerts do
@@ -1225,6 +1237,12 @@ struct AccessoryDynamicsShapeBlock
 				)
 				"AlignedCuboid": (
 					accShape = AccessoryShape Type:"AlignedCuboid"
+					append accShape.Points obj.min
+					append accShape.Points obj.max
+				)
+				"RoundedAlignedCuboid": (
+					accShape = AccessoryShape Type:"RoundedAlignedCuboid"
+					accShape.radius = shapeMod.Radius
 					append accShape.Points obj.min
 					append accShape.Points obj.max
 				)
@@ -1687,7 +1705,7 @@ fn MakeQuatFrom3Verts vertO vertX vertY upVector:[0,0,1] = (
 	(matrix3 xAxis yAxis upVector [0,0,0]) as quat
 )
 
-CollisionShapeTypes = #("Polyhedron", "RoundedPolyhedron", "TicTac", "Wireframe", "AlignedCuboid", "Sphere")
+CollisionShapeTypes = #("Polyhedron", "RoundedPolyhedron", "TicTac", "Wireframe", "AlignedCuboid", "Cuboid", "RoundedAlignedCuboid", "CrushableCuboid", "Sphere")
 AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a3ce, 0x4f8eec73) version:1
 (
 	parameters main rollout:mainaccessoryshaperollout (
@@ -1697,8 +1715,8 @@ AccessoryShapeAttribute = attributes AccessoryShapeCustAttrib attribid:#(0x2804a
 	)
 	rollout mainaccessoryshaperollout "Accessory" (
 		dropdownlist dpdn_CollisionType items:CollisionShapeTypes default:1
-		spinner spn_radius type:#float range:[0,1000,0]
-		spinner spn_CollisionGroup type:#integer range:[0,1000,0]
+		spinner spn_radius "Radius" type:#float range:[0,1000,0]
+		spinner spn_CollisionGroup "Collision Group" type:#integer range:[0,1000,0]
 
 		on mainaccessoryshaperollout open do (
 			dpdn_CollisionType.selection = finditem CollisionShapeTypes CollisionType
@@ -1970,11 +1988,14 @@ AccessoryJointAttribute = attributes AccessoryJointCustAttrib attribid:#(0x8a6ad
 		spinner spn_unknown6_y "Y" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 		spinner spn_unknown6_z "Z" type:#float across:3 fieldwidth:35 range:[-100,100,0]
 
-		on dpdn_jointtype seleced selectedIndex do (
-			if dpdpn_jointtype.Items[selectedIndex] == "World" then joint_type = "world_joint"
+		on dpdn_jointtype selected selectedIndex do (
+			if dpdn_jointtype.Items[selectedIndex] == "World" then joint_type = "world_joint"
 			else joint_type = "child_joint"
+
+			format "Joint type: % (%)\n" joint_type dpdn_jointtype.Items[selectedIndex]
 		)
 		on accessoryjointrollout open do(
+			format "Joint type: % \n" joint_type
 			if joint_type == "world_joint" then
 			(
 				dpdn_jointtype.selection = 1
@@ -3158,6 +3179,7 @@ fn AddAccessoryJointConstraint obj constraint:unsupplied jointType:"world_joint"
 	if jointType == "child_joint" then (
 		modifierName = "Child Joint Constraint"
 	)
+	format "Adding % to %\n"  modifierName obj.name
 	local constraintMod = AddCustomModifier obj modifierName AccessoryJointConstraintAttribute allowMultiple:true
 	
 	if constraint != unsupplied then (
@@ -3204,6 +3226,9 @@ fn AddAccessoryJoint obj jointType:"world_joint" joint:unsupplied = (
 			AddAccessoryJointWeakness obj weakness1:joint.weakness1 weakness2:joint.weakness2
 		)
 	)
+	else (
+		jointMod.jointtype = jointType
+	)
 )
 fn AddAccessoryJoints obj joints = (
 
@@ -3240,6 +3265,18 @@ fn AddAccessoryShapes obj shapeData = (
 				shapeObj.radius = curShape.radius
 			)
 			"alignedcuboid": (
+				local exMin = [amin curShape.points[1].x curShape.Points[2].x,amin curShape.points[1].y curShape.Points[2].y,amin curShape.points[1].z curShape.Points[2].z]
+				local exmax = [amax curShape.points[1].x curShape.Points[2].x,amax curShape.points[1].y curShape.Points[2].y,amax curShape.points[1].z curShape.Points[2].z]
+				local extents = exmax - exMin 
+				local pos = [exMin.x + extents.x * 0.5, exMin.y + extents.y * 0.5, exMin.z]
+				shapeObj = box width:extents.x length:extents.y height:extents.z
+				in coordsys obj (
+					shapeObj.scale = [1,1,1]
+					shapeObj.rotation = quat 1
+					shapeObj.pos = pos
+				)
+			)
+			"roundrdalignedcuboid": (
 				local exMin = [amin curShape.points[1].x curShape.Points[2].x,amin curShape.points[1].y curShape.Points[2].y,amin curShape.points[1].z curShape.Points[2].z]
 				local exmax = [amax curShape.points[1].x curShape.Points[2].x,amax curShape.points[1].y curShape.Points[2].y,amax curShape.points[1].z curShape.Points[2].z]
 				local extents = exmax - exMin 
@@ -3599,6 +3636,7 @@ fn ImportAccessoryTXT file obj = (
 		)
 		for dynamicsblock in accessoryData.DynamicsBlocks do (
 			local dynamicsObj = obj
+			if dynamicsObj.name != undefined then dynamicsObj.name = "lump"
 			if (tolower dynamicsObj.name) != (toLower dynamicsblock.lump_name) then (
 				dynamicsObj = GetDescendantByName obj dynamicsblock.lump_name
 			)
@@ -3939,6 +3977,7 @@ fn GetJointFromModifier obj jointMod = (
 		constraintData.p3_Unknown2 = constraintMod.p3_Unknown2
 		append jointData.constraints constraintData
 	)
+	jointData.numConstraints = jointData.constraints.count
 
 	if obj.modifiers[weaknessModName + "1"] != undefined then (
 		local weakness1Mod = obj.modifiers[weaknessModName + "1"]

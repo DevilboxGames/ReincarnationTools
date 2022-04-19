@@ -7,8 +7,11 @@ fn SetToolMode_Ped args = ()
 fileIn "DotNetFormHelper.ms"
 fileIn "CRToolsSettings.ms"
 fileIn "CRToolsNewUI_Common.ms"
+fileIn "CRToolsNewUI_Mobile.ms"
 fileIn "CRToolsNewUI_Cars.ms"
 fileIn "CRToolsNewUI_Wheels.ms"
+fileIn "CRToolsNewUI_Accessories.ms"
+fileIn "CRToolsNewUI_Levels.ms"
 fileIn "CRToolsNewUI_Import.ms"
 fileIn "CRToolsNewUI_Export.ms"
 
@@ -23,6 +26,21 @@ local childWindows = WindowFinder.GetChildWindows wnd
 wnd
 )
 fn SetToolMode_Car args = (
+	global CRToolsUI
+	CRToolsUI.controls.clear()
+	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
+	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
+	AddModeButtons layoutHelper "Car"
+	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+	--uicontent.text = "Car Mode"
+	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	AddHierarchyToolsUI layoutHelper
+	AddCarToolsUI layoutHelper
+	
+	layoutHelper.EndVerticalGroup()
+	layoutHelper.PrintDebugTree()
+)
+fn SetToolMode_MobileCar args = (
 	global CRToolsUI
 	CRToolsUI.controls.clear()
 	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
@@ -64,7 +82,7 @@ fn SetToolMode_Level args = (
 	--uicontent.text = "Level Mode"
 	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 	AddHierarchyToolsUI layoutHelper
-
+	AddLevelToolsUI layoutHelper
 	
 	layoutHelper.EndVerticalGroup()
 
@@ -81,6 +99,7 @@ fn SetToolMode_Accessory args = (
 	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 
 	AddHierarchyToolsUI layoutHelper
+	AddAccessoryToolsUI layoutHelper
 	
 	layoutHelper.EndVerticalGroup()
 
@@ -160,10 +179,222 @@ fn ShowImportOptions = (
 	layoutHelper.EndVerticalGroup()
 	importSettingsDialog.ShowDialog()
 )
+fn ShowMobileOptions = (
 
+	global CarmaSettings
+	local mobileSettingsDialog = dotNetObject "System.Windows.Forms.Form"
+	mobileSettingsDialog.text = "Mobile Export Settings"
+	mobileSettingsDialog.name = "MobileSettings"
+	mobileSettingsDialog.width = 450
+	--exportSettingsDialog.AutoSize = true
+
+	local layoutHelper = DotNetFormHelper ParentControl:mobileSettingsDialog
+	layoutHelper.BeginVerticalGroup margintop:5 marginbottom:5
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+				local adbPathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				adbPathLabel.text = "Path to ADB"
+				layoutHelper.SetFont adbPathLabel "Segoe UI" 10 bold:false underline:false
+
+				local ADBPathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				ADBPathInput.name = "ADBPathInput"
+				ADBPathInput.text = CarmaSettings.FunsizeSettings.ADB
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+				local gibbedPackerPathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				gibbedPackerPathLabel.text = "Path to GibbedPacker"
+				layoutHelper.SetFont gibbedPackerPathLabel "Segoe UI" 10 bold:false underline:false
+
+				local gibbedPackerPathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				gibbedPackerPathInput.name = "gibbedPackerPathInput"
+				gibbedPackerPathInput.text = CarmaSettings.FunsizeSettings.GibbedPacker
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+				local ObbPackerPathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				ObbPackerPathLabel.text = "Path to ObbPacker"
+				layoutHelper.SetFont ObbPackerPathLabel "Segoe UI" 10 bold:false underline:false
+
+				local ObbPackerPathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				ObbPackerPathInput.name = "ObbPackerPathInput"
+				ObbPackerPathInput.text = CarmaSettings.FunsizeSettings.ObbPacker
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+				local WorkingFolderPathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				WorkingFolderPathLabel.text = "Working Folder"
+				layoutHelper.SetFont WorkingFolderPathLabel "Segoe UI" 10 bold:false underline:false
+
+				local WorkingFolderPathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				WorkingFolderPathInput.name = "WorkingFolderPathInput"
+				WorkingFolderPathInput.text = CarmaSettings.FunsizeSettings.WorkingFolder
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+				local DataFolderPathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				DataFolderPathLabel.text = "Data Folder"
+				layoutHelper.SetFont DataFolderPathLabel "Segoe UI" 10 bold:false underline:false
+
+				local DataFolderPathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				DataFolderPathInput.name = "DataFolderPathInput"
+				DataFolderPathInput.text = CarmaSettings.FunsizeSettings.DataFolder
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+				local WadNamePathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				WadNamePathLabel.text = "Wad Filename"
+				layoutHelper.SetFont WadNamePathLabel "Segoe UI" 10 bold:false underline:false
+
+				local WadNamePathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				WadNamePathInput.name = "WadNamePathInput"
+				WadNamePathInput.text = CarmaSettings.FunsizeSettings.WadName
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+				local ObbNamePathLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				ObbNamePathLabel.text = "Obb Filename"
+				layoutHelper.SetFont ObbNamePathLabel "Segoe UI" 10 bold:false underline:false
+
+				local ObbNamePathInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				ObbNamePathInput.name = "ObbNamePathInput"
+				ObbNamePathInput.text = CarmaSettings.FunsizeSettings.ObbName
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+				local DeviceIPLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,27] margin:[10,0]
+				DeviceIPLabel.text = "Device IP"
+				layoutHelper.SetFont DeviceIPLabel "Segoe UI" 10 bold:false underline:false
+				local DeviceIPInput = layoutHelper.AddControl "System.Windows.Forms.TextBox" size:[200,27] margin:[10,0]
+				DeviceIPInput.name = "DeviceIPInput"
+				DeviceIPInput.text = CarmaSettings.FunsizeSettings.DeviceIP
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			
+			local autoBuildCheckbox = layoutHelper.AddControl "System.Windows.Forms.Checkbox" size:[150,20]
+			autoBuildCheckbox.text = "Auto Build"
+			autoBuildCheckbox.checked = CarmaSettings.FunsizeSettings.autoBuild
+			autoBuildCheckbox.name = "autoBuildCheckbox"
+
+			local autoDeployCheckbox = layoutHelper.AddControl "System.Windows.Forms.Checkbox" size:[150,20]
+			autoDeployCheckbox.text = "Auto Deploy"
+			autoDeployCheckbox.checked = CarmaSettings.FunsizeSettings.autoDeployObb
+			autoDeployCheckbox.name = "autoDeployCheckbox"
+
+			local autoLaunchCheckbox = layoutHelper.AddControl "System.Windows.Forms.Checkbox" size:[150,20]
+			autoLaunchCheckbox.text = "Auto Launch"
+			autoLaunchCheckbox.checked = CarmaSettings.FunsizeSettings.autoLaunchGame
+			autoLaunchCheckbox.name = "autoLaunchCheckbox"
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+		(
+			layoutHelper.BeginVerticalGroup()
+			(
+			)
+			layoutHelper.EndVerticalGroup()
+			layoutHelper.BeginVerticalGroup()
+			(
+			)
+			layoutHelper.EndVerticalGroup()
+		)	
+		layoutHelper.EndHorizontalGroup()
+
+
+
+	layoutHelper.BeginHorizontalGroup()
+	local okButton = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20]
+	--okButton.Location = dotnetobject "System.Drawing.Point" 10 130 
+	okButton.text = "Save"
+	fn ExportSettingsOkClicked okButton ev = (
+		global CarmaSettings
+		local exportSettingsDialog = okButton.parent
+		local ADBPathInput = exportSettingsDialog.Controls.Find "ADBPathInput" false
+		local gibbedPackerPathInput = exportSettingsDialog.Controls.Find "gibbedPackerPathInput" false
+		local ObbPackerPathInput = exportSettingsDialog.Controls.Find "ObbPackerPathInput" false
+		local WorkingFolderPathInput = exportSettingsDialog.Controls.Find "WorkingFolderPathInput" false
+		local DataFolderPathInput = exportSettingsDialog.Controls.Find "DataFolderPathInput" false
+		local ObbNamePathInput = exportSettingsDialog.Controls.Find "ObbNamePathInput" false
+		local WadNamePathInput = exportSettingsDialog.Controls.Find "WadNamePathInput" false
+		local DeviceIPInput = exportSettingsDialog.Controls.Find "DeviceIPInput" false
+		local autoBuildCheckbox = exportSettingsDialog.Controls.Find "autoBuildCheckbox" false
+		local autoDeployCheckbox = exportSettingsDialog.Controls.Find "autoDeployCheckbox" false
+		local autoLaunchCheckbox = exportSettingsDialog.Controls.Find "autoLaunchCheckbox" false
+		
+		CarmaSettings.FunsizeSettings.ADB = ADBPathInput[1].text
+		CarmaSettings.FunsizeSettings.GibbedPacker = gibbedPackerPathInput[1].text
+		CarmaSettings.FunsizeSettings.ObbPacker = ObbPackerPathInput[1].text
+		CarmaSettings.FunsizeSettings.WorkingFolder = WorkingFolderPathInput[1].text
+		CarmaSettings.FunsizeSettings.DataFolder = DataFolderPathInput[1].text
+		CarmaSettings.FunsizeSettings.WadName = WadNamePathInput[1].text
+		CarmaSettings.FunsizeSettings.ObbName = ObbNamePathInput[1].text
+		CarmaSettings.FunsizeSettings.DeviceIP = DeviceIPInput[1].text
+		CarmaSettings.FunsizeSettings.autoDeployObb = autoDeployCheckbox[1].checked
+		CarmaSettings.FunsizeSettings.autoBuild = autoBuildCheckbox[1].checked
+		CarmaSettings.FunsizeSettings.autoLaunchGame = autoLaunchCheckbox[1].checked
+		CarmaSettings.Save()
+		exportSettingsDialog.Close()
+	)
+	SetClickHandler okButton ExportSettingsOkClicked
+
+	local cancelButton = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20]
+	cancelButton.Text = "Cancel"
+	fn ExportSettingsCancelClicked cancelButton ev = (
+		cancelButton.parent.Close()
+	)
+	SetClickHandler cancelButton ExportSettingsCancelClicked
+	layoutHelper.EndHorizontalGroup()
+	layoutHelper.EndVerticalGroup()
+	mobileSettingsDialog.ShowDialog()	
+)
 fn ShowExportOptions = (
 	global CarmaSettings
-	local importSettingsDialog = dotNetObject "System.Windows.Forms.Form"
+	local exportSettingsDialog = dotNetObject "System.Windows.Forms.Form"
 	exportSettingsDialog.text = "Export Settings"
 	exportSettingsDialog.name = "ExportSettings"
 	--exportSettingsDialog.AutoSize = true
@@ -242,9 +473,6 @@ fn CreateMenu uiForm = (
 	local importCnt = importSubMenu.MenuItems.Add("Import &CNT")
 	SetClickHandler importCnt ImportCNTMenuClicked
 
-	local importSettings = importSubMenu.MenuItems.Add("Import &Settings")
-	SetClickHandler importSettings ShowImportOptions
-
 	importSubMenu.MenuItems.Add("-")
 	
 	local importCar = importSubMenu.MenuItems.Add("Import Ca&r")
@@ -315,8 +543,6 @@ fn CreateMenu uiForm = (
 	local exportFullCnt = exportSubMenu.MenuItems.Add("Export &CNT && MDLs")
 	SetClickHandler exportFullCnt ExportFullHierarchyMenuClicked
 
-	local exportSettings = exportSubMenu.MenuItems.Add("Export &Settings")
-	
 
 	exportSubMenu.MenuItems.Add("-")
 	local exportCar = exportSubMenu.MenuItems.Add("Export Ca&r")
@@ -373,6 +599,34 @@ fn CreateMenu uiForm = (
 	local exportPed = exportSubMenu.MenuItems.Add("Export &Ped")
 	local exportPedToDo = exportPed.MenuItems.Add("===ToDo===")
 
+	exportSubMenu.MenuItems.Add("-")
+	local exportMobileItem = exportSubMenu.MenuItems.Add("Mobile")
+	local exportMobileCarItem = exportMobileItem.MenuItems.Add("Export Car")
+	local exportMobileFullCarItem = exportMobileCarItem.MenuItems.Add("Export Full Car")
+	local exportMobileCarSetupItem = exportMobileCarItem.MenuItems.Add("Export Car Setup")
+	local mobileExportSettingsItem = exportMobileItem.MenuItems.Add("Mobile Settings")
+	global exportMobileFullCarCallback =  ExportMobileFullCar
+	global exportMobileCarSetupCallback =  ExportMobileCarTxt
+
+
+	fileMenu.MenuItems.Add("-")
+	local importSettings = fileMenu.MenuItems.Add("Import Settings")
+	SetClickHandler importSettings ShowImportOptions
+	local exportSettings = fileMenu.MenuItems.Add("Export Settings")
+	SetClickHandler exportSettings ShowExportOptions
+	local mobileSettings = fileMenu.MenuItems.Add("Mobile Settings")
+	SetClickHandler mobileSettings ShowMobileOptions
+
+	fn exportMobileFullCarPressed menuItem ev = (
+		global exportMobileFullCarCallback
+		ShowExportToMobileForm "Export Full Car" "You are exporting the full car, including the model, configuration and UI assets" ExportMobileFullCar
+	) 
+	fn exportMobileCarSetupPressed menuItem ev = (
+		global exportMobileCarSetupCallback
+		ShowExportToMobileForm "Export Car Setup Car" "You are exporting the car configuration" ExportMobileCarTxt
+	) 
+	SetClickHandler exportMobileFullCarItem exportMobileFullCarPressed
+	SetClickHandler exportMobileCarSetupItem exportMobileCarSetupPressed
 
 	local modeMenu = crMenu.MenuItems.Add("&Edit Mode")
 	local modeCar = modeMenu.MenuItems.Add("&Car Creation") 
@@ -394,6 +648,12 @@ fn CreateMenu uiForm = (
 	local modePed = modeMenu.MenuItems.Add("&Ped Creation")
 	SetClickHandler modePed SetToolMode_Ped
 	modePed.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift5
+	
+	modeMenu.MenuItems.Add("-")
+
+	local modeCar = modeMenu.MenuItems.Add("&Mobile Car Creation") 
+	SetClickHandler modeCar SetToolMode_MobileCar
+	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift1
 	
 	local helpMenu = crMenu.MenuItems.Add("&Help")
 	local aboutMenuLink = helpMenu.MenuItems.Add("About")
@@ -458,9 +718,10 @@ fn CreateNewUI =
 	--ToolsStartup()
 			
 	CRToolsUI = dotNetObject "System.Windows.Forms.Form"
-
-	CRToolsUi.width = 420
+	CRToolsUI.Name = "BeelzebubToolsWindow"
+	CRToolsUi.width = 440
 	CRToolsUI.height = 600
+	CRToolsUI.MaximumSize = dotNetObject "System.Drawing.Size" 440 800
 	CRToolsUI.autosize = true
 	CRToolsUI.autoscroll = true
 	--local tooltip = dotNetObject "System.Windows.Forms.ToolTip"

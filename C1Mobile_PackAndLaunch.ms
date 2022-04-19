@@ -15,10 +15,10 @@ struct FunsizePackAndLaunchDetails (
 global FunsizeLaunchInfo = FunsizePackAndLaunchDetails()
 
 fn PackObb = (
-	global FunsizeLaunchInfo
-	FunsizeDataDirectory = FunsizeLaunchInfo.DataFolder
-	WadFilePath =  FunsizeLaunchInfo.WorkingFolder +  FunsizeLaunchInfo.WadName
-	ObbFilePath =  FunsizeLaunchInfo.WorkingFolder +  FunsizeLaunchInfo.ObbName
+	global CarmaSettings
+	FunsizeDataDirectory = CarmaSettings.FunsizeSettings.DataFolder
+	WadFilePath =  CarmaSettings.FunsizeSettings.WorkingFolder +  CarmaSettings.FunsizeSettings.WadName
+	ObbFilePath =  CarmaSettings.FunsizeSettings.WorkingFolder +  CarmaSettings.FunsizeSettings.ObbName
 	if (doesFileExist  WadFilePath) then 
 	(
 		DOSCommand ("del " + WadFilePath)
@@ -29,23 +29,23 @@ fn PackObb = (
 		DOSCommand ("del " + ObbFilePath)
 	)
 
-	workingDrive = (FilterString FunsizeLaunchInfo.WorkingFolder "\\")[1]
+	workingDrive = (FilterString CarmaSettings.FunsizeSettings.WorkingFolder "\\")[1]
 	datadir = substituteString FunsizeDataDirectory "\\" "/"
 	waddir = substituteString WadFilePath "\\" "/"
 	
 	if datadir[datadir.count] == "/" then datadir = substring datadir 1 (datadir.count-1)
-	DOSCommand (workingDrive + "&& cd "+ FunsizeLaunchInfo.WorkingFolder +"&&cd bin&&"+FunsizeLaunchInfo.GibbedPacker + " \"" + datadir + "\" \""+ waddir + "\"&&cd.." )
-	DOSCommand (workingDrive + "&& cd "+ FunsizeLaunchInfo.WorkingFolder +"&&"+FunsizeLaunchInfo.ObbPacker)
-	if FunsizeLaunchInfo.AutoDeployObb then (
+	DOSCommand (workingDrive + "&& cd "+ CarmaSettings.FunsizeSettings.WorkingFolder +"&&cd bin&&"+CarmaSettings.FunsizeSettings.GibbedPacker + " \"" + datadir + "\" \""+ waddir + "\"&&cd.." )
+	DOSCommand (workingDrive + "&& cd "+ CarmaSettings.FunsizeSettings.WorkingFolder +"&&"+CarmaSettings.FunsizeSettings.ObbPacker)
+	if CarmaSettings.FunsizeSettings.AutoDeployObb then (
 		
-		DOSCommand (FunsizeLaunchInfo.ADB + " disconnect " )
-		DOSCommand (FunsizeLaunchInfo.ADB + " connect " + FunsizeLaunchInfo.DeviceIP )
+		DOSCommand (CarmaSettings.FunsizeSettings.ADB + " disconnect " )
+		DOSCommand (CarmaSettings.FunsizeSettings.ADB + " connect " + CarmaSettings.FunsizeSettings.DeviceIP )
 		
-		DOSCommand (workingDrive + "&& cd "+ FunsizeLaunchInfo.WorkingFolder +"&&"+FunsizeLaunchInfo.ADB + " push " + FunsizeLaunchInfo.ObbName + " /sdcard/Android/obb/com.stainlessgames.carmageddon/" + FunsizeLaunchInfo.ObbName )
+		DOSCommand (workingDrive + "&& cd "+ CarmaSettings.FunsizeSettings.WorkingFolder +"&&"+CarmaSettings.FunsizeSettings.ADB + " push " + CarmaSettings.FunsizeSettings.ObbName + " /sdcard/Android/obb/com.stainlessgames.carmageddon/" + CarmaSettings.FunsizeSettings.ObbName )
 
-		if FunsizeLaunchInfo.AutoLaunchGame then (
+		if CarmaSettings.FunsizeSettings.AutoLaunchGame then (
 			
-			DOSCommand (FunsizeLaunchInfo.ADB + " shell am start -n com.stainlessgames.carmageddon/.ParsonsLoader ")
+			DOSCommand (CarmaSettings.FunsizeSettings.ADB + " shell am start -n com.stainlessgames.carmageddon/.ParsonsLoader ")
 		)
 	)
 )

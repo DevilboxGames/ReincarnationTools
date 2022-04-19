@@ -42,7 +42,7 @@ struct DotNetFormHelper (
 	LastControl,
 	LastControlPosition,
 	NextControlPosition,
-	AutoSize = true,
+	AutoSize = false,
 	Items = #(),
 	CurrentItem,
 	fn SetBorderstyle control style = (
@@ -86,6 +86,10 @@ struct DotNetFormHelper (
 			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control MarginTop:margin.y MarginBottom:margin.y MarginLeft:margin.x MarginRight:margin.x
 			append CurrentItem.Children controlItem
 
+			if AutoSize then (
+				CurrentItem.width = controlPosition.x + size.x + margin.x + margin.x
+				CurrentItem.height = controlPosition.y + size.y + margin.y + margin.y
+			)
 			ParentControl.Controls.Add control
 		)
 		else (
@@ -94,7 +98,7 @@ struct DotNetFormHelper (
 		control
 	),
 
-	fn BeginVerticalGroup marginTop:10 marginRight:10 marginBottom:10 marginLeft:10 align:"left" = (
+	fn BeginVerticalGroup marginTop:0 marginRight:0 marginBottom:0 marginLeft:0 align:"left" = (
 		--append GroupStack "Vertical"
 		local vGroup = DotNetFormItem Type:"VerticalGroup"
 		vGroup.MarginTop = marginTop
@@ -145,7 +149,7 @@ struct DotNetFormHelper (
 				ParentControl.height= totalHeight
 				ParentControl.width= totalWidth
 
-				format "Setting % size to [%,%]\n" ParentControl ParentControl.width ParentControl.height
+				format "Setting % size to [%,%]\n" ParentControl.name ParentControl.width ParentControl.height
 			)
 		)
 		else (
@@ -153,7 +157,7 @@ struct DotNetFormHelper (
 		)
 	),
 
-	fn BeginHorizontalGroup marginTop:10 marginRight:10 marginBottom:10 marginLeft:10 align:"left" = (
+	fn BeginHorizontalGroup marginTop:0 marginRight:0 marginBottom:0 marginLeft:0 align:"left" = (
 		local hGroup = DotNetFormItem Type:"HorizontalGroup"
 		hGroup.MarginTop = marginTop
 		hGroup.MarginRight = marginRight
@@ -198,12 +202,12 @@ struct DotNetFormHelper (
 				local totalWidth = 0
 
 				for item in items do (
-					totalWidth = amax totalWidth (item.Width + item.MarginLeft + item.MarginRight)
-					totalHeight = totalHeight + (item.height + item.MarginTop + item.MarginBottom)
+					totalWidth =  totalWidth + (item.Width + item.MarginLeft + item.MarginRight)
+					totalHeight = amax totalHeight (item.height + item.MarginTop + item.MarginBottom)
 				)
 				ParentControl.height= totalHeight
 				ParentControl.width= totalWidth
-				format "Setting % size to [%,%]\n" ParentControl totalWidth totalHeight
+				format "Setting % size to [%,%]\n" ParentControl.name totalWidth totalHeight
 			)
 		)
 		else (
@@ -224,7 +228,7 @@ struct DotNetFormHelper (
 	fn PrintDebugTree = (
 
 		for i = 1 to items.count do (
-			PrintDebugItemTree item[i] depth:1
+			PrintDebugItemTree items[i] depth:1
 		)
 	)
 

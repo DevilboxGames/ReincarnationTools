@@ -268,6 +268,7 @@ fn AddCarToolsUI parentLayoutHelper = (
 	carSetupLabel.text = "Car Setup"
 	parentLayoutHelper.SetFont carSetupLabel "Segoe UI" 12 bold:true underline:false
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 100] margin:[10,0]
+	panel.name = "CarSetupPanel"
 
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:0 OutterMarginBottom:0 OutterMarginLeft:5 OutterMarginRight:5
@@ -339,7 +340,7 @@ fn AddCarToolsUI parentLayoutHelper = (
 	systemsDamageLabel.text = "Structure"
 	layoutHelper.SetFont systemsDamageLabel "Segoe UI" 12 bold:true underline:false
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 250] margin:[10,0]
-
+	panel.name = "CarStructurePanel"
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:0 OutterMarginBottom:0 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup align:"center"  marginTop:3 marginRight:3 marginBottom:3 marginLeft:3
@@ -455,7 +456,7 @@ fn AddCarToolsUI parentLayoutHelper = (
 	wheelsLabel.text = "Wheels"
 	layoutHelper.SetFont wheelsLabel "Segoe UI" 12 bold:true underline:false
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 200] margin:[10,0]
-
+	panel.name = "CarWheelsPanel"
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:0 OutterMarginBottom:0 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup align:"center"  marginTop:3 marginRight:3 marginBottom:3 marginLeft:3
@@ -615,7 +616,7 @@ fn AddCarToolsUI parentLayoutHelper = (
 	systemsDamageLabel.text = "Damage"
 	layoutHelper.SetFont systemsDamageLabel "Segoe UI" 12 bold:true underline:false
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 100] margin:[10,0]
-
+	panel.name = "CarDamagePanel"
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:0 OutterMarginBottom:0 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup align:"center"  marginTop:3 marginRight:3 marginBottom:3 marginLeft:3
@@ -694,7 +695,7 @@ fn AddCarToolsUI parentLayoutHelper = (
 	systemsDamageLabel.text = "UI Assets"
 	layoutHelper.SetFont systemsDamageLabel "Segoe UI" 12 bold:true underline:false
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 150] margin:[10,0]
-
+	panel.name = "UIAssetsPanel"
 	parentLayoutHelper.SetBorderStyle panel "FixedSingle"
 	local layoutHelper = DotNetFormHelper ParentControl:panel OutterMarginTop:0 OutterMarginBottom:0 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup align:"center"  marginTop:3 marginRight:3 marginBottom:3 marginLeft:3

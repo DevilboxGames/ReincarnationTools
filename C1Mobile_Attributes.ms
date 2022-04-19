@@ -14,14 +14,15 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		EnginePos type:#point3
 		MaxBodyworkCrushEnabled type:#boolean ui:chk_MaxBodyworkCrushEnabled default:false
 		MaxBodyworkCrush type:#point3
-		GraphicalWheelLimitsEnabled type:#boolean default:false
+		GraphicalWheelLimitsEnabled type:#boolean default:false ui:chk_GraphicalWheelLimitsEnabled
 		GraphicalWheelLimits type:#point4
 		EngineNoises type:#string ui:txt_EngineNoises
 		Grooves type:#string ui:txt_Grooves
 		CollisionShapes type:#maxObjectTab tabsizevariable:true
 		CollisionShapeText type:#string
 		DynamicsText type:#string ui:txt_DynamicsText
-
+		RideHeightEnabled type:#boolean default:false ui:chk_RideHeightEnabled
+		RideHeight type:#float ui:spn_RideHeight
 		Defence type:#integer min:0 max: 10 default: 1 ui:spn_Defence
 		Offence type:#integer min:0 max: 10 default: 1 ui:spn_Offence
 		Power type:#integer min:0 max: 10 default:1 ui:spn_Power
@@ -56,6 +57,8 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 		edittext txt_EngineNoises "Engine Noises" labelOnTop:true height:50
 		edittext txt_Grooves "Grooves" labelOnTop:true height:75
 		edittext txt_DynamicsText "Car Dynamics" labelOnTop:true height:75
+		checkbox chk_RideHeightEnabled "Ride Height"
+		spinner spn_RideHeight ""  type:#float default:RideHeight
 		group "Collision Shapes"(
 			dotnetcontrol lv_shapes "listview" height: 200
 			pickbutton pck_AddCollisionShape "Add" across:3
@@ -129,10 +132,14 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 			spn_MaxBodyworkCrushX.value = MaxBodyworkCrush.x
 			spn_MaxBodyworkCrushY.value = MaxBodyworkCrush.y
 			spn_MaxBodyworkCrushZ.value = MaxBodyworkCrush.z
+
 			spn_GraphicalWheelLimitsX.value = GraphicalWheelLimits.x
 			spn_GraphicalWheelLimitsY.value = GraphicalWheelLimits.y
 			spn_GraphicalWheelLimitsZ.value = GraphicalWheelLimits.z
-
+			spn_GraphicalWheelLimitsX.enabled = GraphicalWheelLimitsEnabled
+			spn_GraphicalWheelLimitsY.enabled = GraphicalWheelLimitsEnabled
+			spn_GraphicalWheelLimitsZ.enabled = GraphicalWheelLimitsEnabled
+			spn_RideHeight.enabled = RideHeightEnabled
 
 			lv_shapes.view  = (dotnetclass "view").details
 			lv_shapes.fullrowselect= true
@@ -142,60 +149,64 @@ FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:
 			refreshShapesList()
 		)
 
-		on clr_Shrapnel change value do (
+		on clr_Shrapnel changed value do (
 			ShrapnelR = value.R
 			ShrapnelG = value.G
 			ShrapnelB = value.B
 		)
 
-		on chk_enginePosEnabled change value do (
+		on chk_enginePosEnabled changed value do (
 			spn_EnginePosX.enabled = value
 			spn_EnginePosY.enabled = value
 			spn_EnginePosZ.enabled = value
 		)
-		on spn_EnginePosX change value do (
+		on spn_EnginePosX changed value do (
 			EnginePos.x = value
 		)
 
-		on spn_EnginePosY change value do (
+		on spn_EnginePosY changed value do (
 			EnginePos.y = value
 		)
 
-		on spn_EnginePosZ change value do (
+		on spn_EnginePosZ changed value do (
 			EnginePos.z = value
 		)
 
-		on chk_MaxBodyworkCrushEnabled change value do (
+		on chk_MaxBodyworkCrushEnabled changed value do (
 			spn_MaxBodyworkCrushX.enabled = value
 			spn_MaxBodyworkCrushY.enabled = value
 			spn_MaxBodyworkCrushZ.enabled = value
 		)
-		on spn_MaxBodyworkCrushX change value do (
+		on spn_MaxBodyworkCrushX changed value do (
 			MaxBodyworkCrush.x = value
 		)
 
-		on spn_MaxBodyworkCrushY change value do (
+		on spn_MaxBodyworkCrushY changed value do (
 			MaxBodyworkCrush.y = value
 		)
 
-		on spn_MaxBodyworkCrushZ change value do (
+		on spn_MaxBodyworkCrushZ changed value do (
 			MaxBodyworkCrush.z = value
 		)
 
-		on chk_GraphicalWheelLimitsEnabled change value do (
+		on chk_RideHeightEnabled changed value do (
+			spn_RideHeight.enabled = value
+		)
+
+		on chk_GraphicalWheelLimitsEnabled changed value do (
 			spn_GraphicalWheelLimitsX.enabled = value
 			spn_GraphicalWheelLimitsY.enabled = value
 			spn_GraphicalWheelLimitsZ.enabled = value
 		)
-		on spn_GraphicalWheelLimitsX change value do (
+		on spn_GraphicalWheelLimitsX changed value do (
 			GraphicalWheelLimits.x = value
 		)
 
-		on spn_GraphicalWheelLimitsY change value do (
+		on spn_GraphicalWheelLimitsY changed value do (
 			GraphicalWheelLimits.y = value
 		)
 
-		on spn_GraphicalWheelLimitsZ change value do (
+		on spn_GraphicalWheelLimitsZ changed value do (
 			GraphicalWheelLimits.z = value
 		)
 

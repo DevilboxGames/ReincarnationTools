@@ -1,6 +1,6 @@
 
 
-fn AddWheelToolsUI parentLayoutHelper = (
+fn AddLevelToolsUI parentLayoutHelper = (
 
 	local panel = parentLayoutHelper.AddControl "System.Windows.Forms.Panel" size:[380, 150]
 
@@ -21,6 +21,4 @@ fn AddWheelToolsUI parentLayoutHelper = (
 
 	)
 	layoutHelper.EndVerticalGroup()
-
-
 )

@@ -259,7 +259,7 @@ fn ToolsStartup =
 		if CarmaSettings.GibbedTools == "" then CarmaSettings.GibbedTools = (currentScriptFolder+"Gibbed.Duels.FileFormats.dll")
 		if CarmaSettings.LOLDecoder == "" then CarmaSettings.LOLDecoder = (currentScriptFolder+"LOLDecoderLib.dll")
 			
-				dllpath = GetFilenamePath CarmaSettings.GibbedTools
+				dllpath = currentScriptFolder
 				local gibbedAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Duels.FileFormats.dll")
 				local gibbedIOAssembly = dotNet.loadAssembly (dllpath+"Gibbed.IO.dll")
 				local gibbedSquishAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Squish.dll")
@@ -269,7 +269,7 @@ fn ToolsStartup =
 				local gibbedConvertClass = (dotnetClass "System.Activator").CreateInstance dotNetType
 		
 				loldecdllpath = GetFilenamePath CarmaSettings.LOLDecoder
-				local gibbedAssembly = dotNet.loadAssembly (loldecdllpath+"LOLDecoderLib.dll")
+				local gibbedAssembly = dotNet.loadAssembly (dllpath+"LOLDecoderLib.dll")
 				local LDdotNetType = gibbedAssembly.GetType "LOLDecoder.LOLDecoderLib"
 				local lolDecoderClass = (dotnetClass "System.Activator").CreateInstance LDdotNetType
 
@@ -285,7 +285,7 @@ fn ToolsStartup =
 			--parentDialogs = windows.getChildrenHWND #max
 			--PrintArrayInFull parentDialogs "Dialogs"
 			--parentDialog = windows.getChildHWND #max "Carmageddon Reincarnation Tools"
-			createDialog carma_reincarnation_settings 300 790 parent:CRToolsUI.handle
+			createDialog carma_reincarnation_settings 300 790 
 		)
 )
 

@@ -635,7 +635,7 @@ fn StripperShakeItBaby faceCount &indices =
 	index = 1
 	loopnum=1
 	loopsWithoutChange = 0
-	while totalFaces < faceCount do
+	while totalFaces < faceCount and false do
 	(
 		while tags[index] == true do
 		(

@@ -181,8 +181,8 @@ fn ExportCarFullClicked sender arg = (
 	)
 	else
 	(
-		cnt_name = GetSaveFileName caption:"Save Car.CNT As" types:"Car.CNT(Car.CNT)|car.cnt"
-		if cnt_name != undefined do
+		car_cnt_name = GetSaveFileName caption:"Save Car.CNT As" types:"Car.CNT(Car.CNT)|car.cnt"
+		if car_cnt_name != undefined do
 		(
 			exportTexturesChecked = true
 			exportMatsChecked = true
@@ -190,29 +190,29 @@ fn ExportCarFullClicked sender arg = (
 			exportOctreeChecked = false
 			global MaterialsToExport
 			MaterialsToExport=#()
-			mdl_path = getFilenamePath cnt_name
+			mdl_path = getFilenamePath car_cnt_name
 			selectedModel = selection[1]
-			ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
-			ExportCNT cnt_name selectedModel
-			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			--ExportMDL mdl_path true true exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			--ExportCNT car_cnt_name selectedModel
+			--ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			
 		local structureXmlFile = (getFileNamePath car_cnt_name)+"structure.xml"
-		ExportStructureXML structureXmlFile rootMesh
+		ExportStructureXML structureXmlFile selectedModel
 
 		local systemsDamageXmlFile = (getFileNamePath car_cnt_name)+"systemsdamage.xml"
-		ExportSystemsDamageXML systemsDamageXmlFile rootMesh
+		ExportSystemsDamageXML systemsDamageXmlFile selectedModel
 
 		local setupLuaFile = (getFilenamePath car_cnt_name)+"setup.lua"
-		ExportCarSetupLUA setupLuaFile rootMesh
+		ExportCarSetupLUA setupLuaFile selectedModel
 
 		local vehicleSetupLuaFile = (getFilenamePath car_cnt_name)+"vehicle_setup.lua"
-		ExportCarVehicleSetupLUA vehicleSetupLuaFile rootMesh
+		ExportCarVehicleSetupLUA vehicleSetupLuaFile selectedModel
 
 		local vehicleSetupCfgFile = (getFilenamePath car_cnt_name)+"vehicle_setup.cfg"
-		ExportCarVehicleCFG vehicleSetupCfgFilerootMeshs
+		ExportCarVehicleCFG vehicleSetupCfgFile selectedModel
 
 		local vfxAnchorsLuafilename = (getFilenamePath car_cnt_name)+"vfx_anchors.lua"
-		ExportVFXAnchors vfxAnchorsLuafilename rootMesh
+		ExportVFXAnchors vfxAnchorsLuafilename selectedModel
 
 
 
@@ -303,7 +303,7 @@ fn ExportCarVehicleSetupCFGClicked sender arg = (
 	(
 
 		file = GetSaveFileName caption:"Save Vehicle Setup Config As" types:"Vehicle Setup Config (Vehicle_setup.cfg)|vehicle_setup.cfg"
-		ExportCarVehicleCFG file rootMesh
+		ExportCarVehicleCFG file selection[1]
 	)
 )
 fn ExportCarVFXAnchorsLUAClicked sender arg = (

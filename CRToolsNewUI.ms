@@ -15,7 +15,7 @@ fileIn "CRToolsNewUI_Levels.ms"
 fileIn "CRToolsNewUI_Import.ms"
 fileIn "CRToolsNewUI_Export.ms"
 
-
+global currentMode = undefined
 fn FindMaxWindow windowTitle:"Autodesk 3ds Max" = (
 
 
@@ -26,98 +26,112 @@ local childWindows = WindowFinder.GetChildWindows wnd
 wnd
 )
 fn SetToolMode_Car args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
-	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
-	AddModeButtons layoutHelper "Car"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	--uicontent.text = "Car Mode"
-	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
-	AddHierarchyToolsUI layoutHelper
-	AddCarToolsUI layoutHelper
-	
-	layoutHelper.EndVerticalGroup()
-	layoutHelper.PrintDebugTree()
+	global CRToolsUI, currentMode
+	if currentMode != "car" then (
+		currentMode = "car"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
+		layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
+		AddModeButtons layoutHelper "Car"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Car Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+		AddHierarchyToolsUI layoutHelper
+		AddCarToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+		layoutHelper.PrintDebugTree()
+	)
 )
 fn SetToolMode_MobileCar args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
-	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
-	AddModeButtons layoutHelper "Car"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	--uicontent.text = "Car Mode"
-	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
-	AddHierarchyToolsUI layoutHelper
-	AddCarToolsUI layoutHelper
-	
-	layoutHelper.EndVerticalGroup()
-	layoutHelper.PrintDebugTree()
+	global CRToolsUI, currentMode
+	if currentMode != "mobilecar" then (
+		currentMode = "mobilecar"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
+		layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20
+		AddModeButtons layoutHelper "Car"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Car Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+		AddHierarchyToolsUI layoutHelper
+		AddCarToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+		layoutHelper.PrintDebugTree()
+	)
 )
 fn SetToolMode_Wheel args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
-	AddModeButtons layoutHelper "Wheel"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	--uicontent.text = "Wheel Mode"
-	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+	global CRToolsUI, currentMode
+	if currentMode != "wheel" then (
+		currentMode = "wheel"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+		layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+		AddModeButtons layoutHelper "Wheel"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Wheel Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 
-	AddHierarchyToolsUI layoutHelper
-	AddWheelToolsUI layoutHelper
-	
-	layoutHelper.EndVerticalGroup()
-
+		AddHierarchyToolsUI layoutHelper
+		AddWheelToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+	)
 )
 fn SetToolMode_Level args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+	global CRToolsUI, currentMode
+	if currentMode != "level" then (
+		currentMode = "level"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+		layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	AddModeButtons layoutHelper "Level"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	--uicontent.text = "Level Mode"
-	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
-	AddHierarchyToolsUI layoutHelper
-	AddLevelToolsUI layoutHelper
-	
-	layoutHelper.EndVerticalGroup()
-
+		AddModeButtons layoutHelper "Level"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Level Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+		AddHierarchyToolsUI layoutHelper
+		AddLevelToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+	)
 )
 fn SetToolMode_Accessory args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+	global CRToolsUI, currentMode
+	if currentMode != "accessory" then (
+		currentMode = "accessory"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+		layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	AddModeButtons layoutHelper "Accessory"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
-	--uicontent.text = "Accessory Mode"
-	--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+		AddModeButtons layoutHelper "Accessory"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Accessory Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 
-	AddHierarchyToolsUI layoutHelper
-	AddAccessoryToolsUI layoutHelper
-	
-	layoutHelper.EndVerticalGroup()
-
+		AddHierarchyToolsUI layoutHelper
+		AddAccessoryToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+	)
 )
 fn SetToolMode_Ped args = (
-	global CRToolsUI
-	CRToolsUI.controls.clear()
-	local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
-	layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+	global CRToolsUI, currentMode
+	if currentMode != "ped" then (
+		currentMode = "ped"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:5 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+		layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
 
-	AddModeButtons layoutHelper "Ped"
-	--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20]
-	--uicontent.text = "Ped Mode"
-	AddHierarchyToolsUI layoutHelper
+		AddModeButtons layoutHelper "Ped"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20]
+		--uicontent.text = "Ped Mode"
+		AddHierarchyToolsUI layoutHelper
 
-	
-	layoutHelper.EndVerticalGroup()
-
+		
+		layoutHelper.EndVerticalGroup()
+	)
 )
 
 fn ShowImportOptions = (
@@ -414,7 +428,7 @@ fn ShowExportOptions = (
 
 	local exportMTLFilesCheckbox = layoutHelper.AddControl "System.Windows.Forms.Checkbox" size:[200,20]
 	exportMTLFilesCheckbox.text = "Export MTL Files"
-	exportMTLFilesCheckbox.checked = CarmaSettings.ExportSettings.ExportMTLFiles
+	exportMTLFilesCheckbox.checked = CarmaSettings.ExportSettings.ExportMTL
 	exportMTLFilesCheckbox.name = "ExportMTLFilesCheckbox"
 
 	local exportOldCNTCheckbox = layoutHelper.AddControl "System.Windows.Forms.Checkbox" size:[200,20]

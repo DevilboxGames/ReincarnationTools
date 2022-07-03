@@ -1,3 +1,5 @@
+fileIn "C1Mobile_ConvertC1.ms"
+
 fn ShowDataFolderBrowser sender arg = (
 	local folderSelectDialog = dotnetobject "CMDControls.FolderSelectDialog"
 	if folderSelectDialog.ShowDialog() and folderSelectDialog.FileName != undefined then (

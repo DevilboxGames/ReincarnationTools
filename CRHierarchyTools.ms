@@ -213,6 +213,17 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false node
 )
 
 
+
+fn InsertNullAbove target nullName =
+(
+	newnode = CreateNewNullNode target.transform nullName
+	newnode.parent =target.parent
+	target.parent = newnode
+
+	newnode
+)
+
+
 fn SetCollectionToCNTNodes collection doChildren:false =
 (
 	for mdl in collection do

@@ -1,5 +1,34 @@
 
 
+fn flipWheel obj = (
+	oldMods = BeginEditMesh obj
+	numVerts = getNumVerts obj
+	in coordsys obj (
+	for i =1 to numverts do (
+		v = getvert obj i
+		v.x = -v.x
+		setvert obj i v
+	)
+	
+	numfaces = getnumfaces obj
+	for i = 1 to numfaces do (
+		f = getface obj i
+		v1 = f.x
+		f.x = f.y
+		f.y = v1
+		setface obj i f
+		tvf = gettvface obj i
+		v1 = tvf.x
+		tvf.x = tvf.y
+		tvf.y = v1
+		settvface obj i tvf
+	)
+	
+	)	
+	update obj
+	EndEditMesh obj oldMods
+	
+)
 fn SetToComplicatedWheel obj = (
 	wheelModifier = emptyModifier()
 	wheelModifier.name = "Complicated Wheel"

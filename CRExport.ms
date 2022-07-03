@@ -1,10 +1,18 @@
 
 fn writeCNTheader f =
 (
+	global CarmaSettings
 	writebyte f 69 #unsigned
 	writebyte f 35 #unsigned
 	writebyte f 0 #unsigned
-	writebyte f 4 #unsigned
+	if CarmaSettings.ExportSettings != undefined and CarmaSettings.ExportSettings.ExportOldCnt == true then 
+	(
+		writebyte f 4 #unsigned
+	)
+	else 
+	(
+		writebyte f 4 #unsigned
+	)
 )
 
 fn writeMDLheader f =
@@ -635,7 +643,7 @@ fn StripperShakeItBaby faceCount &indices =
 	index = 1
 	loopnum=1
 	loopsWithoutChange = 0
-	while totalFaces < faceCount and false do
+	while totalFaces < faceCount do
 	(
 		while tags[index] == true do
 		(
@@ -810,7 +818,7 @@ fn ExportMaterialsAndTextures outputFolder exportTextures:true exportMats:true f
 				append alphas rawAlphas[(findItem rawBitmaps bmp)]
 			)
 			ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
-			ConvertIMG.ConvertToIMG bitmaps outputFolder null
+			ConvertIMG.ConvertToIMG bitmaps outputFolder alphas
 		)
 		else  (
 			for bitmapFilename in bitmaps do (

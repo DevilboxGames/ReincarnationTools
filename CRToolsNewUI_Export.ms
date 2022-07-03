@@ -405,6 +405,8 @@ fn ExportAccessoryClicked sender arg = (
 	)
 )
 fn ExportFullAccessoryClicked sender arg = (
+	global CarmaSettings
+
 	if (selection as array).count == 0 then
 	(
 		messageBox "Please select the root object to export (e.g. the accessory root)" title:"No objects selected!"
@@ -418,9 +420,9 @@ fn ExportFullAccessoryClicked sender arg = (
 		cnt_name = GetSaveFileName caption:"Save Accessory.CNT As" types:"Accessory.CNT(Accessory.CNT)|accessory.cnt"
 		if cnt_name != undefined do
 		(
-			exportTexturesChecked = true
-			exportMatsChecked = true
-			exportMTLChecked = false
+			exportTexturesChecked = CarmaSettings.ExportSettings.ExportTextures
+			exportMatsChecked = CarmaSettings.ExportSettings.ExportMaterials
+			exportMTLChecked = CarmaSettings.ExportSettings.ExportMTL
 			exportOctreeChecked = false
 			global MaterialsToExport
 			MaterialsToExport=#()

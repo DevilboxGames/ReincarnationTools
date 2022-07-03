@@ -175,6 +175,50 @@ fn computeConvexHull theNode maxVerts:64 pushAmt:0.0 cleanup:true = (
 	)
 	hull
 )
+fn MakeCollisionMeshes objs: singleMesh:false maxVerts:16 minHeight: = (
+	collisionMeshes = #()
+	if objs ==unsupplied then (
+		objs = #()
+		for obj in objects do (
+			if (findstring obj.name "whl") != 1 and (findstring obj.name "wheel") != 1 then (
+				append objs obj
+			)
+		)
+	)
+	format "%\n" objs
+	for obj in objs where (classof obj) == Editable_mesh do (
+		select obj
+		collisionMesh = computeConvexHull obj pushamt:0.0 maxverts:maxVerts
+
+		vertnum = getnumverts collisionMesh
+		if vertnum < 1 then ( delete collisionMesh)
+		else (
+			if minHeight != unsupplied then (
+				for  v = 1 to vertnum do (
+					vpos = getvert collisionMesh v
+					if vpos.z < minHeight then setvert collisionMesh v [vpos.x, vpos.y, minHeight]
+				)
+			)
+			if singleMesh and collisionMeshes.count > 0 then (
+				collisionMesh.pivot = [0,0,0]
+				meshop.attach collisionMeshes[1]  collisionMesh
+			)
+			else (
+				append collisionMeshes collisionMesh
+			)
+		)
+		
+	)
+	if singleMesh then (
+		combinedMesh = collisionMeshes[1]
+		select combinedMesh
+		finalCollisionMesh =computeConvexHull combinedMesh pushamt:0.0
+		collisionMeshes[1] = finalCollisionMesh
+		delete combinedMesh
+	)
+
+	collisionMeshes
+)
 fn SearchUniqueVerts pos vert = (
 	if pos < vert.pos then -1
 	else if pos > vert.pos then 1
@@ -1081,10 +1125,6 @@ fn IsObjectAPedBonesList obj =
 	 (obj.modifiers["Ped Bones List"] != undefined)
 )
 
-fn SetMeshVertColoursToGrey obj = (
-	verts = obj.verts as bitarray
-	for v in verts do setVertColor obj v (color 127 127 127)
-)
 
 fn BeginEditMesh obj = (
 
@@ -1105,6 +1145,17 @@ fn EndEditMesh obj mods = (
 	
 
 )
+
+fn SetMeshVertColoursToGrey obj = (
+	if getNumCPVVerts obj == 0 then (
+		setNumCPVVerts obj (getnumVerts obj)
+	)
+	verts = obj.verts as bitarray
+	local oldMods = BeginEditMesh obj
+	for v in verts do setVertColor obj v (color 255 127 127)
+	EndEditMesh obj oldMods
+)
+
 fn RotatePivotOnly obj rotation = (
 	local rotValInv=inverse (rotation as quat)
 	animate off in coordsys local obj.rotation*=RotValInv

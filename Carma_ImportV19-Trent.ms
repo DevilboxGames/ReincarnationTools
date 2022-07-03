@@ -592,7 +592,7 @@ fn GetCarDataFiles txtpath =
 		ln = readline f
 		splitline = filterstring ln " \t" splitEmptyTokens:false
 		
-		if (substring splitline[1] 1 2) == "//" or splitline.count == 0 then continue
+		if splitline.count == 0 or (substring splitline[1] 1 2) == "//"  then continue
 		else
 		(
 			lineNum += 1
@@ -1518,5 +1518,10 @@ rollout datimporter "Import Dat file"
 	)
 )
 
-createdialog datimporter 200 330 50 150
+
+if noHarmalarmUI != true then
+(
+	noHarmalarmUI = undefined
+	createdialog datimporter 200 330 50 150
+)
 

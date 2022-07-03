@@ -1,3 +1,8 @@
+noHarmalarmUI = true
+if LoadC1TXT == undefined then (
+	
+	filein "Carma_ImportV19-Trent.ms"
+)
 fileIn "CRToolsSettings.ms"
 fileIn "CRFormHelpers.ms"
 fileIn "CRRollouts.ms"

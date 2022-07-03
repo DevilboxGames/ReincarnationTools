@@ -1,3 +1,245 @@
+FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attribid:#(0x2818f431, 0x61352613) version:1
+(
+	parameters main rollout:FunsizeLevelDetailsRollout (
+		LevelFolderName type:#string ui:txt_FolderName default: "userlevel"
+		LevelLayerName type:#string ui:txt_LayerName default: "race01"
+		LevelName type:#string ui:txt_LevelName default:"User Level"
+		LevelDescription type:#string ui:txt_LevelDescription default: "This is a user made level"
+		Environment type:#string ui:txt_Environment default:"nyhorizn"
+		EnvironmentMap type:#string ui:txt_EnvironmentMap default:"env"
+		ShadowStrength type:#color default:(color 178 178 178)
+		MapName type:#string ui:txt_MapName defualt:"Embankment_level"
+		MapSize type:#point3
+		MapCenter type:#point3
+		BigMap type:#string ui:txt_BigMap
+		GridHelper type:#maxObject
+		MapMatrix type:#Matrix3
+		FogColour type:#color ui:col_FogColour
+		LightingColour type:#color ui:col_LightingColour
+		Headlights type:#boolean ui:chk_Headlights
+		Splash type:#string ui:txt_Splash
+		AutoRecoverHeightEnabled type:#boolean ui:chk_AutoRecoverHeightenabled
+		AutoRecoverHeight type:#float ui:spn_AutoRecoverHeight
+		Viz type:#integer ui:spn_Viz default:435
+		AIPath type:#string ui:txt_AIPath
+		MatMods type:#stringTab tabSizeVariable:true
+		SmokeColours type:#colorTab tabSizeVariable:true
+
+	)
+
+	rollout FunsizeLevelDetailsRollout "Level Details" (
+		group "Level Details" (
+			edittext txt_FolderName "Folder Name"
+			edittext txt_LayerName "Layer Name"
+			edittext txt_LevelName "Level Name"
+			edittext txt_LevelDescription "Level Description"
+			edittext txt_Environment "Environment"
+			edittext txt_EnvironmentMap "Environment Map"
+			edittext txt_LevelDescription "Splash Texture"
+			checkbox chk_AutoRecoverHeightenabled "Auto Recovery Height"
+			spinner spn_AutoRecoverHeight "" type:#float range:[-500,500,-100]
+			spinner spn_Viz "VIZ" type:#integer range:[0,1000,435]
+			edittext txt_AIPath "AI Paths File"
+		)
+		group "Mini Map" (
+			edittext txt_MapName "Map Name"
+			edittext txt_BigMap "Map Image"
+			label lbl_MapSize "Map Size"
+			spinner spn_MapSizeX "X" across:2 
+			spinner spn_MapSizeY "Y" across:2 
+			label lbl_MapCenter "Map Center"
+			spinner spn_MapCenterX "X" across:2 
+			spinner spn_MapCenterY "Y" across:2 
+			button btn_ComputeMapsize "Calulate Size"
+
+
+			label lbl_MapMatrix "Map Matrix"
+			spinner spn_MapMatrixM11 "" across:3
+			spinner spn_MapMatrixM12 "" across:3 
+			spinner spn_MapMatrixM13 "" across:3 
+			spinner spn_MapMatrixM21 "" across:3
+			spinner spn_MapMatrixM22 "" across:3 
+			spinner spn_MapMatrixM23 "" across:3 
+			spinner spn_MapMatrixM31 "" across:3
+			spinner spn_MapMatrixM32 "" across:3 
+			spinner spn_MapMatrixM33 "" across:3 
+			spinner spn_MapMatrixM41 "" across:3
+			spinner spn_MapMatrixM42 "" across:3 
+			spinner spn_MapMatrixM43 "" across:3 
+
+		)
+		group "Lighting" (
+			colorpicker col_FogColour "Fog Colour"
+			colorpicker col_LightingColour "Light Colour"
+			checkbox chk_Headlights "Headlights"
+		)
+		group "Smoke Colours" (
+			dotnetcontrol lv_SmokeCols "listview" height: 100
+			button btn_DeleteSmokeCol "Delete Selected" across:2
+			button btn_AddSmokeCol "New" across:2
+
+			colorpicker col_SmokeCol "Colour"
+		)
+		group "Mat Mods" (
+
+			dotnetcontrol lv_MatMods "listview" height: 100
+			button btn_DeleteMatMod "Delete Selected" across:2
+			button btn_AddMatMod "New" across:2
+
+			spinner spn_WallFriction "Wall Friction"
+			spinner spn_TyreFriction "Tyre Friction"
+			spinner spn_DownForce "Down force"
+			spinner spn_Bumpiness "Bumpiness"
+			spinner spn_TyreSound "Tyre Sound" type:#integer
+			spinner spn_CrashSound "Crash Sound" type:#integer
+			spinner spn_ScrapeSound "Scrape Sound" type:#integer
+			spinner spn_Sparks "Sparks"
+			spinner spn_SmokeType "Smoke Type"
+			button btn_SaveMatMod "Save"
+		)
+
+		fn refreshSmokeCols = (
+			if lv_SmokeCols == null or lv_SmokeCols.items == null then (
+
+				lv_SmokeCols.view  = (dotnetclass "view").details
+				lv_SmokeCols.fullrowselect= true
+				lv_SmokeCols.gridlines = true
+				lv_SmokeCols.multiselect =false
+				lv_SmokeCols.columns.add "Name" 140
+			)
+			
+			lv_SmokeCols.Items.Clear()
+			for i = 1 to SmokeColours.count do (
+
+				lvitem = dotNetObject "listviewitem" (SmokeColours[i].r+", "+SmokeColours[i+1].g+", "+SmokeColours[i+2].b)
+				lv_SmokeCols.items.add lvitem
+			)
+		)
+		fn refreshMatMods = (
+			if lv_MatMods == null or lv_MatMods.items == null then (
+
+				lv_MatMods.view  = (dotnetclass "view").details
+				lv_MatMods.fullrowselect= true
+				lv_MatMods.gridlines = true
+				lv_MatMods.multiselect =false
+				lv_MatMods.columns.add "Name" 140
+			)
+			local splitMatMods = filterstring MatMods ":"
+			lv_MatMods.Items.Clear()
+			for i = 0 to splitMatMods.count-1 do (
+
+				lvitem = dotNetObject "listviewitem" ("Mat #"+i)
+				lv_MatMods.items.add lvitem
+			)
+		)
+
+		fn refreshMapData = (
+			spn_MapSizeX.Value = MapSize.x
+			spn_MapSizeY.Value = MapSize.y
+			spn_MapCenterX.Value = MapCenter.x
+			spn_MapCenterY.Value = MapCenter.y
+			spn_MapMatrixM11.value = MapMatrix.row1.x
+			spn_MapMatrixM12.value = MapMatrix.row1.y
+			spn_MapMatrixM13.value = MapMatrix.row1.z
+			spn_MapMatrixM21.value = MapMatrix.row2.x
+			spn_MapMatrixM22.value = MapMatrix.row2.y
+			spn_MapMatrixM23.value = MapMatrix.row2.z
+			spn_MapMatrixM31.value = MapMatrix.row3.x
+			spn_MapMatrixM32.value = MapMatrix.row3.y
+			spn_MapMatrixM33.value = MapMatrix.row3.z
+			spn_MapMatrixM41.value = MapMatrix.row4.x
+			spn_MapMatrixM42.value = MapMatrix.row4.y
+			spn_MapMatrixM43.value = MapMatrix.row4.z
+		)
+		on FunsizeLevelDetailsRollout open do (
+
+			refreshMapData()
+			refreshMatMods()
+			refreshSmokeCols()
+		)
+		on lv_SmokeCols selectedindexchanged do (
+			if lv_SmokeCols.SelectedIndices.count > 0 then (
+				local i = lv_SmokeCols.SelectedIndices.Item[0]
+				local i2 = i + 1
+
+				col_SmokeCol.value = SmokeColours[i2]
+
+			)
+		)
+		on lv_MatMods selectedindexchanged do (
+			local splitMatMods =filterstring MatMods ":"
+			if lv_MatMods.SelectedIndices.count > 0 then (
+				local i = lv_MatMods.SelectedIndices.Item[0]
+				local i2 = i + 1
+				local matModDetails = filterstring splitMatMods[i2] ";"
+
+				spn_WallFriction.value = matModDetails[1]
+				spn_TyreFriction.value = matModDetails[2]
+				spn_DownForce.value = matModDetails[3]
+				spn_Bumpiness.value = matModDetails[4]
+				spn_TyreSound.value = matModDetails[5]
+				spn_CrashSound.value = matModDetails[6]
+				spn_ScrapeSound.value = matModDetails[7]
+				spn_Sparks.value = matModDetails[8]
+				spm_SnokeType.value = matModDetails[8]
+			)	
+		)
+		on btn_DeleteMatMod pressed do (
+
+			if lv_MatMods.SelectedIndices.count > 0 then (
+				local i = lv_MatMods.SelectedIndices.Item[0] + 1
+				local splitMatMods =filterstring MatMods ":"
+				deleteItem splitMatMods i
+				refreshMatMods()
+			)
+		)
+		on btn_AddMatMod pressed do (
+			lv_MatMods.SelectedIndices.Clear()
+
+				spn_WallFriction.value = 1.0
+				spn_TyreFriction.value = 1.0
+				spn_DownForce.value = 1.0
+				spn_Bumpiness.value = 0.0
+				spn_TyreSound.value = 0
+				spn_CrashSound.value = 0
+				spn_ScrapeSound.value = 0
+				spn_Sparks.value = 1.0
+				spm_SnokeType.value = 1.0
+		)
+		on btn_SaveMatMod pressed do (
+			local matModString = spn_WallFriction.value + ";" + spn_TyreFriction.value + ";" + spn_DownForce.value + ";" + spn_Bumpiness.value + ";" + spn_TyreSound.value + ";" + spn_CrashSound.value + ";" + spn_ScrapeSound.value + ";" + spn_Sparks.value + ";" + spn_SnokeType.value
+			if lv_MatMods.SelectedIndices.count > 0 then (
+				local i = lv_MatMods.SelectedIndices.Item[0] + 1
+				local splitMatMods =filterstring MatMods ":"
+				splitMatMods[i] = matModString
+				Matmods = ""
+				for i = 1 to splitMatMods.Count do (
+					if i > 1 then MatMods = MatMods + ":"
+					MatMods = MatMods + splitMatMods[i]
+				)
+
+			)
+			else (
+				MatMods = MatMods + ":" + matModString
+			)
+
+			refreshMatMods()
+		)
+	)
+
+)
+
+fn AddFunsizeLevelAttributes levelRoot = (
+	max modify mode
+	levelModifier = emptyModifier()
+	
+	levelModifier.name = "Funsize Levle"
+	addModifier levelRoot levelModifier
+	custattributes.add levelModifier FunsizeLevelDetailsAttribute baseObject:false
+	levelModifier
+)
+
+
 FunsizeCarDetailsAttribute = attributes FunsizeCarDetailsCustAttribute attribid:#(0x9bf26d6, 0x2ce0600e) version:1
 (
 	parameters main rollout:FunsizeCarDetailsRollout (

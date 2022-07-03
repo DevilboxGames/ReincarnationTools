@@ -448,9 +448,9 @@ fn ShowExportOptions = (
 		local exportMTLFilesCheckbox = exportSettingsDialog.Controls.Find "ExportMTLFilesCheckbox" false
 		local exportOldCNTCheckbox = exportSettingsDialog.Controls.Find "ExportOldCNTCheckbox" false
 		CarmaSettings.ExportSettings.ExportTextures = exportTexturesCheckbox[1].checked
-		CarmaSettings.ExportSettings.UsePrepData = exportMaterialsCheckbox[1].checked
-		CarmaSettings.ExportSettings.UseTriStrips = exportMTLFilesCheckbox[1].checked
-		CarmaSettings.ExportSettings.MergeSplits = exportOldCNTCheckbox[1].checked
+		CarmaSettings.ExportSettings.ExportMaterials = exportMaterialsCheckbox[1].checked
+		CarmaSettings.ExportSettings.ExportMTL = exportMTLFilesCheckbox[1].checked
+		CarmaSettings.ExportSettings.ExportOldCNT = exportOldCNTCheckbox[1].checked
 		CarmaSettings.Save()
 		exportSettingsDialog.Close()
 	)
@@ -669,6 +669,11 @@ fn CreateMenu uiForm = (
 	SetClickHandler modeCar SetToolMode_MobileCar
 	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift1
 	
+	local toolsMenu = crMenu.MenuItems.Add("&Tools")
+	local mobileToolsMenu = toolsMenu.MenuItems.Add("Mobile")
+	local loadC1CarForMobile = mobileToolsMenu.MenuItems.Add("Load And Setup C1 Car")
+	SetClickHandler loadC1CarForMobile LoadAndConvertC1CarToMobile
+
 	local helpMenu = crMenu.MenuItems.Add("&Help")
 	local aboutMenuLink = helpMenu.MenuItems.Add("About")
 )

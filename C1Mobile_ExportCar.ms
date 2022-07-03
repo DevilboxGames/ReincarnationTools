@@ -1,4 +1,10 @@
 fn FunSize_CreateTextEntryRowContent key value comment:"" = (
+	if key == undefined then (
+		key = "undefined"
+	)
+	if value == undefined then (
+		value = ""
+	)
 	key = substitutestring key "&" "&amp;"
 	value = substitutestring value "&" "&amp;"
 	comment = substitutestring comment "&" "&amp;"
@@ -188,14 +194,15 @@ fn Funsize_UpdateCarSpecs FunsizeDataPath carname carModifier = (
 	do (
 
 		curline = readline f
-
-		lineCarName = (filterString curline "\t")[1]
-		if (toupper lineCarName) == (toupper carname) then (
-			format "%\t%\t%\t%\t%\t%\t%\t%\t%\t%\n" carname carModifier.Defence carModifier.Offence carModifier.Power carModifier.Softness carModifier.BHPperTon carModifier.TopSpeed carModifier.Mass carModifier.ShadowMask carModifier.NaughtToSixty to:newCarSpecs
-			foundCar = true
-		)
-		else (
-			format "%\n" curline to:newCarSpecs
+		if curline != "" then (
+			lineCarName = (filterString curline "\t")[1]
+			if (toupper lineCarName) == (toupper carname) then (
+				format "%\t%\t%\t%\t%\t%\t%\t%\t%\t%\n" carname carModifier.Defence carModifier.Offence carModifier.Power carModifier.Softness carModifier.BHPperTon carModifier.TopSpeed carModifier.Mass carModifier.ShadowMask carModifier.NaughtToSixty to:newCarSpecs
+				foundCar = true
+			)
+			else (
+				format "%\n" curline to:newCarSpecs
+			)
 		)
 	) 	while (eof f) == false 
 

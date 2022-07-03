@@ -46,7 +46,7 @@ fn CheckScriptChanges = (
 CheckScriptChanges()
 if loadedOtherScripts != true then (
 	filein "Carma_ImportV19-Trent.ms"
-	filein "ReincarnationTools.ms"
+	filein "BeelzebubTools.ms"
 	loadedOtherScripts = true
 )
 
@@ -241,10 +241,10 @@ fn MakeCollisionMeshes objs: singleMesh:false maxVerts:16 minHeight: = (
 
 	collisionMeshes
 )
-fn ConvertCar C1CarName:"ivan" prefix:"C1SP" = (
+fn ConvertCar C1CarName:"ivan" prefix:"C1SP" doexport:true = (
 	global OpponentsTXT
 	if OpponentsTXT == undefined then (
-		OpponentsTXT = (dotnetclass "ToxicRagers.Carmageddon.Formats.OpponentsTXT").Load C1OpponetsTextFile
+		OpponentsTXT = (dotnetclass "ToxicRagers.Carmageddon.Formats.OpponentTXT").Load C1OpponetsTextFile
 	)
 
 	additionalMatsToConvert = #()
@@ -605,8 +605,9 @@ fn ConvertCar C1CarName:"ivan" prefix:"C1SP" = (
 
 	carRoot.name="carbody"
 	carRoot.modifiers["CNT Hierarchy"].filename="carbody"
-
-	ExportFunsizeCar carroot nolaunch:true
+	if doexport then (
+		ExportFunsizeCar carroot nolaunch:true
+	)
 	carMaxSaveFolder = MaxSaveFolder + C1CarName + "\\"
 	makedir carMaxSaveFolder
 	saveMaxFile (carMaxSaveFolder+C1CarName+".max") useNewFile:false

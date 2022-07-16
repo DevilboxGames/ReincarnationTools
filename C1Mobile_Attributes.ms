@@ -1,8 +1,61 @@
+FunsizePedDetailsAttribute = attributes FunsizePedDetailsCustAttribute attribid:#(0x7a0a642d, 0x7a777b7) version:1
+(
+	parameters main rollout:FunsizePedDetailsRollout (
+		PedType type:#string ui:txt_PedType default:"PED_1"
+		InitialPoint type:#integer ui:spn_InitialPoint default:1
+	)
+	rollout FunsizePedDetailsRollout "Ped Details" (
+		edittext txt_PedType "Ped Type"
+		spinner spn_InitialPoint "Initial Point" range:[1,1000,1]
+	)
+)
+
+FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAttribute attribid:#(0x1069ea6b, 0x3635a4dc) version:1
+(
+	parameters main rollout:FunsizeAccessoryPlacementRollout (
+		AccessoryType type:#string ui:txt_Type
+		InstanceName type:#string ui:txt_InstanceName
+		InstanceColour type:#color ui:col_InstanceColour
+	)
+	rollout FunsizeAccessoryPlacementRollout "Accessory Details" (
+		edittext txt_Type "Accessory Type"
+		button but_loadAccessory "Load Accessory"
+		edittext txt_InstanceName "Instance Name"
+		colorPicker col_InstanceColour "Instance Colour"
+
+		on but_loadAccessory pressed do (
+			local deps = refs.dependents this
+			local node = undefined
+			format "dependents:\n"
+			for dep in deps do (
+				format "\t% - %  - % - %\n" dep (classof dep) (superClassOf dep) (isKindOf dep GeometryClass)
+				local deps2 = refs.dependents dep
+
+				format "\tdependents:\n"
+				for dep2 in deps2 do (
+					format "\t\t% - % - % - %\n" dep2 (classof dep2) (superClassOf dep2) (isKindOf dep2 GeometryClass)
+					if (isKindOf dep2 ReferenceTarget) == false then node = dep2
+				)
+			)
+
+			if node != undefined then (
+				--ReplaceWithFunsizeAccessory AccessoryType node
+				format "Node has % modifiers\n" node.modifiers.count
+
+				for modifier in node.modifiers do format "\t%\n" modifier.name
+			)
+		)
+	)
+)
+
 FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attribid:#(0x2818f431, 0x61352613) version:1
 (
 	parameters main rollout:FunsizeLevelDetailsRollout (
 		LevelFolderName type:#string ui:txt_FolderName default: "userlevel"
-		LevelLayerName type:#string ui:txt_LayerName default: "race01"
+		LevelFileName type:#string ui:txt_FileName default: "LEVEL_01.txt"
+		LevelLayerName type:#string default: "sys_level01"
+		LevelPedLayerName type:#string default: "sys_level01_ped"
+		LevelPowerupLayerName type:#string default: "sys_level01_powerups"
 		LevelName type:#string ui:txt_LevelName default:"User Level"
 		LevelDescription type:#string ui:txt_LevelDescription default: "This is a user made level"
 		Environment type:#string ui:txt_Environment default:"nyhorizn"
@@ -22,7 +75,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		AutoRecoverHeight type:#float ui:spn_AutoRecoverHeight
 		Viz type:#integer ui:spn_Viz default:435
 		AIPath type:#string ui:txt_AIPath
-		MatMods type:#stringTab tabSizeVariable:true
+		MatMods type:#string
 		SmokeColours type:#colorTab tabSizeVariable:true
 
 	)
@@ -30,12 +83,15 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 	rollout FunsizeLevelDetailsRollout "Level Details" (
 		group "Level Details" (
 			edittext txt_FolderName "Folder Name"
-			edittext txt_LayerName "Layer Name"
+			edittext txt_FileName "File Name"
+			dropdownlist dpdn_LayerName "Accessory Layer"
+			dropdownlist dpdn_PedLayerName "Ped Layer"
+			dropdownlist dpdn_PowerupLayerName "Powerup Layer"
 			edittext txt_LevelName "Level Name"
 			edittext txt_LevelDescription "Level Description"
 			edittext txt_Environment "Environment"
 			edittext txt_EnvironmentMap "Environment Map"
-			edittext txt_LevelDescription "Splash Texture"
+			edittext txt_Splash "Splash Texture"
 			checkbox chk_AutoRecoverHeightenabled "Auto Recovery Height"
 			spinner spn_AutoRecoverHeight "" type:#float range:[-500,500,-100]
 			spinner spn_Viz "VIZ" type:#integer range:[0,1000,435]
@@ -66,6 +122,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 			spinner spn_MapMatrixM41 "" across:3
 			spinner spn_MapMatrixM42 "" across:3 
 			spinner spn_MapMatrixM43 "" across:3 
+			button btn_ComputeMapMatrix "Calulate Matrix"
 
 		)
 		group "Lighting" (
@@ -124,12 +181,14 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				lv_MatMods.multiselect =false
 				lv_MatMods.columns.add "Name" 140
 			)
-			local splitMatMods = filterstring MatMods ":"
-			lv_MatMods.Items.Clear()
-			for i = 0 to splitMatMods.count-1 do (
+			if MatMods!= undefined and MatMods.count > 0 then (
+				local splitMatMods = filterstring MatMods ":"
+				lv_MatMods.Items.Clear()
+				for i = 0 to splitMatMods.count-1 do (
 
-				lvitem = dotNetObject "listviewitem" ("Mat #"+i)
-				lv_MatMods.items.add lvitem
+					lvitem = dotNetObject "listviewitem" ("Mat #"+i)
+					lv_MatMods.items.add lvitem
+				)
 			)
 		)
 
@@ -151,22 +210,58 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 			spn_MapMatrixM42.value = MapMatrix.row4.y
 			spn_MapMatrixM43.value = MapMatrix.row4.z
 		)
+		fn refreshLayerList = (
+			if (LayerManager.getLayerFromName LevelLayerName) == undefined then(
+				LayerManager.newLayerFromName LevelLayerName
+			)
+			if (LayerManager.getLayerFromName LevelPedLayerName) == undefined then(
+				LayerManager.newLayerFromName LevelPedLayerName
+			)
+			if (LayerManager.getLayerFromName LevelPowerupLayerName) == undefined then(
+				LayerManager.newLayerFromName LevelPowerupLayerName
+			)
+			local items = #()
+
+			for i = 1 to layerManager.count - 1 do (
+				local layer = layerManager.getLayer i
+				append items layer.Name
+
+			)
+			dpdn_LayerName.items = items
+			dpdn_LayerName.selection = finditem dpdn_LayerName.items LevelLayerName
+			dpdn_PedLayerName.items = items
+			dpdn_PedLayerName.selection = finditem dpdn_PedLayerName.items LevelPedLayerName
+			dpdn_PowerupLayerName.items = items
+			dpdn_PowerupLayerName.selection = finditem dpdn_LayerName.items LevelPowerupLayerName
+		)
 		on FunsizeLevelDetailsRollout open do (
 
 			refreshMapData()
 			refreshMatMods()
 			refreshSmokeCols()
+			refreshLayerList()
+
+		)
+
+		on dpdn_LayerName selected selectedIndex do (
+			LevelLayerName = dpdn_LayerName.Items[selectedIndex]
 		)
 		on lv_SmokeCols selectedindexchanged do (
 			if lv_SmokeCols.SelectedIndices.count > 0 then (
 				local i = lv_SmokeCols.SelectedIndices.Item[0]
 				local i2 = i + 1
 
-				col_SmokeCol.value = SmokeColours[i2]
+				col_SmokeCol.color = SmokeColours[i2]
 
 			)
 		)
-		on lv_MatMods selectedindexchanged do (
+		on col_SmokeCol changed col do (
+			if lv_SmokeCols.SelectedIndices.Count > 0 then (
+				local i = lv_SmokeCols.SelectedIndices.Item[0]
+				SmokeColours[i] = col
+			)
+		)
+		on lv_MatMods selectedindexchanged index do (
 			local splitMatMods =filterstring MatMods ":"
 			if lv_MatMods.SelectedIndices.count > 0 then (
 				local i = lv_MatMods.SelectedIndices.Item[0]
@@ -181,7 +276,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				spn_CrashSound.value = matModDetails[6]
 				spn_ScrapeSound.value = matModDetails[7]
 				spn_Sparks.value = matModDetails[8]
-				spm_SnokeType.value = matModDetails[8]
+				spm_SmokeType.value = matModDetails[8]
 			)	
 		)
 		on btn_DeleteMatMod pressed do (
@@ -204,10 +299,11 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				spn_CrashSound.value = 0
 				spn_ScrapeSound.value = 0
 				spn_Sparks.value = 1.0
-				spm_SnokeType.value = 1.0
+				spn_SmokeType.value = 1.0
 		)
 		on btn_SaveMatMod pressed do (
-			local matModString = spn_WallFriction.value + ";" + spn_TyreFriction.value + ";" + spn_DownForce.value + ";" + spn_Bumpiness.value + ";" + spn_TyreSound.value + ";" + spn_CrashSound.value + ";" + spn_ScrapeSound.value + ";" + spn_Sparks.value + ";" + spn_SnokeType.value
+			if MatMods == undefined then MatMods = ""
+			local matModString = (spn_WallFriction.value as string) + ";" + (spn_TyreFriction.value as string) + ";" + (spn_DownForce.value as string) + ";" + (spn_Bumpiness.value as string) + ";" + (spn_TyreSound.value as string) + ";" + (spn_CrashSound.value as string) + ";" + (spn_ScrapeSound.value as string) + ";" + (spn_Sparks.value as string) + ";" + (spn_SmokeType.value as string)
 			if lv_MatMods.SelectedIndices.count > 0 then (
 				local i = lv_MatMods.SelectedIndices.Item[0] + 1
 				local splitMatMods =filterstring MatMods ":"
@@ -215,7 +311,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				Matmods = ""
 				for i = 1 to splitMatMods.Count do (
 					if i > 1 then MatMods = MatMods + ":"
-					MatMods = MatMods + splitMatMods[i]
+					MatMods = MatMods + splitMatMods[i] + ":"
 				)
 
 			)
@@ -229,11 +325,29 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 
 )
 
+fn AddFunsizePedAttributes pedRoot = (
+	max modify mode
+	pedModifier = emptyModifier()
+	
+	pedModifier.name = "Funsize Ped"
+	addModifier pedRoot pedModifier
+	custattributes.add pedModifier FunsizePedDetailsAttribute baseObject:false
+	pedModifier
+)
+fn AddFunsizeAccessoryItemAttributes accRoot = (
+	max modify mode
+	accModifier = emptyModifier()
+	
+	accModifier.name = "Funsize Accessory"
+	addModifier accRoot accModifier
+	custattributes.add accModifier FunsizeAccessoryPlacementAttribute baseObject:false
+	accModifier
+)
 fn AddFunsizeLevelAttributes levelRoot = (
 	max modify mode
 	levelModifier = emptyModifier()
 	
-	levelModifier.name = "Funsize Levle"
+	levelModifier.name = "Funsize Level"
 	addModifier levelRoot levelModifier
 	custattributes.add levelModifier FunsizeLevelDetailsAttribute baseObject:false
 	levelModifier

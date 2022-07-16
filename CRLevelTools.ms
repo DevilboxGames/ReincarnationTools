@@ -643,3 +643,62 @@ fn OpenAccessoryPlacementFloater = (
 
 	floater
 )
+
+fn ReplaceWithAccessory accessoryCntPath accessoryName objRoot = (
+
+	local currentLayer = LayerManager.current
+	local accLibraryLayer = LayerManager.getLayerFromName "sys_AccessoryLibrary"
+
+	local accToInstance = undefined
+
+	if accLibraryLayer != undefined then (
+		local refLayer = ILayerManager.getLayerObject "sys_AccessoryLibrary"
+		local layerDeps = refs.dependents refLayer
+		local layerNodes = for n in layerDeps where (isKindOf n ReferenceTarget) == false collect n
+		for obj in layerNodes where obj.name == accessoryName and obj.parent == undefined do (
+			accToInstance = obj
+		)
+
+	)
+	else (
+		accLibraryLayer = LayerManager.newLayerFromName "sys_AccessoryLibrary"
+		accLibraryLayer.isHidden = true
+		accLibraryLayer.renderable = false
+	)
+
+	if accToInstance == undefined then (
+		accLibraryLayer.current = true
+
+		accToInstance = ImportAccessory accessoryCntPath
+		accToInstance.name = accessoryName
+		currentLayer.current = true
+	)
+
+	local instancedObjects = #()
+	Maxops.CloneNodes accToInstance expandHierarchy:true newNodes:&instancedObjects cloneType:#instance
+	for obj in instancedObjects do currentLayer.addnode obj
+
+	local instancedAccessory = instancedObjects[1]
+
+	local existingChildren = join #() objRoot.children
+	for obj in existingChildren do existingChildren = join existingChildren obj.children
+
+	instancedAccessory.transform = objRoot.transform
+	instancedAccessory.parent = objRoot
+
+	instancedAccessory
+)
+
+fn ReplaceWithFunsizeAccessory accessoryName objRoot = (
+	global CarmaSettings
+
+	local accessoryCntPath = CarmaSettings.FunsizeSettings.DataFolder
+	if accessoryCntPath[accessoryCntPath.count] != "\\" then accessoryCntPath = accessoryCntPath + "\\"
+	accessoryCntPath = accessoryCntPath + "DATA\\CONTENT\\TRACKS\\ACCESSORIES\\" + accessoryName + "\\accessory.cnt" 
+	if (dotnetclass "System.IO.File").exists accessoryCntPath then (
+		ReplaceWithAccessory accessoryCntPath accessoryName objRoot
+	)
+	else (
+		format "Could not find %\n" accessoryCntPath
+	)
+)

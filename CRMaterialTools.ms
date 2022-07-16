@@ -184,7 +184,16 @@ MT2BaseMaterials = #(
 	(MT2BaseMaterial name:"unlit_base" DiffuseColourType:"Texture" DiffuseAlias:"DiffuseColour" NormalColourType:"None" NormalAlias:"" SpecularColourType:"None" SpecularAlias:"" OpacityFrom:"Constant"),
 	(MT2BaseMaterial name:"water_base" DiffuseColourType:"Texture" DiffuseAlias:"DiffuseColour" NormalColourType:"Texture" NormalAlias:"Normal_Map" SpecularColourType:"Texture" SpecularAlias:"Spec_Map" OpacityFrom:"DiffuseAlpha")
 )
+fn CheckMT2Exists folder materialName = (
 
+	local materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))
+	if materialExists ==	false then (
+		folder = CarmaSettings.DataCorePath+"\\Content\\Textures\\"
+	)
+	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) 
+
+	materialExists
+)
 fn GetMT2Texture folder materialName importTextures:false =
 (
 	texmap = undefined
@@ -357,6 +366,113 @@ fn GetMaterialFromMT2 folder materialName importTextures:false = (
 			if texmap==undefined do
 			(
 				--format "texmap undefined for \"%\" in material %, using checker!\n" (folder+textureName+".tdx") materialName
+			)
+		)
+	)
+	mat
+)
+
+fn LoadIImgTextture folder textureName = (
+	local foundFileName = undefined
+
+	if (doesFileExist (folder+textureName+".png")) then
+	(
+		foundFileName = folder+textureName+".png"
+	)
+	else if (doesFileExist (folder+textureName+".tga")) then
+	(
+		foundFileName = folder+textureName+".tga"
+	)
+	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".png")) then
+	(
+		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".png"
+	)
+	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".tga")) then
+	(
+		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".tga"
+	)
+	else if (doesFileExist (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".png")) then
+	(
+		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".png"
+	)
+	else if (doesFileExist (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga")) then
+	(
+		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+	)
+	else if (doesFileExist (folder+textureName+".img")) then
+	(
+
+		ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
+		ConvertIMG.ConvertFromIMG (folder+textureName+".img") (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga") (dotnetclass "ToxicRagers.Stainless.Formats.CompressionMethod").None
+		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+	)
+	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".img")) then
+	(
+		
+		ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
+		ConvertIMG.ConvertFromIMG (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".img") (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga")  (dotnetclass "ToxicRagers.Stainless.Formats.CompressionMethod").None
+		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+	)
+	if foundFileName != undefined then (
+		texmap = bitmaptexture()
+		
+		texmap.filename = foundFileName
+		
+	)
+	else (
+		texmap = checker()
+		texmap.coords.U_Tiling =10
+		texmap.coords.V_Tiling =10
+	)
+	texmap
+
+)
+
+fn CheckMTLExists folder materialName = (
+
+	local materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
+	if materialExists ==	false then (
+		folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"
+	)
+	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
+
+	materialExists
+)
+fn GetMaterialFromMTL folder materialName importTextures:false = (
+		mat = undefined
+	for existingMat in CMDMaterialLibrary where existingMat.name == materialName do (
+		mat = existingMat
+	)
+	local originalFolder = folder
+	if mat == undefined then (
+		mat = Standardmaterial name:materialName twoSided:true diffuse:(color 0 0 0)
+		append CMDMaterialLibrary mat
+		materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
+		if materialExists ==	false then (
+			folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"
+		)
+		if ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL")) then
+		(
+			local mtlMat = MTLFile()
+			mtlMat.load ( folder+materialname+".mtl")
+			mtlmat.ApplyToMaterial mat
+			local diffuseName = undefined
+			for matLayer in mtlMat.Layers where matLayer.BlendMode == 0 and diffuseName == undefined do (
+				diffuseName = matLayer.MapName
+
+			)
+			if diffuseName == undefined and mtlMat.Layers.Count > 0 then (
+				diffuseName = mtlMat.Layers[1].mapname
+			)
+			if diffuseName != undefined then (
+				mat.diffuseMap = LoadIImgTextture originalFolder diffuseName
+				--showtexturemap mat mat.diffuseMap on
+				bmp =  (openbitmap (mat.diffuseMap.filename))
+				if bmp != undefined and bmp.hasAlpha then (
+					mat.opacityMap = LoadIImgTextture originalFolder diffuseName
+					mat.opacityMap.monooutput = 1
+				)
+		
 			)
 		)
 	)

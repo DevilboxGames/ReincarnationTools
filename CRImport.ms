@@ -332,7 +332,16 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 		if meshMaterial == undefined do
 		(
 				append globalMaterialNames materialName
-			meshMaterial = GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures /* StandardMaterial()
+			
+			if CheckMT2Exists (getFilenamePath filename) materialname then (
+				meshMaterial = GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures
+			)
+			else if CheckMTLExists (getFilenamePath filename) materialname then (
+				meshMaterial = GetMaterialFromMTL (getFilenamePath filename) materialname importTextures:importTextures 
+			)
+
+				 /* StandardMaterial()
+			
 			meshMaterial.shaderType = 1
 			meshMaterial.diffuse = color 0 0 0
 			--format "\nAbout To Call GetMDLTexture for %\n" materialName
@@ -396,7 +405,15 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			(
 				--format "Trying to load the material and texture!\n"
 				append globalMaterialNames materialName
-				subMat =  GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures /* StandardMaterial()
+
+				if CheckMT2Exists (getFilenamePath filename) materialname then (
+					subMat = GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures
+				)
+				else if CheckMTLExists (getFilenamePath filename) materialname then (
+					subMat = GetMaterialFromMTL (getFilenamePath filename) materialname importTextures:importTextures 
+				)
+				--subMat =  GetMaterialFromMT2 (getFilenamePath filename) materialname importTextures:importTextures
+				 /* StandardMaterial()
 
 				subMat.diffuse = color 0 0 0
 				subMat.shaderType = 1
@@ -411,13 +428,14 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				subMat.name = materialName
 				showtexturemap subMat subMat.diffuseMap true
 				*/
-				
+				/*
 				if  subMat == undefined and ((dotnetclass "System.IO.File").exists ((getFilenamePath filename)+materialName+".MTL")) then
 				(
 					local mtlMat = MTLFile()
 					mtlMat.load ( (getFilenamePath filename)+materialname+".mtl")
 					mtlmat.ApplyToMaterial subMat
 				)
+				*/
 				append globalMaterials subMat
 			)
 			

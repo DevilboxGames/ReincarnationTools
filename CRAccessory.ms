@@ -4115,3 +4115,20 @@ fn ExportAccessoryTXT file rootObj = (
 
 	accFile
 )
+
+fn ImportAccessory file = (
+		local filePath = getFilenamePath file
+	local importTextures = CarmaSettings.ImportSettings.importTextures
+	local forcePrep = CarmaSettings.ImportSettings.UsePrepData
+	local useTriStrips = CarmaSettings.ImportSettings.UseTriStrips
+	local mergeSplits = CarmaSettings.ImportSettings.MergeSplits
+	local SpawnOctree = false
+	
+	local rootMesh = ImportCNT file importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:false mergeSplits:mergeSplits  SpawnOctree:SpawnOctree
+	
+	local accessoryTxtPath = (dotnetclass "System.IO.Path").Combine filePath "accessory.txt"
+
+	local accessoryTxt = ImportAccessoryTXT accessoryTxtPath rootMesh
+
+	rootMesh
+)

@@ -107,8 +107,13 @@ struct MTLLayer
 		LayerFlags = mat.mtlmat_data.layer_layerflags[layer]
 	),
 	fn ApplyToMaterial mat layer = (
-			
+		if MapName == undefined then (
+		mat.mtlmat_data.layer_name[layer] 			= mat.name
+		)
+		else 
+		(
 		mat.mtlmat_data.layer_name[layer] 			= MapName
+		)
 		mat.mtlmat_data.layer_blend_mode[layer] 	= BlendMode + 1
 		mat.mtlmat_data.layer_alpha_opacity[layer] = AlphaOpacity
 		mat.mtlmat_data.layer_specialfx[layer] 	= SpecialFX + 1

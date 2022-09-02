@@ -654,7 +654,7 @@ fn ReplaceWithAccessory accessoryCntPath accessoryName objRoot = (
 	if accLibraryLayer != undefined then (
 		local refLayer = ILayerManager.getLayerObject "sys_AccessoryLibrary"
 		local layerDeps = refs.dependents refLayer
-		local layerNodes = for n in layerDeps where (isKindOf n ReferenceTarget) == false collect n
+		local layerNodes = for n in layerDeps where (isKindOf n node) == true collect n
 		for obj in layerNodes where obj.name == accessoryName and obj.parent == undefined do (
 			accToInstance = obj
 		)

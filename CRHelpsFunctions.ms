@@ -1,3 +1,6 @@
+fileIn "CRTextXMLTools.ms"
+fileIn "ToxicRagersHelpers.ms"
+
 fn KeepMaxAlive =
 (
 	 if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
@@ -317,6 +320,18 @@ fn ConvertToCRSpace pos noflip:false =
 		[pos.x,pos.z,pos.y]
 	else
 		[-pos.x,pos.z,-pos.y]
+)
+fn ConvertMatrixFromCRSpace mat = (
+
+	mat =  matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0] * mat * inverse(matrix3 [-1,0,0] [0,0,-1] [0,1,0] [0,0,0])
+	mat.row1 *= -1
+	mat
+)
+fn ConvertMatrixToCRSpace mat = (
+
+	mat.row1 *= -1
+	mat =  matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0] * mat * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
+	mat
 )
 fn ConvertQuatFromCRSpace q =
 (

@@ -372,7 +372,7 @@ fn GetMaterialFromMT2 folder materialName importTextures:false = (
 	mat
 )
 
-fn LoadIImgTextture folder textureName = (
+fn LoadImgTexture folder textureName = (
 	local foundFileName = undefined
 
 	if (doesFileExist (folder+textureName+".png")) then
@@ -391,27 +391,38 @@ fn LoadIImgTextture folder textureName = (
 	(
 		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".tga"
 	)
-	else if (doesFileExist (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".png")) then
+	else if (doesFileExist (CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".png")) then
 	(
-		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".png"
+		foundFileName = CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".png"
 	)
-	else if (doesFileExist (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga")) then
+	else if (doesFileExist (CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".tga")) then
 	(
-		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+		foundFileName = CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".tga"
 	)
 	else if (doesFileExist (folder+textureName+".img")) then
 	(
 
+		try (
 		ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
-		ConvertIMG.ConvertFromIMG (folder+textureName+".img") (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga") (dotnetclass "ToxicRagers.Stainless.Formats.CompressionMethod").None
-		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+		ConvertIMG.ConvertFromIMG (folder+textureName+".img") (CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".png")
+		foundFileName = CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".png"
+		)
+		catch (
+			foundFileName = undefined
+		)
 	)
 	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".img")) then
 	(
-		
+		try (
 		ConvertIMG = dotnetclass "IMGToolLib.IMGTool"
-		ConvertIMG.ConvertFromIMG (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".img") (CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga")  (dotnetclass "ToxicRagers.Stainless.Formats.CompressionMethod").None
-		foundFileName = CarmaSettings.TexturePath+"FunsizeTextures\\"+textureName+".tga"
+		local imgLocation = ((dotnetclass "System.IO.Path").Combine CarmaSettings.FunsizeSettings.DataFolder "Data\\Content\\Textures" (textureName+".img"))
+		local pngLocation = ((dotnetclass "System.IO.Path").Combine CarmaSettings.TexturePath "FunsizeTextures" (textureName+".png")) 
+		ConvertIMG.ConvertFromIMG imgLocation pngLocation
+		foundFileName = pngLocation
+		)
+		catch (
+			foundFileName = undefined
+		)
 	)
 	if foundFileName != undefined then (
 		texmap = bitmaptexture()
@@ -465,14 +476,16 @@ fn GetMaterialFromMTL folder materialName importTextures:false = (
 				diffuseName = mtlMat.Layers[1].mapname
 			)
 			if diffuseName != undefined then (
-				mat.diffuseMap = LoadIImgTextture originalFolder diffuseName
-				--showtexturemap mat mat.diffuseMap on
-				bmp =  (openbitmap (mat.diffuseMap.filename))
-				if bmp != undefined and bmp.hasAlpha then (
-					mat.opacityMap = LoadIImgTextture originalFolder diffuseName
-					mat.opacityMap.monooutput = 1
+				mat.diffuseMap = LoadImgTexture originalFolder diffuseName
+
+					showtexturemap mat mat.diffuseMap on
+				if (iskindof mat.diffuseMap checker) == false then (
+					bmp =  (openbitmap (mat.diffuseMap.filename))
+					if bmp != undefined and bmp.hasAlpha then (
+						mat.opacityMap = LoadImgTexture originalFolder diffuseName
+						mat.opacityMap.monooutput = 1
+					)
 				)
-		
 			)
 		)
 	)

@@ -9,6 +9,15 @@ FunsizePedDetailsAttribute = attributes FunsizePedDetailsCustAttribute attribid:
 		spinner spn_InitialPoint "Initial Point" range:[1,1000,1]
 	)
 )
+FunsizeCopDetailsAttribute = attributes FunsizeCopDetailsCustAttribute attribid:#(0x77f0da8, 0x67623859) version:1
+(
+	parameters main rollout:FunsizeCopDetailsRollout (
+		CopType type:#string ui:dpdn_CopType default:"Cop_1"
+	)
+	rollout FunsizeCopDetailsRollout "Cop Details" (
+		dropdownlist dpdn_CopType "Cop Type" items:#("NORM", "APC")
+	)
+)
 
 FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAttribute attribid:#(0x1069ea6b, 0x3635a4dc) version:1
 (
@@ -39,7 +48,7 @@ FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAtt
 			)
 
 			if node != undefined then (
-				--ReplaceWithFunsizeAccessory AccessoryType node
+				ReplaceWithFunsizeAccessory AccessoryType node
 				format "Node has % modifiers\n" node.modifiers.count
 
 				for modifier in node.modifiers do format "\t%\n" modifier.name
@@ -53,9 +62,9 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 	parameters main rollout:FunsizeLevelDetailsRollout (
 		LevelFolderName type:#string ui:txt_FolderName default: "userlevel"
 		LevelFileName type:#string ui:txt_FileName default: "LEVEL_01.txt"
-		LevelLayerName type:#string default: "sys_level01"
-		LevelPedLayerName type:#string default: "sys_level01_ped"
-		LevelPowerupLayerName type:#string default: "sys_level01_powerups"
+		LevelLayerName type:#string default: "sys_level_01"
+		LevelPedLayerName type:#string default: "sys_level_01_ped"
+		LevelPowerupLayerName type:#string default: "sys_level_01_powerups"
 		LevelName type:#string ui:txt_LevelName default:"User Level"
 		LevelDescription type:#string ui:txt_LevelDescription default: "This is a user made level"
 		Environment type:#string ui:txt_Environment default:"nyhorizn"
@@ -168,7 +177,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 			lv_SmokeCols.Items.Clear()
 			for i = 1 to SmokeColours.count do (
 
-				lvitem = dotNetObject "listviewitem" (SmokeColours[i].r+", "+SmokeColours[i+1].g+", "+SmokeColours[i+2].b)
+				lvitem = dotNetObject "listviewitem" (SmokeColours[i].r as string +", "+SmokeColours[i].g as string+", "+SmokeColours[i].b as string)
 				lv_SmokeCols.items.add lvitem
 			)
 		)
@@ -186,7 +195,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				lv_MatMods.Items.Clear()
 				for i = 0 to splitMatMods.count-1 do (
 
-					lvitem = dotNetObject "listviewitem" ("Mat #"+i)
+					lvitem = dotNetObject "listviewitem" ("Mat #"+(i as string))
 					lv_MatMods.items.add lvitem
 				)
 			)
@@ -268,15 +277,15 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 				local i2 = i + 1
 				local matModDetails = filterstring splitMatMods[i2] ";"
 
-				spn_WallFriction.value = matModDetails[1]
-				spn_TyreFriction.value = matModDetails[2]
-				spn_DownForce.value = matModDetails[3]
-				spn_Bumpiness.value = matModDetails[4]
-				spn_TyreSound.value = matModDetails[5]
-				spn_CrashSound.value = matModDetails[6]
-				spn_ScrapeSound.value = matModDetails[7]
-				spn_Sparks.value = matModDetails[8]
-				spm_SmokeType.value = matModDetails[8]
+				spn_WallFriction.value = matModDetails[1] as float
+				spn_TyreFriction.value = matModDetails[2] as float
+				spn_DownForce.value = matModDetails[3] as float
+				spn_Bumpiness.value = matModDetails[4] as float
+				spn_TyreSound.value = matModDetails[5] as integer
+				spn_CrashSound.value = matModDetails[6] as integer
+				spn_ScrapeSound.value = matModDetails[7] as integer
+				spn_Sparks.value = matModDetails[8] as float
+				spn_SmokeType.value = matModDetails[9] as float
 			)	
 		)
 		on btn_DeleteMatMod pressed do (
@@ -333,6 +342,15 @@ fn AddFunsizePedAttributes pedRoot = (
 	addModifier pedRoot pedModifier
 	custattributes.add pedModifier FunsizePedDetailsAttribute baseObject:false
 	pedModifier
+)
+fn AddFunsizeCopAttributes CopRoot = (
+	max modify mode
+	CopModifier = emptyModifier()
+	
+	CopModifier.name = "Funsize Cop"
+	addModifier CopRoot CopModifier
+	custattributes.add CopModifier FunsizeCopDetailsAttribute baseObject:false
+	CopModifier
 )
 fn AddFunsizeAccessoryItemAttributes accRoot = (
 	max modify mode

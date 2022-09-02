@@ -3636,7 +3636,7 @@ fn ImportAccessoryTXT file obj = (
 		)
 		for dynamicsblock in accessoryData.DynamicsBlocks do (
 			local dynamicsObj = obj
-			if dynamicsObj.name != undefined then dynamicsObj.name = "lump"
+			if dynamicsObj.name == undefined then dynamicsObj.name = "lump"
 			if (tolower dynamicsObj.name) != (toLower dynamicsblock.lump_name) then (
 				dynamicsObj = GetDescendantByName obj dynamicsblock.lump_name
 			)

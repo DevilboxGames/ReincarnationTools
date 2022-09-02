@@ -1,13 +1,8 @@
 
-
-fn SetCNTNodeType mdl nodetype =
-(
-	if (IsObjectACNT mdl) ==false do custAttributes.add mdl CNTAttribute
-	
+fn SetCNTNodeType_Internal mdl nodeType = (
 	mdl.modifiers["CNT Hierarchy"].NodeType = nodetype
 	mdl.modifiers["CNT Hierarchy"].NodeTypeID= (finditem CNTTypes nodetype)
 )
-
 fn SetToCNTNodes_Old mdl nodeType:undefined fileName:undefined =
 (
 	if (IsObjectACNT mdl) ==false do
@@ -18,14 +13,14 @@ fn SetToCNTNodes_Old mdl nodeType:undefined fileName:undefined =
 		
 		if (classof mdl) == dummy then 
 		(
-			SetCNTNodeType mdl "NULL"
+			SetCNTNodeType_Internal mdl "NULL"
 			mdl.CNTCustAttribute.FileName = ""
 			
 		)
 		else
 		(
-			if nodeType != undefined then SetCNTNodeType mdl nodeType
-			else SetCNTNodeType mdl "MODL"
+			if nodeType != undefined then SetCNTNodeType_Internal mdl nodeType
+			else SetCNTNodeType_Internal mdl "MODL"
 		)
 		
 	)
@@ -49,31 +44,40 @@ fn SetToCNTNodes mdl nodeType:undefined fileName:undefined =
 		)
 		if (classof mdl) == dummy then 
 		(
-			SetCNTNodeType mdl "NULL"
+			SetCNTNodeType_Internal mdl "NULL"
 			cntHierarchyModifier.FileName = ""
 			
 		)
 		else if classof mdl == freeSpot or classof mdl == omnilight or classof mdl == Directionallight then
 		(
-			SetCNTNodeType mdl "LITg"
+			SetCNTNodeType_Internal mdl "LITg"
 		)
 		else
 		(
-			if nodeType != undefined then SetCNTNodeType mdl nodeType
+			if nodeType != undefined then SetCNTNodeType_Internal mdl nodeType
 			else if mdl.modifiers["Skin"] != undefined then
 			(
-				SetCNTNodeType mdl "SKIN"
+				SetCNTNodeType_Internal mdl "SKIN"
 			)
-			else SetCNTNodeType mdl "MODL"
+			else SetCNTNodeType_Internal mdl "MODL"
 		)
 		
 		
 	)
 )
-fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false nodeType: "NULL" =
+
+fn SetCNTNodeType mdl nodetype =
+(
+	if (IsObjectACNT mdl) == false then SetToCNTNodes mdl nodeType:nodetype
+	else (
+		SetCNTNodeType_Internal mdl nodeType
+	)
+)
+
+fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false useDummy:false nodeType: "NULL" =
 (
 	global forceDummyNull
-	if forceDummyNull == true then 
+	if forceDummyNull == true or useDummy == true then 
 	(
 		m = dummy boxsize:[0.05,0.05,0.05] name:nodename transform:trans
 

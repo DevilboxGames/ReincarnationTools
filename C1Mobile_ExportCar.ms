@@ -1,65 +1,26 @@
-fn FunSize_CreateTextEntryRowContent key value comment:"" = (
-	if key == undefined then (
-		key = "undefined"
-	)
-	if value == undefined then (
-		value = ""
-	)
-	key = substitutestring key "&" "&amp;"
-	value = substitutestring value "&" "&amp;"
-	comment = substitutestring comment "&" "&amp;"
-	"<Cell><Data>" + key + "</Data></Cell>" +		--Key
-	"<Cell><Data>" + comment + "</Data></Cell>" + --Comment
-	"<Cell><Data>" + value + "</Data></Cell>" + --English
-	"<Cell><Data>" + value + "</Data></Cell>" + --French
-	"<Cell><Data>" + value + "</Data></Cell>" + --Spanish
-	"<Cell><Data>" + value + "</Data></Cell>" + --German
-	"<Cell><Data>" + value + "</Data></Cell>" + --Italian
-	"<Cell><Data>" + value + "</Data></Cell>" + --Japanese
-	"<Cell><Data>" + value + "</Data></Cell>" + --Russian
-	"<Cell><Data>" + value + "</Data></Cell>" + --Portuguese
-	"<Cell><Data>" + value + "</Data></Cell>" + --Turkish
-	"<Cell><Data>" + value + "</Data></Cell>" + --Chinese
-	"<Cell><Data>" + value + "</Data></Cell>"   --Polish
-)
-fn FunsizeFindRowForCar xmlDoc carname key = (
-	rows = xmlDoc.GetElementsByTagName "Row"
 
-	foundEl = undefined
-
-	for i = 0 to (rows.count - 1) do (
-
-		el = rows.item[i]
-		cellElements = el.FirstChild.FirstChild
-		if (toupper cellElements.innertext) == (toupper key) then ( 
-			foundEl = el
-			i = rows.count
-		)
-	)
-	foundEl
-)
-fn Funsize_AddTextToXML filename carname driverName driverWastedName driverDescription carFullName = (
+fn Funsize_AddCarTextToXML filename carname driverName driverWastedName driverDescription carFullName = (
 	XmlDoc = dotNetObject "System.Xml.XmlDocument"
 	XmlDoc.load filename
 	TableNode = (XmlDoc.GetElementsByTagName "Table").item[0]
 
-	driverNameRow = FunsizeFindRowForCar xmldoc carname (carname + "_DRIVER")
+	driverNameRow = XmlFindRowForLabel xmldoc (carname + "_DRIVER")
 	if driverNameRow == undefined then driverNameRow = XmlDoc.CreateElement("Row")
 
-	driverNameRow.innerXml = FunSize_CreateTextEntryRowContent (carname + "_DRIVER") driverName
+	driverNameRow.innerXml = XmlCreateTextEntryRowContent (carname + "_DRIVER") driverName
 
-	driverDescriptionRow = FunsizeFindRowForCar xmldoc carname (carname + "_INFO")
+	driverDescriptionRow = XmlFindRowForLabel xmldoc (carname + "_INFO")
 	if driverDescriptionRow == undefined then driverDescriptionRow = XmlDoc.CreateElement("Row")
 
-	driverDescriptionRow.innerXml = FunSize_CreateTextEntryRowContent (carname + "_INFO") driverDescription
+	driverDescriptionRow.innerXml = XmlCreateTextEntryRowContent (carname + "_INFO") driverDescription
 
-	driverWastedNameRow = FunsizeFindRowForCar xmldoc carname (carname + "_SHORT")
+	driverWastedNameRow = XmlFindRowForLabel xmldoc (carname + "_SHORT")
 	if driverWastedNameRow == undefined then driverWastedNameRow = XmlDoc.CreateElement("Row")
-	driverWastedNameRow.innerXml = FunSize_CreateTextEntryRowContent (carname + "_SHORT") driverWastedName
+	driverWastedNameRow.innerXml = XmlCreateTextEntryRowContent (carname + "_SHORT") driverWastedName
 
-	carFullNameRow = FunsizeFindRowForCar xmldoc carname ("CAR_"+carname)
+	carFullNameRow = XmlFindRowForLabel xmldoc ("CAR_"+carname)
 	if carFullNameRow == undefined then carFullNameRow = XmlDoc.CreateElement("Row")
-	carFullNameRow.innerXml = FunSize_CreateTextEntryRowContent ("CAR_" + carname) carFullName
+	carFullNameRow.innerXml = XmlCreateTextEntryRowContent ("CAR_" + carname) carFullName
 
 	TableNode.AppendChild(driverNameRow)
 	TableNode.AppendChild(driverDescriptionRow)
@@ -341,7 +302,7 @@ fn ExportFunsizeCar carRoot nolaunch: false onlyAllowCars: = (
 	--for mat in scenematerials do format "%: %\n" mat.name (classof mat)
 	ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:true
 	carModifier = carRoot.modifiers["Funsize Car"]
-	Funsize_AddTextToXML (FunsizeDataPath+"Data\\Content\\Text\\Text.xml") carModifier.CarName carModifier.DriverName carModifier.WastedName carModifier.CarDescription carModifier.CarFullName
+	Funsize_AddCarTextToXML (FunsizeDataPath+"Data\\Content\\Text\\Text.xml") carModifier.CarName carModifier.DriverName carModifier.WastedName carModifier.CarDescription carModifier.CarFullName
 	Funsize_ExportHUDScript FunsizeDataPath carModifier.carname carRoot.Modifiers["Funsize HUD Damage"]
 	Funsize_UpdateCarSpecs FunsizeDataPath carModifier.carname carModifier
 	Funsize_QuickRaceCars FunsizeDataPath carModifier.carname carModifier onlyAllowCars: onlyAllowCars

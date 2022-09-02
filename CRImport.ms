@@ -1862,7 +1862,7 @@ fn MergeCNTNodes outMesh inMesh =
 	(
 		MergeCNTNodes outMesh inMesh.children[i]
 	)
-	
+	update outMesh
 	 outMesh
 )
 fn ParseCNTNodes cntNode folderName importTextures:false forcePREP:true useTriStrips:false mergeMDLs: false mergeSplits: true origin:[0,0,0] importObjects: true SpawnOctree:false =
@@ -2018,6 +2018,19 @@ fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mer
 	 rootMesh
 )
 
+fn QuickImportCnt file  mergeMDLs:false  = (
+		local filePath = getFilenamePath file
+	local importTextures = CarmaSettings.ImportSettings.importTextures
+	local forcePrep = CarmaSettings.ImportSettings.UsePrepData
+	local useTriStrips = CarmaSettings.ImportSettings.UseTriStrips
+	local mergeSplits = CarmaSettings.ImportSettings.MergeSplits
+	local SpawnOctree = false
+	
+	local rootMesh = ImportCNT file importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs mergeSplits:mergeSplits  SpawnOctree:SpawnOctree
+	
+	rootMesh
+)
+
 fn ImportMDLButtonPressed sender arg =
 (
 	global UseTR
@@ -2074,6 +2087,7 @@ fn ImportMDLButtonPressed sender arg =
 	--format "----------------------------\nMDL Loaded In %:%.% ms\n" stopwatch.Elapsed.Minutes stopwatch.Elapsed.Seconds stopwatch.Elapsed.Milliseconds 
 	--gc() light:true
 )
+
 fn ImportCNTButtonPressed sender arg=
 (
 	

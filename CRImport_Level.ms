@@ -326,7 +326,18 @@ fn ParseLevelRoutesTXT txtFileName =
 	
 	if ((dotnetclass "System.IO.File").exists txtFileName) then
 	(
-		f = openfile txtFileName mode:"r"
+		f2 = fopen txtFileName "r"
+		local firstByte = readbyte f2
+		fclose f2
+		local hasNullByte = false
+		if firstByte == 0 then (
+			hasNullByte = true
+			format "Has null byte\n"
+			f2 = fopen txtFileName "r+"
+			writeByte f2 32
+			fclose f2
+		)
+		f = openfile txtFileName mode:"rt"
 		
 		
 			activeType=undefined
@@ -339,11 +350,14 @@ fn ParseLevelRoutesTXT txtFileName =
 			AILinkCount = 0
 			currentMode = undefined
 			lineNum=0
+			if hasNullByte then (
+				seek f 2
+			)
 			while not (eof f) do
 			(
 				lineNum += 1
-				
 				curline = trimLeft (trimRight (readline f))
+
 				if curline[1] == "[" then
 				(
 					currentAILink = undefined
@@ -376,7 +390,7 @@ fn ParseLevelRoutesTXT txtFileName =
 							(
 								currentAINode.pos = ConvertToCRSpace (StringAsPoint3 curline)
 								currentAINode.pos.y = -currentAINode.pos.y
-								--currentAINode.pos.z = -currentAINode.pos.z
+								currentAINode.pos.z = -currentAINode.pos.z
 							)
 							"<RADIUS>":
 							(
@@ -408,7 +422,7 @@ fn ParseLevelRoutesTXT txtFileName =
 					else if toupper curline == "\"\"LOOP\"\"" then currentAILink.IsLoop = true
 					else if toupper curline == "\"\"INTERIOR\"\"" then currentAILink.Interior = true
 					if curline[1] == "<" then currentMode = toupper curLine
-					else
+					else if curLine != "" then
 					(
 						case currentMode of
 						(

@@ -7,6 +7,62 @@ FunsizePedDetailsAttribute = attributes FunsizePedDetailsCustAttribute attribid:
 	rollout FunsizePedDetailsRollout "Ped Details" (
 		edittext txt_PedType "Ped Type"
 		spinner spn_InitialPoint "Initial Point" range:[1,1000,1]
+
+	)
+)
+
+FunsizePowerupDetailsAttribute = attributes FunsizePowwrupDetailsCustAttribute attribid:#(0x259e73ea, 0x156bb6e7) version:1
+(
+	parameters main rollout:FunsizePowerupDetailsRollout (
+		PowerupTypes type:#stringtab tabSizeVariable:true
+		RespawnTime type:#float ui:spn_RespawnTime default:0
+	)
+	rollout FunsizePowerupDetailsRollout "Powerup Details" (
+		spinner spn_RespawnTime "Respawn Time" range:[0,1000,0]
+		label lbl_PowerupType "Powerup Types"
+
+			dotnetcontrol lv_Powerups "listview" height: 100
+			button btn_DeletePowerup "Delete Selected" across:2
+			button btn_AddPowerup "New" across:2
+			edittext txt_PowerupName
+
+			fn RefreshPowerupTypesList = (
+
+				if lv_Powerups == null or lv_Powerups.items == null then (
+
+					lv_Powerups.view  = (dotnetclass "view").details
+					lv_Powerups.fullrowselect= true
+					lv_Powerups.gridlines = true
+					lv_Powerups.multiselect =false
+					lv_Powerups.columns.add "Name" 140
+				)
+				
+				lv_Powerups.Items.Clear()
+				for i = 1 to Powerupours.count do (
+
+					lvitem = dotNetObject "listviewitem" Powerupours[i]
+					lv_Powerups.items.add lvitem
+				)
+			)
+			on FunsizePowerupDetailsRollout opeb do (
+				RefreshPowerupTypesList()
+			)
+
+			on lv_Powerups selectedindexchanged do (
+				if lv_Powerups.SelectedIndices.count > 0 then (
+					local i = lv_Powerups.SelectedIndices.Item[0]
+					local i2 = i + 1
+
+					txt_PowerupName.text = PowerupTypes[i2]
+
+				)
+			)
+			on txt_PowerupName changed txt do (
+				if lv_Powerups.SelectedIndices.Count > 0 then (
+					local i = lv_Powerups.SelectedIndices.Item[0]
+					PowerupTypes[i+1] = txt
+				)
+			)
 	)
 )
 FunsizeCopDetailsAttribute = attributes FunsizeCopDetailsCustAttribute attribid:#(0x77f0da8, 0x67623859) version:1
@@ -56,7 +112,106 @@ FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAtt
 		)
 	)
 )
+FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(0x5ea740db, 0x13fb809a) version:1
+(
+	parameters main rollout:FunsizeLevelTextRollout (
+		LevelNameKey type:#string ui:txt_LevelNameKey
+		LevelName type:#string ui:txt_LevelName
+		LevelDescriptionKey type:#string ui:txt_LevelDescriptionKey
+		LevelDescription type:#string ui:txt_LevelDescription
+		LevelEnvironmentKey type:#string ui:txt_LevelEnvironmentKey
+		LevelEnvironment type:#string ui:txt_LevelEnvironment
+		LevelText3Key type:#string ui:txt_LevelText3Key
+		LevelText3 type:#string ui:txt_LevelText3
 
+	)
+	parameters unlocks rollout:FunsizeLevelUnlocksRollout (
+		TrackUnlock type:#string ui:txt_TrackUnlock default:"none"
+		VehicleUnlock type:#string ui:txt_VehicleUnlock default:"none"
+		EventUnlock type:#string ui:txt_EventUnlock default:"none"
+
+		SpecialCode type:#integer ui:spn_SpecialCode default:0
+
+		RaceType type:#string ui:txt_RaceType default:"Wrecking Racing"
+
+		LapLength type:#float ui:spn_LapLength range:[0,10000,0]
+		PedCount type:#integer ui:spn_PedCount range:[0,10000,0]
+		Laps type:#integer ui:spn_Laps default:3 range:[0,100,0]
+		AISkill type:#integer ui:spn_AISkill default:2 range:[0,10,0]
+		AICars type:#integer ui:spn_AICars default:2 range:[0,30,0]
+		NumAI type:#integer ui:spn_NumAI default:2 range:[0,30,0]
+
+		Boss type:#string ui:txt_Boss default:"None"
+	)
+	parameters timeandcredits rollout:FunsizeLevelTimeCreditsRollout (
+		RequiredCredits type:#integer ui:spn_RequiredCredits
+
+		WinBonusLaps_Easy type:#integer ui:spn_WinBonusLaps_Easy
+		WinBonusLaps_Medium type:#integer ui:spn_WinBonusLaps_Medium
+		WinBonusLaps_Hard type:#integer ui:spn_WinBonusLaps_Hard
+
+		WinBonusPeds_Easy type:#integer ui:spn_WinBonusPeds_Easy
+		WinBonusPeds_Medium type:#integer ui:spn_WinBonusPeds_Medium
+		WinBonusPeds_Hard type:#integer ui:spn_WinBonusPeds_Hard
+
+		WinBonusWasted_Easy type:#integer ui:spn_WinBonusWasted_Easy
+		WinBonusWasted_Medium type:#integer ui:spn_WinBonusWasted_Medium
+		WinBonusWasted_Hard type:#integer ui:spn_WinBonusWasted_Hard
+
+		StartTime_Easy type:#integer ui:spn_StartTime_Easy
+		StartTime_Medium type:#integer ui:spn_StartTime_Medium
+		StartTime_Hard type:#integer ui:spn_StartTime_Hard
+
+	)
+	rollout FunsizeLevelTextRollout "Level Text" (
+		edittext txt_LevelNameKey "LevelNameKey" labelOnTop:true
+		edittext txt_LevelName "LevelName" labelOnTop:true
+		edittext txt_LevelDescriptionKey "LevelDescriptionKey" labelOnTop:true
+		edittext txt_LevelDescription "LevelDescription" labelOnTop:true
+		edittext txt_LevelEnvironmentKey "LevelEnvironmentKey" labelOnTop:true
+		edittext txt_LevelEnvironment "LevelEnvironment" labelOnTop:true
+		edittext txt_LevelText3Key "LevelText3Key" labelOnTop:true
+		edittext txt_LevelText3 "LevelText3" labelOnTop:true
+	)
+	rollout FunsizeLevelUnlocksRollout "Level Unlocks & Stats" (
+		edittext txt_TrackUnlock "TrackUnlock"
+		edittext txt_VehicleUnlock "VehicleUnlock"
+		edittext txt_EventUnlock "EventUnlock"
+
+		spinner spn_SpecialCode "SpecialCode" type:#integer  default:0
+
+		edittext txt_RaceType "RaceType"
+
+		spinner spn_LapLength "LapLength" type:#float range:[0,10000,0]
+		spinner spn_PedCount "PedCount" type:#integer  range:[0,10000,0]
+		spinner spn_Laps "Laps" type:#integer  default:3 range:[0,100,0]
+		spinner spn_AISkill "AISkill" type:#integer  default:2 range:[0,10,0]
+		spinner spn_AICars "AICars" type:#integer  default:2 range:[0,30,0]
+		spinner spn_NumAI "NumAI" type:#integer  default:2 range:[0,30,0]
+
+		edittext txt_Boss "Boss"
+	)
+	rollout FunsizeLevelTimeCreditsRollout "Level Credits & Timer" (
+
+		spinner spn_RequiredCredits "RequiredCredits" type:#integer 
+
+		spinner spn_WinBonusLaps_Easy "WinBonusLaps_Easy" type:#integer 
+		spinner spn_WinBonusLaps_Medium "WinBonusLaps_Medium" type:#integer 
+		spinner spn_WinBonusLaps_Hard "WinBonusLaps_Hard" type:#integer 
+
+		spinner spn_WinBonusPeds_Easy "WinBonusPeds_Easy" type:#integer 
+		spinner spn_WinBonusPeds_Medium "WinBonusPeds_Medium" type:#integer 
+		spinner spn_WinBonusPeds_Hard "WinBonusPeds_Hard" type:#integer 
+
+		spinner spn_WinBonusWasted_Easy "WinBonusWasted_Easy" type:#integer 
+		spinner spn_WinBonusWasted_Medium "WinBonusWasted_Medium" type:#integer 
+		spinner spn_WinBonusWasted_Hard "WinBonusWasted_Hard" type:#integer 
+
+		spinner spn_StartTime_Easy "StartTime_Easy" type:#integer 
+		spinner spn_StartTime_Medium "StartTime_Medium" type:#integer 
+		spinner spn_StartTime_Hard "StartTime_Hard" type:#integer 
+	)
+)
 FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attribid:#(0x2818f431, 0x61352613) version:1
 (
 	parameters main rollout:FunsizeLevelDetailsRollout (
@@ -65,6 +220,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		LevelLayerName type:#string default: "sys_level_01"
 		LevelPedLayerName type:#string default: "sys_level_01_ped"
 		LevelPowerupLayerName type:#string default: "sys_level_01_powerups"
+		LevelPathsLayerName type:#string default: "sys_level_01_paths"
 		LevelName type:#string ui:txt_LevelName default:"User Level"
 		LevelDescription type:#string ui:txt_LevelDescription default: "This is a user made level"
 		Environment type:#string ui:txt_Environment default:"nyhorizn"
@@ -229,6 +385,9 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 			if (LayerManager.getLayerFromName LevelPowerupLayerName) == undefined then(
 				LayerManager.newLayerFromName LevelPowerupLayerName
 			)
+			if (LayerManager.getLayerFromName LevelPathsLayerName) == undefined then(
+				LayerManager.newLayerFromName LevelPathsLayerName
+			)
 			local items = #()
 
 			for i = 1 to layerManager.count - 1 do (
@@ -267,7 +426,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		on col_SmokeCol changed col do (
 			if lv_SmokeCols.SelectedIndices.Count > 0 then (
 				local i = lv_SmokeCols.SelectedIndices.Item[0]
-				SmokeColours[i] = col
+				SmokeColours[i+1] = col
 			)
 		)
 		on lv_MatMods selectedindexchanged index do (
@@ -361,13 +520,31 @@ fn AddFunsizeAccessoryItemAttributes accRoot = (
 	custattributes.add accModifier FunsizeAccessoryPlacementAttribute baseObject:false
 	accModifier
 )
+fn AddFunsizePowerupItemAttributes pupRoot = (
+	max modify mode
+	pupModifier = emptyModifier()
+	
+	pupModifier.name = "Funsize Powerup"
+	addModifier pupRoot pupModifier
+	custattributes.add pupModifier FunsizePowerupDetailsAttribute baseObject:false
+	pupModifier
+)
 fn AddFunsizeLevelAttributes levelRoot = (
 	max modify mode
 	levelModifier = emptyModifier()
 	
-	levelModifier.name = "Funsize Level"
+	levelModifier.name = "Funsize Level Settings"
 	addModifier levelRoot levelModifier
 	custattributes.add levelModifier FunsizeLevelDetailsAttribute baseObject:false
+	levelModifier
+)
+fn AddFunsizeLevelInfoAttributes levelRoot = (
+	max modify mode
+	levelModifier = emptyModifier()
+	
+	levelModifier.name = "Funsize Level Info"
+	addModifier levelRoot levelModifier
+	custattributes.add levelModifier FunsizeLevelInfoAttribute baseObject:false
 	levelModifier
 )
 

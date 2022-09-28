@@ -307,6 +307,8 @@ fn quatdot q1 q2 =
 (
 	q1.w*q2.w + q1.x* q2.x + q1.y*q2.y + q1.z*q2.z
 )
+
+
 fn ConvertFromCRSpace pos noflip:false=
 (
 	if noflip then
@@ -320,6 +322,16 @@ fn ConvertToCRSpace pos noflip:false =
 		[pos.x,pos.z,pos.y]
 	else
 		[-pos.x,pos.z,-pos.y]
+)
+fn ConvertCopFromFunsize pos = (
+	local pos = (ConvertFromCRSpace pos) * 6.9
+	pos.x = -pos.x
+	pos
+)
+fn ConvertCopToFunsize pos = (
+	local pos = (ConvertToCRSpace pos) / 6.9
+	pos.x = -pos.x
+	pos
 )
 fn ConvertMatrixFromCRSpace mat = (
 

@@ -3247,6 +3247,8 @@ fn AddAccessoryShapes obj shapeData = (
 	if layerObject == undefined then
 	(
 		layerObject= LayerManager.newLayerFromName  "Accessory Collision Shapes"
+		layerObject.isHidden = true
+		layerObject.renderable = false
 	)
 
 	local shapeObj = undefined

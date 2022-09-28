@@ -670,6 +670,12 @@ fn CreateMenu uiForm = (
 	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift1
 	
 	local toolsMenu = crMenu.MenuItems.Add("&Tools")
+
+	fn aiRoutesClicked menuItem ev = (
+		OpenAIPathsFloater()
+	)
+	local aiRouteToolsMenu = toolsMenu.MenuItems.Add("Race Routes")
+	SetClickHandler aiRouteToolsMenu aiRoutesClicked
 	local mobileToolsMenu = toolsMenu.MenuItems.Add("Mobile")
 	local loadC1CarForMobile = mobileToolsMenu.MenuItems.Add("Load And Setup C1 Car")
 	SetClickHandler loadC1CarForMobile LoadAndConvertC1CarToMobile

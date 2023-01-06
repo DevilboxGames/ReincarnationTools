@@ -6301,7 +6301,7 @@ fn GetBonesList mdl =
 	)
 	else if mdl.modifiers["Skin"] != undefined then
 	(
-		pedBonesList (GetBonesFromSkin skinMod)
+		pedBonesList = (GetBonesFromSkin mdl.modifiers["Skin"])
 	)
 	pedBonesList
 )

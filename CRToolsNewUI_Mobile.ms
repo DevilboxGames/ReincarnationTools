@@ -18,7 +18,7 @@ fn ShowExportToMobileForm title message exportFunction = (
 	funsizeExport.Name = "FunsizeExport"
 	funsizeExport.Text = title
 	funsizeExport.width = 400
-	funsizeExport.height = 400
+	funsizeExport.height = 500
 	
 	local layoutHelper = DotNetFormHelper ParentControl:funsizeExport OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginRight:5
 	layoutHelper.BeginVerticalGroup marginTop:10 marginBottom:20

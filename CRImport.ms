@@ -1105,17 +1105,18 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			)*/
 			
 			--format "\nnum skin verts: %\nnum uniqueVerts: %\n\n" (skinOps.GetNumberVertices skinMod) uniqueVerts.count
-			for i=1 to uniqueVerts.count do
+			for i=1 to weightsPerVert.count do --uniqueVerts.count do
 			(
 				--format "Vert #%" i
-				vertIndex = finditem oldVertsToNewVerts i
-				
-				weightCount = skinOps.GetVertexWeightCount skinMod i
+				--vertIndex = finditem oldVertsToNewVerts i
+				local vertIndex = i
+				local newVertIndex = oldVertsToNewVerts[i]
+				weightCount = skinOps.GetVertexWeightCount skinMod newVertIndex
 				--format "\nWeights on Vert Before Replacing (% found):\t" weightCount
 				for x=1 to weightCount do
 				(
 					
-					boneId = skinOps.GetVertexWeightBoneID skinMod i x
+					boneId = skinOps.GetVertexWeightBoneID skinMod newVertIndex x
 					boneName = skinOps.GetBoneName skinMod boneId 0
 					boneNum = 0
 					for j=1 to boneNames.count do
@@ -1126,7 +1127,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 							j = boneNames.count
 						)
 					)
-					weight = skinOps.GetVertexWeight  skinMod i x
+					weight = skinOps.GetVertexWeight  skinMod newVertIndex x
 					--format "(% [%/%] - %), " boneName boneNum boneId weight
 				)
 				
@@ -1144,14 +1145,14 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 						append weightsPerVert[vertIndex][5] 0.0
 					)
 				)
-				skinOps.ReplaceVertexWeights skinMod i weightsPerVert[vertIndex][4] weightsPerVert[vertIndex][5]
+				skinOps.ReplaceVertexWeights skinMod newVertIndex weightsPerVert[vertIndex][4] weightsPerVert[vertIndex][5]
 				skinOps.Invalidate SkinMod 0
-				weightCount = skinOps.GetVertexWeightCount skinMod i
+				weightCount = skinOps.GetVertexWeightCount skinMod newVertIndex
 				--format "\nWeights on Vert (% found):\t\t\t" weightCount
 				for x=1 to weightCount do
 				(
 					
-					boneId = skinOps.GetVertexWeightBoneID skinMod i x
+					boneId = skinOps.GetVertexWeightBoneID skinMod newVertIndex x
 					boneName = skinOps.GetBoneName skinMod boneId 0
 					boneNum = 0
 					for j=1 to boneNames.count do
@@ -1162,7 +1163,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 							j = boneNames.count + 1
 						)
 					)
-					weight = skinOps.GetVertexWeight  skinMod i x
+					weight = skinOps.GetVertexWeight  skinMod newVertIndex x
 					--format "(% [%/%] - %), " boneName boneNum boneId weight
 				)
 				--format "\n\n"

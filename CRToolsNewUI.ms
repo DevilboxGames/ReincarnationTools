@@ -519,6 +519,8 @@ fn CreateMenu uiForm = (
 	SetClickHandler importLevelSetup ImportLevelSetupClicked
 	local importLevelAccessories = importLevel.MenuItems.Add("&Load Level Accessories")
 	SetClickHandler importLevelAccessories ImportLevelAccessoriesClicked
+	local importLevelAccessories = importLevel.MenuItems.Add("&Load Level Powerups")
+	SetClickHandler importLevelAccessories ImportLevelPowerupsClicked
 	local importLevelPeds = importLevel.MenuItems.Add("&Load Level Peds")
 	SetClickHandler importLevelPeds ImportLevelPedsClicked
 	local importLevelRoutes = importLevel.MenuItems.Add("&Load Level Paths")

@@ -13,7 +13,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 		)
 		else if (doesFileExist (folder+textureName+".tga")) then
 		(
-			--format "Texture is already converted: %\n"  (folder+textureName+".tga")
+			format "Texture is already converted: %\n"  (folder+textureName+".tga")
 			
 			foundFileName = folder+textureName+".tga"
 		)
@@ -25,7 +25,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 		)
 		else if (doesFileExist (folder+"NON_VT\\"+textureName+".tga")) then
 		(
-			--format "Texture is already converted: %\n"  (folder+textureName+".tga")
+			format "Texture is already converted: %\n"  (folder+textureName+".tga")
 			
 			foundFileName = folder+"NON_VT\\"+textureName+".tga"
 		)
@@ -37,7 +37,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 		)
 		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga")) then
 		(
-			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
+			format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
 			
 			foundFileName = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tga"
 		)
@@ -95,6 +95,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 			if TDXFilename != undefined then
 			(
 				
+				format "Converting texture from TDX % \n" texturename
 				--HiddenDOSCommand (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") prompt:("Loading Texture: "+TDXFilename)
 				--format "Command For Converting Texture: %\n from start path: %" (CarmaSettings.GibbedTools+" \""+TDXFilename+"\"") startPath
 				convesionPath =  CarmaSettings.TexturePath
@@ -114,6 +115,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 				foundFileName = convesionPath+"\\"+textureName+".png"
 			)
 			else (
+				format "Extracting texture from VT %\n" texturename
 				vtUtils = dotNetObject  "ToxicRagers.CarmageddonReincarnation.VirtualTextures.vtUtils" CarmaSettings.GamePath
 				
 				foundFileName = vtUtils.ExtractTexture texturename
@@ -436,6 +438,37 @@ fn LoadImgTexture folder textureName = (
 		texmap.coords.V_Tiling =10
 	)
 	texmap
+
+)
+
+fn ReplacePhysMatsWithStandardMats = (
+	--undo "Replace PhysMat with StdMat" (
+		for obj in objects where classof obj == Editable_mesh or classof obj == Editable_Poly or classof obj == PolyMeshObject do (
+			if classof obj.material == PhysicalMaterial then (
+				local newMat = Standardmaterial()
+				newMat.diffusemap = obj.material.base_color_map
+				newMat.OpacityMap = obj.material.transparency_map
+				obj.material = newMat
+			)
+			else if classof obj.material == Multimaterial then (
+				for i = 1 to obj.material.material.count do (
+					if classof obj.material.material[i] == PhysicalMaterial then (
+						local newMat = Standardmaterial()
+						newMat.diffusemap = obj.material.material[i].base_color_map
+						newMat.OpacityMap = obj.material.material[i].transparency_map
+						obj.material.material[i] = newMat
+					)
+					else (
+						format "\tUnknown sub mat type: %\n" (classof obj.material)
+					)
+				)
+			)
+			else (
+				format "Unknown mat type: %\n" (classof obj.material)
+			)
+		)
+		true
+	--)
 
 )
 

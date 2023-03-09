@@ -307,7 +307,17 @@ fn ImportLevelAccessoriesClicked sender arg = (
 		if file != undefined then (
 
 			local selectedCar = selection[1]
-			ParseLevelAccessoryLOL file
+			ParseLevelAccessoryLUA file
+		)
+)
+
+fn ImportLevelPowerupsClicked sender arg = (
+		file = GetOpenFileName caption:"Open Powerup Placement Script" types:"Open Accessory Placement (powerups.lua)|powerups.lua;powerups.lol"
+
+		if file != undefined then (
+
+			local selectedCar = selection[1]
+			ParseLevelAccessoryLUA file isPowerup:true
 		)
 )
 

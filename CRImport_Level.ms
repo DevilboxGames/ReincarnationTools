@@ -20,7 +20,10 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 	)
 	else
 	(
-		
+		if isPowerup and (dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt")then
+		(
+			accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Pickups\\"+accessoryType+"\\accessory.cnt"
+		)
 		if ((dotnetclass "System.IO.File").exists (CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt")) then
 		(
 			accessory.accessoryFileName = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryType+"\\accessory.cnt"
@@ -36,7 +39,36 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 	--else
 		--format "No accessory found matching %\n" accessoryType
 	KeepMaxAlive()
+	accessory.backfacecull = true
 	accessory
+)
+fn ParseLevelAccessoryLUA luaFileName isPowerup:false = (
+
+	local accessoriesFile = CRLevelAccessoriesFile()
+	accessoriesFile.Read luaFileName
+	
+	local UniqueAccessoryList = #()
+	for spec in accessoriesFile.Accessories do(
+		local layerObject = LayerManager.getLayerFromName spec.AccessoryLayer
+		if layerObject == undefined then
+		(
+			layerObject= LayerManager.newLayerFromName spec.AccessoryLayer
+		)
+		
+		local accessoryToLoad = spec.AccessoryType
+		
+		appendIfUnique UniqueAccessoryList accessoryToLoad
+		
+		local newAccessoryObject = FindAndLoadLevelAccessory accessoryToLoad (getFilenamePath luaFileName) isPowerup:isPowerup
+		--if tolower currentAccessoryType == "c1checkpoint" then format "\tConverted Transform: %\n\n" trans
+		newAccessoryObject.transform = spec.AccessoryTransform
+		newAccessoryObject.accessoryName = spec.AccessoryName
+		newAccessoryObject.accessoryID =  spec.AccessoryLabel
+		newAccessoryObject.accessoryColour = spec.AccessoryColour
+		layerObject.addnode newAccessoryObject
+	)
+
+	
 )
 fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 (
@@ -503,10 +535,10 @@ fn ImportLevelButtonPressed sender arg=
 				if sender.parent.controls.Item["LoadPowerupsCheckbox"].checked then
 				(
 					powerupLOLFile = (getFilenamePath cnt_name)+"powerups.lol"
-					if (getfiles setupLOLFile).count == 0 then (
-						setupLOLFile = (getFilenamePath cnt_name)+"powerups.lua"
+					if (getfiles powerupLOLFile).count == 0 then (
+						powerupLOLFile = (getFilenamePath cnt_name)+"powerups.lua"
 					)
-					if (getfiles setupLOLFile).count != 0 then (
+					if (getfiles powerupLOLFile).count != 0 then (
 						ParseLevelAccessoryLOL powerupLOLFile isPowerup:true
 					)
 				)

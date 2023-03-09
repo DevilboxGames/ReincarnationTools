@@ -3,6 +3,7 @@ if LoadC1TXT == undefined then (
 	
 	filein "Carma_ImportV19-Trent.ms"
 )
+filein "DocParser.ms"
 fileIn "CRToolsSettings.ms"
 fileIn "CRFormHelpers.ms"
 fileIn "CRRollouts.ms"
@@ -27,6 +28,7 @@ fileIn "CRCarTools.ms"
 fileIn "CRMaterialTools.ms"
 
 fileIn "CRAccessory.ms"
+fileIn "CRLevelAccessory.ms"
 fileIn "CRExport.ms"
 fileIn "CRExport_car.ms"
 fileIn "CRExport_level.ms"

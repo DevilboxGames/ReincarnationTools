@@ -267,6 +267,9 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 		UpdateToolsUI()
 		
 	)
+	on accessory_pallete_rollout resized size do (
+		lv_Accessories.Size = dotNetObject "System.Drawing.Size" size.x 300
+	)
 
 	on dpdn_Tool selected i do (
 		UpdateToolsUI()

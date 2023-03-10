@@ -53,14 +53,14 @@ struct CRLevelAccessorySpec (
     ),
 
     fn Write stream = (
-        local trans = (matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0]) * AccessoryTransform * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
+        local t = (matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0]) * AccessoryTransform * inverse(matrix3 [-1,0,0] [0,0,1] [0,-1,0] [0,0,0])
         
-        format "\t% = \n\t{\n\t\ttype = \"%\",\n\t\tname = \"%\",\n\t\tlayer = \"%\",\n\t\ttransform = { { %, %, % },  { %, %, % },  { %, %, % },  { %, %, % }}, colour = { %, %, %}\n\t}," AccessoryLabel AccessoryType AccessoryName AccessoryLayer t.row1.x t.row1.y t.row1.z t.row2.x t.row2.y t.row2.z  t.row3.x t.row3.y t.row3.z t.row4.x t.row4.y t.row4.z (AccessoryColour.r as integer) (AccessoryColour.g as integer) (AccessoryColour.b as integer) to:stream
+        format "\t% = \n\t{\n\t\ttype = \"%\",\n\t\tname = \"%\",\n\t\tlayer = \"%\",\n\t\ttransform = { { %, %, % },  { %, %, % },  { %, %, % },  { %, %, % }}, colour = { %, %, %}\n\t},\n\n" AccessoryLabel AccessoryType AccessoryName AccessoryLayer t.row1.x t.row1.y t.row1.z t.row2.x t.row2.y t.row2.z  t.row3.x t.row3.y t.row3.z t.row4.x t.row4.y t.row4.z (AccessoryColour.r as integer) (AccessoryColour.g as integer) (AccessoryColour.b as integer) to:stream
     )
 )
 
 struct CRLevelAccessoriesFile (
-    Accessories,    -- CRLevelAccessorySpec[]
+    Accessories = #(),    -- CRLevelAccessorySpec[]
     Filename,       -- string
 
     fn Read path = (
@@ -84,5 +84,9 @@ struct CRLevelAccessoriesFile (
             spec.Write stream
         )
         format "}\n" to:stream
+
+        f = openfile path mode:"wt"
+        format "%" (stream as string) to:f
+        close f
     )
 )

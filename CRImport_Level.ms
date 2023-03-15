@@ -67,7 +67,7 @@ fn ParseLevelAccessoryLUA luaFileName isPowerup:false = (
 		newAccessoryObject.accessoryColour = spec.AccessoryColour
 		layerObject.addnode newAccessoryObject
 	)
-
+	free accessoriesFile
 	
 )
 fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
@@ -529,7 +529,7 @@ fn ImportLevelButtonPressed sender arg=
 						setupLOLFile = (getFilenamePath cnt_name)+"level.lua"
 					)
 					if (getfiles setupLOLFile).count != 0 then (
-						ParseLevelAccessoryLOL setupLOLfile
+						ParseLevelAccessoryLUA setupLOLfile
 					)
 				)
 				if sender.parent.controls.Item["LoadPowerupsCheckbox"].checked then
@@ -539,7 +539,7 @@ fn ImportLevelButtonPressed sender arg=
 						powerupLOLFile = (getFilenamePath cnt_name)+"powerups.lua"
 					)
 					if (getfiles powerupLOLFile).count != 0 then (
-						ParseLevelAccessoryLOL powerupLOLFile isPowerup:true
+						ParseLevelAccessoryLUA powerupLOLFile isPowerup:true
 					)
 				)
 				if sender.parent.controls.Item["LoadPathsCheckbox"].checked then

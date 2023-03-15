@@ -16,14 +16,26 @@ fileIn "CRToolsNewUI_Import.ms"
 fileIn "CRToolsNewUI_Export.ms"
 
 global currentMode = undefined
+
+fn GetIntPtr ptr = (
+	local dotnetPtr = dotNet.ValueToDotNetObject ptr (dotnetClass "System.IntPtr")
+	local ptrType = dotnetPtr.GetType()
+	if ptrType.Name == "Int64" then (
+		dotnetObject "System.IntPtr" dotnetPtr
+	)
+	else (
+		dotnetPtr
+	)
+)
 fn FindMaxWindow windowTitle:"Autodesk 3ds Max" = (
 
 
-WindowFinder = dotnetclass "CMDControls.FindWindow"
-local wnd = WindowFinder.SearchForWindow windowTitle
-local childWindows = WindowFinder.GetChildWindows wnd
---format "%\n" WindowFinder.ChildLog
-wnd
+	WindowFinder = dotnetclass "CMDControls.FindWindow"
+	local wnd = GetIntPtr (WindowFinder.SearchForWindow windowTitle)
+
+	local childWindows = WindowFinder.GetChildWindows wnd
+	--format "%\n" WindowFinder.ChildLog
+	wnd
 )
 fn SetToolMode_Car args = (
 	global CRToolsUI, currentMode
@@ -731,7 +743,7 @@ fn CreateNewUI =
 	--CRToolsUI.Text = "Carmageddon Reincarnation Tools"
 	
 	maxHandlePointer= FindMaxWindow()-- (Windows.GetMAXHWND())
-	sysPointer = DotNetObject "System.IntPtr" maxHandlePointer
+	sysPointer = GetIntPtr maxHandlePointer
 		
 	--maxHwnd = (dotnetclass "System.Windows.Forms.Control").fromHandle sysPointer --DotNetObject "MaxCustomControls.Win32HandleWrapper" sysPointer
 	--CRToolsUI.show(maxHwnd)
@@ -758,11 +770,11 @@ fn CreateNewUI =
 	local currentScriptFolder = getFilenamePath currentScriptFileName
 	local iconBmp = dotnetobject "System.Drawing.Bitmap" (currentScriptFolder + "\\UI\\ToolsIcon.png") 
 	CRToolsUI.Text = "Carmageddon: 3DSMax Damage"
-	CRToolsUI.Icon = (dotnetclass "System.Drawing.Icon").FromHandle (iconBmp.GetHicon())
+	CRToolsUI.Icon = (dotnetclass "System.Drawing.Icon").FromHandle (GetIntPtr (iconBmp.GetHicon()))
 	CreateMenu CRToolsUI
 
 	local controlClass = dotnetclass "System.Windows.Forms.Control"
-	CRToolsUI.show (controlClass.FromHandle maxHandlePointer)
+	CRToolsUI.show (controlClass.FromHandle sysPointer)
 --CRToolsUI.Owner = (controlClass.FromHandle maxHandlePointer)
 	callbacks.removeScripts #selectionSetChanged id:#crtoolschangehandler
 	callbacks.addScript #selectionSetChanged "SelectedNodeChangeHandler()" id:#crtoolschangehandler

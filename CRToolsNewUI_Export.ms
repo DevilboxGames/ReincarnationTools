@@ -362,19 +362,14 @@ fn ExportLevelSetupClicked sender arg = (
 fn ExportLevelAccessoriesClicked sender arg = (
 	local file = GetSaveFileName caption:"Save Accories" filename:"level.lua" types:"Level Accessories (level.lua)|level.lua"
 	local accessoryFile = CRLevelAccessoriesFile accessories:#()
-
-	local labelBase = "accesspry_"
-	local i = random 100000 900000
 	
 	for obj in objects where classof obj == CarmaHelper_AccessoryPlaceholder and not obj.isPowerup do (
-		local accessoryLabel = labelBase + (i as string)
-		i += 1
-		append accessoryFile.Accessories (CRLevelAccessorySpec    AccessoryTransform:obj.transform AccessoryName:obj.accessoryName AccessoryType:obj.accessoryType AccessoryLayer:obj.layer.name AccessoryColour:obj.accessoryColour AccessoryLabel:accessoryLabel  )
+		append accessoryFile.Accessories (CRLevelAccessorySpec    AccessoryTransform:obj.transform AccessoryName:obj.accessoryName AccessoryType:obj.accessoryType AccessoryLayer:obj.layer.name AccessoryColour:obj.accessoryColour AccessoryLabel:obj.accessoryID  )
 	)
 
 	accessoryFile.Write file
 )
-fn ExportLevelPowerupssClicked sender arg = (
+fn ExportLevelPowerupsClicked sender arg = (
 	local file = GetSaveFileName caption:"Save Powerups" filename:"powerups.lua" types:"Level Powerups (powerups.lua)|powerups.lua"
 	local accessoryFile = CRLevelAccessoriesFile accessories:#()
 	local labelBase = "powerup_"

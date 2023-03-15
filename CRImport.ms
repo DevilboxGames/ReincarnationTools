@@ -445,7 +445,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				matExistsInMerged = finditem merge_MatsIDsToNames materialName
 				if matExistsInMerged == 0 then
 				(
-					if merge_SubMat.material.count == 1 and merge_SubMat.material[1].name=="##DELETEME##" then
+					if merge_SubMat.material.count == 1 and (merge_SubMat.material[1] == undefined or merge_SubMat.material[1].name=="##DELETEME##") then
 					(
 						merge_SubMat.material[merge_SubMat.material.count] = subMat
 					)

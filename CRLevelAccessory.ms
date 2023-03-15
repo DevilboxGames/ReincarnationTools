@@ -70,6 +70,7 @@ struct CRLevelAccessoriesFile (
         
         luaDoc.SkipToToken "accessories"
         luaDoc.NextToken()  -- {
+        luaDoc.NextToken()  -- {
 		Accessories = #()
         while not luaDoc.EndOfFile() and luaDoc.Peek() != "}" do (
             local spec = CRLevelAccessorySpec()

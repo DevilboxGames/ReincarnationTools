@@ -1507,14 +1507,14 @@ rollout datimporter "Import Dat file"
 	
 	on dat_file pressed do
 	(
-		LoadC2Dat undefined  &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_smth:imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_act:imp_act.checked
+		LoadC2Dat undefined  &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_smth:imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_act:imp_act.checked imp_scale69:imp_scale69.checked
 		
 	)
 	on c1level_file pressed do
 	(
 		
 		fnm=getopenfilename types:"C1/SP Car or Level Text files(*.txt)|*.txt"
-		LoadC1TXT fnm &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_smth:imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_act:imp_act.checked
+		LoadC1TXT fnm &imp_prog.value &imp_prog_lab.text imp_hier:imp_hier.checked imp_group:imp_group.checked imp_smth:imp_smth.checked imp_mat:imp_mat.checked imp_quad:imp_quad.checked imp_act:imp_act.checked imp_scale69:imp_scale69.checked
 	)
 )
 

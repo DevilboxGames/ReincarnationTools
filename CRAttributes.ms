@@ -6176,6 +6176,13 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 		BoneList type:#maxObjectTab tabSizeVariable:true
 		
 	)
+	
+	fn SetFromList bones = (
+		for bone in bones do
+		(
+			append BoneList (nodeTransformMonitor node:bone forwardTransformChangeMsgs:false)
+		)
+	)
 	rollout PedSkelAttributeParams "Ped Bones List"
 	(
 	
@@ -6188,6 +6195,9 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 		button but_RemoveBone "Remove" across:3
 		button but_MoveUp "Up" across:3
 		button but_MoveDown "Down" across:3
+		button but_SortAsc "Sort Asc" across:2
+		button but_SortDesc "Sort Desc" across:2
+		button but_Clear "Clear" across:2
 		
 		on PedSkelAttributeParams open do
 		(
@@ -6235,9 +6245,36 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 				)
 			)
 		)
+		fn CompareBoneNames b1 b2 = (
+			stricmp b1.name b2.name
+		)
+		fn CompareBoneNamesDesc b1 b2 = (
+			stricmp b2.name b1.name
+		)
+
 		on but_AddBoneFromSkin pressed do
 		(
 			AddBonesFromSkin()
+		)
+		on but_SortAsc pressed do
+		(
+			local newList = for b in BoneList collect b.node
+			qSort newList CompareBoneNames
+			lv_BonesList.Items.clear()
+			for i=1 to newList.count do (
+				BoneList[i] = (nodeTransformMonitor node:newList[i] forwardTransformChangeMsgs:false)
+				lv_BonesList.Items.add newList[i].name
+			)
+		)
+		on but_SortDesc pressed do
+		(
+			local newList = for b in BoneList collect b.node
+			qSort newList CompareBoneNamesDesc
+			lv_BonesList.Items.clear()
+			for i=1 to newList.count do (
+				BoneList[i] = (nodeTransformMonitor node:newList[i] forwardTransformChangeMsgs:false)
+				lv_BonesList.Items.add newList[i].name
+			)
 		)
 		on but_MoveUp pressed do
 		(
@@ -6280,12 +6317,20 @@ PedSkeletonAttribute = attributes PedSkelCustAttribute attribID:#(0x52b53405, 0x
 				lv_BonesList.Items.add lvitem
 			)
 		)
-		on but_DeleteLumpRenderLevel pressed do
+		on but_RemoveBone pressed do
 		(
 			if lv_BonesList.SelectedIndices.count > 0 then
 			(
 				if BoneList.count > 0 then deleteItem BoneList (lv_BonesList.SelectedIndices.Item[0] + 1)
 				lv_BonesList.Items.removeat lv_BonesList.SelectedIndices.Item[0]
+			)
+		)
+		on but_Clear pressed do
+		(
+			if BoneList.count > 0 then BoneList = #()
+			if lv_BonesList.Items.count > 0 then
+			(
+				lv_BonesList.Items.clear()
 			)
 		)
 	)
@@ -6309,13 +6354,17 @@ fn AddPedBonesListMod mdl =
 (
 	if (IsObjectAPedBonesList mdl) != undefined then
 	(
-		messagebox mdl.name
+		--messagebox mdl.name
 		max modify mode
 		boneHierarchyModifier = emptyModifier()
 		boneHierarchyModifier.name = "Ped Bones List"
 		addModifier mdl boneHierarchyModifier
 		custattributes.add boneHierarchyModifier PedSkeletonAttribute baseObject:false
 		--boneHierarchyModifier.PedSkelCustAttribute.AddBonesFromSkin()
-		SetCNTNodeType mdl "SKIN"
+		if IsObjectACNT mdl then (
+			SetCNTNodeType mdl "SKIN"
+		)
+
+		boneHierarchyModifier
 	)
 )

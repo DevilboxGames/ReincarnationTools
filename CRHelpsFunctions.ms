@@ -864,7 +864,7 @@ fn witepaddedstring f str =
 		writebyte f 0
 	)
 )
-fn readpaddedstring f version61OrLess:false=
+fn readpaddedstring f version60OrLess:false=
 (
 	str_length =  readlong f #unsigned
 	str_div4 = str_length / 4
@@ -875,7 +875,7 @@ fn readpaddedstring f version61OrLess:false=
 	)
 	str_added = str_div4 + str_plus1
 	extraPadding = 4
-	if version61OrLess do extraPadding=0
+	if version60OrLess do extraPadding=0
 	str_padding = (str_added * 4) - str_length + extraPadding
 	newString = readstring2 f str_length
 	for i = 1 to str_padding do

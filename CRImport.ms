@@ -34,8 +34,8 @@ fn BlankUnknownSkinData fileName =
 	mdlMajorVersion = readbyte f #unsigned
 	writebyte fw mdlMajorVersion
 	
-	version61orless=false
-	if mdlMinorVersion < 2 or mdlMajorVersion < 6 then version61orless=true
+	version60orless=false
+	if mdlMinorVersion < 1 or mdlMajorVersion < 6 then version60orless=true
 	for i=1 to 64 do
 	(
 		b = readbyte f
@@ -48,7 +48,7 @@ fn BlankUnknownSkinData fileName =
 	
 	for i=1 to materialCount do
 	(
-		materialName = readpaddedstring f version61OrLess:version61orless
+		materialName = readpaddedstring f version60OrLess:version60orless
 		witepaddedstring fw materialName
 	)
 	PREPfaceCount = readlong f #unsigned
@@ -272,8 +272,10 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 	mdlMinorVersion = readbyte f #unsigned
 	mdlMajorVersion = readbyte f #unsigned
 	version61orless=false
+	version60orless=false
 	version63orhigher=false
 	if mdlMinorVersion < 2 or mdlMajorVersion < 6 then version61orless=true
+	if mdlMinorVersion < 1 or mdlMajorVersion < 6 then version60orless=true
 	if mdlMinorVersion > 2 or mdlMajorVersion > 6 then version63orhigher=true
 	
 	checksum = readlong f #unsigned
@@ -316,7 +318,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 	--format "=======================\nHandling Materials for mesh %\n=======================\n" filename
 	if(materialCount == 1) then
 	(
-		materialName = readpaddedstring f version61OrLess:version61orless
+		materialName = readpaddedstring f version60OrLess:version60orless
 		append materialNames materialName
 			--format "Checking if material #% \"%\" already has been loaded\n" i materialName
 		if(finditem globalMaterialNames materialName) > 0 then
@@ -387,7 +389,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 		meshMaterial = multimaterial numsubs:materialCount
 		for i=1 to materialCount do
 		(
-			materialName = readpaddedstring f version61OrLess:version61orless
+			materialName = readpaddedstring f version60OrLess:version60orless
 			--format "matid: % matname: %\n" i materialName
 			append materialNames materialName
 			--format "Checking if material #% \"%\" already has been loaded\n" i materialName
@@ -920,7 +922,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				boneInfo[i] = #([v1X,v1Y,v1Z], [v2X,v2Y,v2Z], [v3X,v3Y,v3Z], p, c, s)
 				
 				
-				--format "%: \"%\" : { x:%   y:%   z:%} : { x:%   y:%   z:%} : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
+				format "%: \"%\" : \n\t{ x:%   y:%   z:%} \n\t{ x:%   y:%   z:%} \n\t{ x:%   y:%   z:%} \n\tp: % c: % s:% \n" i boneNames[i] v1X v1Y v1Z v2X v2Y v2Z v3X v3Y v3Z p c s
 				
 				--format "%: \"%\" : { x:%   y:%   z:%} p: % c: % s:% \n" i boneNames[i] v3X v3Y v3Z p c s
 			)
@@ -951,11 +953,13 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				unknown_su1 = readshort f #unsigned
 				unknown_su2 = readshort f #unsigned
 				
+				--format "%: [%, %, %, %] - [%,%,%] - % - % - % - %/% - %/%\n" boneNames[i] qX qY qZ qW posX posY posZ unknown_f unknown_l unknown_lu unknown_s1 unknown_s2 unknown_su1 unknown_su2
+
 				boneTransform = (quat qz -qx qw qy) as matrix3
 
 				if CarmaSettings.SetupForUE4 then (
 					bonePos =  [-posX, -posZ, posY] * 100
-					newBone = bonesys.createbone bonePos (bonePos + 5 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
+					newBone = bonesys.createbone bonePos (bonePos + 5 * boneTransform.row1) (normalize -boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
 				
 					newbone.width = 2
 					newbone.height = 2
@@ -964,12 +968,12 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				)
 				else (
 					bonePos =  [-posX, -posZ, posY]
-					newBone = bonesys.createbone bonePos (bonePos + 0.1 * boneTransform.row1) (normalize boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
+					newBone = bonesys.createbone bonePos (bonePos + 0.1 * boneTransform.row1) (normalize -boneTransform.row3) --bone name:boneNames[i] rotation:(quat qz -qx qw qy)
 				
 					newbone.width = 0.1
 					newbone.height = 0.1
 					listOfBones[i] = newBone
-					listOfBones[i].rotation = quat qz -qx qw qy
+					listOfBones[i].rotation	 = quat qz -qx qw qy
 				)
 
 				parentBone = boneInfo[i][4]+1
@@ -995,7 +999,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				
 				ik.SetAxisLimit newBone #rotational #{1, 2, 3}
 				ik.SetAxisEase newBone #rotational #{1, 2, 3}
-				--format "boneInfo[%] = %\n" i boneInfo[i]
+				--format "%: boneInfo[%] = %\n" boneNames[i] i boneInfo[i]
 				minLimit = ([boneInfo[i][1].x, boneInfo[i][1].y,boneInfo[i][1].z] * 360)-- * boneTransform
 				maxLimit = ([boneInfo[i][2].x, boneInfo[i][2].y,boneInfo[i][2].z] * 360)-- * boneTransform
 				
@@ -1008,13 +1012,15 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			)
 			
 			sortedBones = deepcopy boneNames
-			sort sortedBones
+			--sort sortedBones
 			oldbonestonewbones = #()
 			newbonestooldbones = #()
 			currentBones = #()
-				if listOfBones[(finditem boneNames "hips")].children.count > 0 then
+			local originBoneIndex = (finditem boneNames "hips")
+			if originBoneIndex == 0 then originBoneIndex = (finditem boneNames "Origin")
+				if listOfBones[originBoneIndex].children.count > 0 then
 				(
-					for i=1 to listOfBones[(finditem boneNames "hips")].children.count do append listOfBones[(finditem boneNames "hips")].children[i]
+					for i=1 to listOfBones[originBoneIndex].children.count do append listOfBones[originBoneIndex].children[i]
 				)
 			while currentBones.count > 0 do
 			(
@@ -1080,7 +1086,7 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				(
 					currentWeightIndex += 1
 					boneIndex = readshort f #unsigned
-					weightsPerVert[i][4][j] = boneIndex+1 --oldbonestonewbones[boneIndex + 1]
+					weightsPerVert[i][4][j] =  oldbonestonewbones[boneIndex + 1]--boneIndex+1 --
 				)
 			)
 			currentWeightIndex = 0
@@ -1168,6 +1174,11 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 				)
 				--format "\n\n"
 			)
+			
+			boneListModifier = AddPedBonesListMod m
+			boneListModifier.PedSkelCustAttribute.SetFromList listOfBones
+			select m
+
 			free boneNames
 			free weightsPerVert
 			free boneInfo
@@ -1177,6 +1188,8 @@ fn ImportMDL filename importTextures:false forcePREP:true useUniqueVerts:true us
 			free newbonestooldbones
 			free currentBones
 			--format "\nnum skin verts: %\n\n" (skinOps.GetNumberVertices skinMod)
+
+
 			
 		)
 	)

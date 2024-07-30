@@ -47,6 +47,24 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 			
 			foundFileName = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png"
 		)
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".png")) then
+		(
+			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Textures\\"+texturename+".png")
+			
+			foundFileName = CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".png"
+		)
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".tga")) then
+		(
+			format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Textures\\"+texturename+".tga")
+			
+			foundFileName = CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".tga"
+		)
+		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png")) then
+		(
+			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".png")
+			
+			foundFileName = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".png"
+		)
 		else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tga")) then
 		(
 			--format "Texture is already converted: %\n" (CarmaSettings.GamePath+"\\Data_Core\\Content\\Textures\\"+texturename+".tga")
@@ -86,6 +104,7 @@ fn LoadCRTexture folder texturename type:"bitmap" =
 			if (doesFileExist (folder+texturename+".tdx")) then TDXFilename = folder+texturename+".tdx"
 			else if (doesFileExist (folder+"NON_VT\\"+texturename+".tdx")) then TDXFilename = folder+"NON_VT\\"+texturename+".tdx"
 			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\"+texturename+".tdx"
+			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Textures\\"+texturename+".tdx"
 			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\NON_VT\\"+texturename+".tdx"
 			else if (doesFileExist (CarmaSettings.DataCorePath+"\\Content\\Textures\\particle\\"+texturename+".tdx")) then TDXFilename = CarmaSettings.DataCorePath+"\\Content\\Textures\\particle\\"+texturename+".tdx"
 			
@@ -376,7 +395,7 @@ fn GetMaterialFromMT2 folder materialName importTextures:false = (
 
 fn LoadImgTexture folder textureName = (
 	local foundFileName = undefined
-
+	format "Loading texture %\n" textureName
 	if (doesFileExist (folder+textureName+".png")) then
 	(
 		foundFileName = folder+textureName+".png"
@@ -392,6 +411,14 @@ fn LoadImgTexture folder textureName = (
 	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".tga")) then
 	(
 		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"+textureName+".tga"
+	)
+	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"+textureName+".tga")) then
+	(
+		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"+textureName+".tga"
+	)
+	else if (doesFileExist (CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"+textureName+".png")) then
+	(
+		foundFileName = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"+textureName+".png"
 	)
 	else if (doesFileExist (CarmaSettings.TexturePath+"\\FunsizeTextures\\"+textureName+".png")) then
 	(
@@ -479,6 +506,10 @@ fn CheckMTLExists folder materialName = (
 		folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"
 	)
 	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
+	if materialExists ==	false then (
+		folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"
+	)
+	materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
 
 	materialExists
 )
@@ -494,6 +525,10 @@ fn GetMaterialFromMTL folder materialName importTextures:false = (
 		materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
 		if materialExists ==	false then (
 			folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Textures\\"
+		)
+		materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL"))
+		if materialExists ==	false then (
+			folder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Textures\\"
 		)
 		if ((dotnetclass "System.IO.File").exists (folder+materialName+".MTL")) then
 		(

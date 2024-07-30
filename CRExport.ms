@@ -896,7 +896,7 @@ fn TestStripper mO =
 	
 	nm
 )
-fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTextures:false funsizeExport:false  createOctree:false =
+fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTextures:false funsizeExport:false  createOctree:false adduserData:true =
 (
 	OctreeVerts = #()
 	PREPVerts = #()
@@ -1900,17 +1900,24 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			printarrayinfull bonesList "Bones List: "
 			for i=1 to bonesList.count do
 			(
-				axisMin = (ik.getaxismin bonesList[i] #rotational)/360
-				-- Min Limit
-				writefloat f axisMin.x
-				writefloat f axisMin.y
-				writefloat f  axisMin.z
+				axisMin = (ik.getaxismax bonesList[i] #rotational)/360
+				if (bit.isFinite axisMin.x) == false then (
+					axisMin = [-3.40282e+38,-3.40282e+38,-3.40282e+38]
+				)
 				
-				axisMax = (ik.getaxismax bonesList[i] #rotational)/360
-				-- Max Limit
+				axisMax = (ik.getaxismin bonesList[i] #rotational)/360
+				if (bit.isFinite axisMax.x) == false then (
+					axisMax = [3.40282e+38,3.40282e+38,3.40282e+38]
+				)
+				-- Min Limit
 				writefloat f axisMax.x
 				writefloat f axisMax.y
 				writefloat f axisMax.z
+				-- Max Limit
+				writefloat f axisMin.x
+				writefloat f axisMin.y
+				writefloat f axisMin.z
+				format "% min: % - max: %\n" bonesList[i].Name (ik.getaxismin bonesList[i] #rotational) (ik.getaxismax bonesList[i] #rotational) 
 				
 				relativePos = bonesList[i].position
 				--format "Bone pos: %\n" relativepos
@@ -1919,13 +1926,13 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 					relativePos = relativePos * (inverse bonesList[i].parent.transform)
 				)
 				else relativePos = [0,0,0]
-				relativePos = ConvertToCRSpace relativePos
+				--relativePos = ConvertToCRSpace relativePos
 				
 				--format "Relative pos: %\n" relativepos
 				
-				writefloat f -relativePos.x
+				writefloat f relativePos.x
+				writefloat f relativePos.z
 				writefloat f relativePos.y
-				writefloat f -relativePos.z
 				
 				--format "Writing parent\n"
 				if bonesList[i].parent == undefined then writebyte f -1
@@ -1973,6 +1980,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 			
 			for i=1 to bonesList.count do
 			(
+				--  qz -qx qw qy
 				writefloat f -bonesList[i].rotation.y
 				writefloat f bonesList[i].rotation.w
 				writefloat f bonesList[i].rotation.x
@@ -2024,7 +2032,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 						)
 					)
 					--format "Vertex #% (%)\tboneID: %\tboneNum: %\n\t\"%\"\t%\n" i vertNum boneID boneNum boneName bonesList[boneNum+1]
-					writeshort f (boneId - 1) #unsigned
+					writeshort f (boneNum) #unsigned
 				)
 				
 			)
@@ -2054,7 +2062,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		writelong f sizeOfMDL
 		exceptionHappened=false
 		return 0*/
-		
+		if addUserData then (
 		writelong f USERflags
 		
 		--print "Writing USER Vertices"
@@ -2267,7 +2275,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		--print "Writing MDL Content Size"
 		--fclose f
 		--f = fopen mdl_name "rb"
-	
+		
 		--fseek f 0 #seek_end
 		sizeOfMDL = ftell f - 28
 		--format "Size Of MDL = %\n----------------\n" sizeOfMDL
@@ -2275,6 +2283,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 		--f = fopen mdl_name "ab"
 		fseek f 24 #seek_set
 		writelong f sizeOfMDL
+		)
 		exceptionHappened=false
 	)
 	catch

@@ -400,3 +400,29 @@ fn ImportAccessoryClicked sender arg = (
 	)
 )
 
+
+/* ==================================== *\
+|* ==== Mobile Import Callbacks ==== *|
+\* ==================================== */
+
+fn importMobileCarClicked sender arg = (
+
+
+)
+
+fn importMobileLevelClicked sender arg = (
+	file = GetOpenFileName caption:"Open Mobile Level" types:"Level Txt File (level*.txt)|level*.txt"
+
+	if file != undefined then (
+
+		local filePath = getFilenamePath file
+		local importTextures = CarmaSettings.ImportSettings.importTextures
+		local forcePrep = CarmaSettings.ImportSettings.UsePrepData
+		local useTriStrips = CarmaSettings.ImportSettings.UseTriStrips
+		local mergeSplits = CarmaSettings.ImportSettings.MergeSplits
+		local SpawnOctree = false
+		ImportFunsizeLevelTXT file
+	)
+	
+
+)

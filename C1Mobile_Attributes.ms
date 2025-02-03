@@ -115,6 +115,8 @@ FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAtt
 FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(0x5ea740db, 0x13fb809a) version:1
 (
 	parameters main rollout:FunsizeLevelTextRollout (
+		LevelCareerNum type:#integer ui:spn_LevelCareerNum range:[0,100,0]
+		LevelRaceNum type:#integer ui:spn_LevelRaceNum range:[0,30,0]
 		LevelNameKey type:#string ui:txt_LevelNameKey
 		LevelName type:#string ui:txt_LevelName
 		LevelDescriptionKey type:#string ui:txt_LevelDescriptionKey
@@ -164,6 +166,8 @@ FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(
 
 	)
 	rollout FunsizeLevelTextRollout "Level Text" (
+		spinner spn_LevelCareerNum "Career Mode Order" type:#integer range:[0,100,0]
+		spinner spn_LevelRaceNum "Race Number" type:#integer range:[0,30,0]
 		edittext txt_LevelNameKey "LevelNameKey" labelOnTop:true
 		edittext txt_LevelName "LevelName" labelOnTop:true
 		edittext txt_LevelDescriptionKey "LevelDescriptionKey" labelOnTop:true

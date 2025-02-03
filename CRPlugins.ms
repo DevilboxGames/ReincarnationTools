@@ -1789,7 +1789,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	category:"Carmageddon: Reincarnation"
 	version:2
 (
-	local AINodesObjects, AILinksObjects, IconMesh, thisNode, thisMesh, lastPlacedNode, currentPlacingNode, lastPlacedLink, intersectGrid, lastViewPoint, draggingMouse, activeRace
+	local AINodesObjects, AILinksObjects, IconMesh, thisNode, thisMesh, lastPlacedNode, currentPlacingNode, lastPlacedLink, intersectGrid, lastViewPoint, draggingMouse, activeRace, tmpMat
 	
 	parameters RouteParamBlock rollout: RouteParameters
 	(
@@ -2180,6 +2180,11 @@ plugin simpleObject CarmaHelper_LevelRoutes
 	on postLoad do
 	(
 		thisNode = NodeStorage.node
+		if tmpMat != undefined then
+		(
+			thisNode.material = tmpMat
+			tmpMat = undefined
+		)
 		AINodesObjects = #()
 		AILinksObjects = #()
 	)
@@ -2225,8 +2230,11 @@ plugin simpleObject CarmaHelper_LevelRoutes
 			setNumFaces thisMesh 2
 			setFace thisMesh 1 faces[1]
 			setFace thisMesh 2 faces[2]
-			
-			thisNode.material = iconMat
+			tmpMat = iconMat
+			if thisNode != undefined then
+			(
+				thisNode.material = iconMat
+			)
 
 			setmesh thisMesh vertices:#([0.5,0.5,0],[0.5,-0.5,0],[-0.5,0.5,0],[-0.5,-0.5,0]) faces:#([1,2,3],[2,4,3])
 			

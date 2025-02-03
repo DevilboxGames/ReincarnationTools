@@ -19,14 +19,13 @@ fn AddLevelToolsUI parentLayoutHelper = (
 			SetClickHandler pathsToolButton OnPathsToolButtonPressed
 
 			local accessoeiesToolButton = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
-			accessoeiesToolButton.text = "Accessry Tool"
-			accessoeiesToolButton.name = "accessoeiesToolButton"
+			accessoeiesToolButton.text = "Accessory Tool"
+			accessoeiesToolButton.name = "accessoriesToolButton"
 			fn OnAccessoryButtonPressed btn ev = (
 				OpenAccessoryPlacementFloater()
 			)
 			SetClickHandler accessoeiesToolButton OnAccessoryButtonPressed
 		)
-		layoutHelper.EndHorizontalGroup()
 	)
 	layoutHelper.EndVerticalGroup()
 )

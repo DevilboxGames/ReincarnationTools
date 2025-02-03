@@ -252,7 +252,7 @@ fn ConvertC1CarToMobile c1txtfile C1CarName:"ivan" prefix:"C1SP" doexport:true =
  			funsizeCarMod.CarDescription = opponent.Bio
  			funsizeCarMod.DriverName = opponent.DriverName
  			funsizeCarMod.WastedName = opponent.DriverShortName + " Wasted"
- 			funsizeCarMod.NaughtToSixty = (filterstring opponent.To60 " ")[2]
+ 			funsizeCarMod.NaughtToSixty = (filterstring opponent.To60 " ")[2] as float
  		)
  	)
 

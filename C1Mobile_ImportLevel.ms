@@ -17,6 +17,8 @@ fn ImportFunsizeLevelTXT filename  = (
 	local levelFolder = pathClass.GetDirectoryName filename
 
 	local levelNumString = (filterstring (pathClass.GetFileNameWithoutExtension fileName) "_")[2]
+		
+	--if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
 	local LevelLayerName = "sys_level_"+(levelNumString)
 	local LevelPedLayerName = LevelLayerName + "_ped"
 	local LevelPowerupLayerName = LevelLayerName + "_powerups"
@@ -58,7 +60,7 @@ fn ImportFunsizeLevelTXT filename  = (
 	for i = 0 to levelTxt.Accessories.count - 1 do (
 		local accData = levelTxt.Accessories.item[i]
 		local accTransform = ConvertMatrixFromCRSpace (ToxicRagersMatrix3DToMaxMatrix3 accData.Transform)
-		PlaceAccessory accTransform accData.Name accData.InstanceName (ToxicRagersColourToMaxColor accData.InstanceColour)
+		PlaceMobileAccessory accTransform accData.Name accData.InstanceName (ToxicRagersColourToMaxColor accData.InstanceColour)
 	)
 
 	for i = 0 to levelTxt.Cops.count - 1 do (
@@ -94,7 +96,7 @@ fn ImportFunsizeLevelTXT filename  = (
 	)
 	(layerManager.getLayerFromName LevelPathsLayerName).current = true
 
-	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt")))
+	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt"))) LevelPathsLayerName
 
 	currentLayer.current = true
 

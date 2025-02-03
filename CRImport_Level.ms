@@ -344,13 +344,13 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	PrintArrayInFull UniqueAccessoryList "List Of Accessories: "
 	--format "The Level.lol file: %\n" lolscript
 )
-fn ParseLevelRoutesTXT txtFileName =
+fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" =
 (
 	oldCurrentLayer = LayerManager.current
-	routesLayer = LayerManager.getLayerFromName "sys_LevelRoutes"
+	routesLayer = LayerManager.getLayerFromName layerToUse
 	if routesLayer == undefined then
 	(
-		routesLayer = LayerManager.newLayerFromName "sys_LevelRoutes"
+		routesLayer = LayerManager.newLayerFromName layerToUse
 	)
 	routesLayer.current = true
 	

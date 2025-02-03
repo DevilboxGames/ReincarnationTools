@@ -554,6 +554,13 @@ fn CreateMenu uiForm = (
 	local importPed = importSubMenu.MenuItems.Add("Import &Ped")
 	local importPedToDo = importPed.MenuItems.Add("===ToDo===")
 
+	importSubMenu.MenuItems.Add("-")
+	local importMobileItem = importSubMenu.MenuItems.Add("Mobile")
+	local importMobileCarItem = importMobileItem.MenuItems.Add("Import Car")
+	SetClickHandler importMobileCarItem importMobileCarClicked
+
+	local importMobileLevelItem = importMobileItem.MenuItems.Add("Import Level")
+	SetClickHandler importMobileLevelItem importMobileLevelClicked
 
 	local exportSubMenu = fileMenu.MenuItems.Add("&Export")
 	local exportMdl = exportSubMenu.MenuItems.Add("Export &MDL")

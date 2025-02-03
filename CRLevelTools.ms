@@ -44,9 +44,12 @@ fn ZE_Cam cam objs =
 	)
 	cam.fov=fov-- set the camera's fov to the new fov value
 )
-fn GenerateAccessoryScreenshot accessoryName rootObject = (
-	screenshotPath = (getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\"+accessoryName+".png"
+fn GenerateAccessoryScreenshot accessoryName rootObject mobile:false = (
+	local screenshotPath = (getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\"+accessoryName+".png"
 
+	if mobile then (
+		screenshotPath = (getFileNamePath (getThisScriptFilename()))+"UI\\MobileAccessories\\"+accessoryName+".png"
+	)
 	oldFramerate= frameRate
 	frameRate = 5
 
@@ -108,18 +111,29 @@ fn GenerateAccessoryScreenshot accessoryName rootObject = (
 	--delete ground
 
 )
-fn GenerateSingleAccessoryScreenshot accessoryName = (
-	accessoryFolder = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryName
+fn GenerateSingleAccessoryScreenshot accessoryName mobile:false = (
+	local accessoryFolder = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"+accessoryName
+
+	if mobile then (
+		
+		accessoryFolder = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Tracks\\Accessories\\"+accessoryName
+	)
+
 	rootObject = ImportCNT (accessoryFolder+"\\accessory.cnt") importTextures:true forcePREP:true useTriStrips:false mergeMDLs:false mergeSplits:true
-	GenerateAccessoryScreenshot accessoryName rootObject
+	GenerateAccessoryScreenshot accessoryName rootObject mobile:mobile
 			
 )
-fn GenerateAllAccessoryScreenshots startIndex:1 limit:10 = (
+fn GenerateAllAccessoryScreenshots startIndex:1 limit:10 mobile:false = (
 	global CarmaSettings
 	local accessoriesPath = CarmaSettings.DataCorePath+"\\Content\\Accessories\\"
+
+	if mobile then (
+		accessoriesPath = CarmaSettings.FunsizeSettings.DataFolder+"Data\\Content\\Tracks\\Accessories\\"
+
+	)
 	accessoryFolders = getDirectories (accessoriesPath+"*")
 	numAccessories = accessoryFolders.count
-	format "Converting % accessories from %\n" numAccessories accessoriesPath
+	
 	i = startIndex
 	numThumbnailed = 0
 	numErrors = 0
@@ -127,12 +141,12 @@ fn GenerateAllAccessoryScreenshots startIndex:1 limit:10 = (
 		numAccessories = limit
 	)
 
-	format "Converting % accessories from %\n" numAccessories accessoriesPath
+	format "Rendering % accessories from %\n" numAccessories accessoriesPath
 	while i <= numAccessories do (
 		accessoryFolder = accessoryFolders[i]
 		if (getFiles (accessoryFolder+"\\accessory.cnt")) != 0 then (
 			rootObject = ImportCNT (accessoryFolder+"\\accessory.cnt") importTextures:true forcePREP:true useTriStrips:false mergeMDLs:false mergeSplits:true
-			GenerateAccessoryScreenshot (GetFolderName accessoryFolder) rootObject
+			GenerateAccessoryScreenshot (GetFolderName accessoryFolder) rootObject mobile:mobile
 			numThumbnailed = numThumbnailed + 1
 			delete objects
 		)
@@ -160,6 +174,79 @@ fn GenerateTestGrid size:[10,10,5] = (
 	)
 )
 
+fn ReplaceWithAccessory accessoryCntPath accessoryName objRoot = (
+
+	local currentLayer = LayerManager.current
+	local accLibraryLayer = LayerManager.getLayerFromName "sys_AccessoryLibrary"
+
+	local accToInstance = undefined
+
+	if accLibraryLayer != undefined then (
+		local refLayer = ILayerManager.getLayerObject "sys_AccessoryLibrary"
+		local layerDeps = refs.dependents refLayer
+		local layerNodes = for n in layerDeps where (isKindOf n node) == true collect n
+		for obj in layerNodes where obj.name == accessoryName and obj.parent == undefined do (
+			accToInstance = obj
+		)
+
+	)
+	else (
+		accLibraryLayer = LayerManager.newLayerFromName "sys_AccessoryLibrary"
+		accLibraryLayer.isHidden = true
+		accLibraryLayer.renderable = false
+	)
+
+	if accToInstance == undefined then (
+		accLibraryLayer.current = true
+
+		accToInstance = ImportAccessory accessoryCntPath
+		accToInstance.name = accessoryName
+		currentLayer.current = true
+	)
+
+	local instancedObjects = #()
+	Maxops.CloneNodes accToInstance expandHierarchy:true newNodes:&instancedObjects cloneType:#instance
+	for obj in instancedObjects do currentLayer.addnode obj
+
+	local instancedAccessory = instancedObjects[1]
+
+	local existingChildren = join #() objRoot.children
+	for obj in existingChildren do existingChildren = join existingChildren obj.children
+
+	instancedAccessory.transform = objRoot.transform
+	instancedAccessory.parent = objRoot
+
+	instancedAccessory
+)
+
+fn ReplaceWithFunsizeAccessory accessoryName objRoot = (
+	global CarmaSettings
+
+	local accessoryCntPath = CarmaSettings.FunsizeSettings.DataFolder
+	if accessoryCntPath[accessoryCntPath.count] != "\\" then accessoryCntPath = accessoryCntPath + "\\"
+	accessoryCntPath = accessoryCntPath + "DATA\\CONTENT\\TRACKS\\ACCESSORIES\\" + accessoryName + "\\accessory.cnt" 
+	if (dotnetclass "System.IO.File").exists accessoryCntPath then (
+		ReplaceWithAccessory accessoryCntPath accessoryName objRoot
+	)
+	else (
+		format "Could not find %\n" accessoryCntPath
+	)
+)
+fn PlaceMobileAccessory trans accessoryName instanceName instanceColour = (
+
+	local accNull = CreateNewNULLNode trans (instanceName as string) addAttributes:true nodeType:"IGNORE"
+	local accMod = AddFunsizeAccessoryItemAttributes accNull
+
+	accMod.InstanceColour = instanceColour
+	if instanceName != undefined then (
+		accMod.InstanceName = instanceName
+	)
+	accMod.AccessoryType = accessoryName
+
+	ReplaceWithFunsizeAccessory accessoryName accNull
+
+)
+
 struct AccessoryListItem (
 	Name,
 	Path,
@@ -179,8 +266,9 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 (
 	local tempAccessories, tempLayer
 	group "Tools" (
-		button btn_PlaceAccessory "Place Accessory" across:2
-		dropdownlist dpdn_Tool "Current Tool" items:#("Single", "Brush", "Line", "Curve", "Scatter", "Stamp")
+		button btn_PlaceAccessory "Place Accessory" across:1
+		dropdownlist dpdn_AccessoryType "Accessory Type" items:#("Common", "Level", "Powerups", "Mobile") across:2
+		dropdownlist dpdn_Tool "Current Tool" items:#("Single", "Brush", "Line", "Curve", "Scatter", "Stamp") across:2
 		edittext txt_Layer "Race Layer" text:"Level"
 	)
 	group "Placement Settings" (
@@ -258,12 +346,23 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 			)
 		)
 	)
-	on accessory_pallete_rollout open do (
-		global AccessoriesListItems
-		lv_Accessories.GameDirectory = CarmaSettings.GamePath
-		lv_Accessories.IconDirectory =  (getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\"
+	fn SetupAccessoriesList gameDir iconDir listType = (
+		
+		lv_Accessories.ListType = listType
+		lv_Accessories.GameDirectory = gameDir
+		lv_Accessories.IconDirectory =  iconDir
 		lv_Accessories.Size = dotNetObject "System.Drawing.Size" 250 300
 		lv_Accessories.GetAccessoriesList()
+		UpdateToolsUI()
+	)
+	on accessory_pallete_rollout open do (
+		global AccessoriesListItems
+		--lv_Accessories.ListType = (dotnetclass "CMDControls.AccessoryList+AccessoryListType").Common
+		--lv_Accessories.GameDirectory = CarmaSettings.GamePath
+		--lv_Accessories.IconDirectory =  (getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\")
+		--lv_Accessories.Size = dotNetObject "System.Drawing.Size" 250 300
+		--lv_Accessories.GetAccessoriesList()
+		SetupAccessoriesList CarmaSettings.GamePath ((getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\") (dotnetclass "CMDControls.AccessoryList+AccessoryListType").Common
 		UpdateToolsUI()
 		
 	)
@@ -271,6 +370,21 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 		lv_Accessories.Size = dotNetObject "System.Drawing.Size" size.x 300
 	)
 
+	on dpdn_AccessoryType selected i do (
+		if i == 4 then (	-- Mobile
+			SetupAccessoriesList CarmaSettings.FunsizeSettings.DataFolder ((getFileNamePath (getThisScriptFilename()))+"UI\\MobileAccessories\\") (dotnetclass "CMDControls.AccessoryList+AccessoryListType").Mobile
+		)
+		else if i == 3 then (	-- Powerups
+
+		)
+		else if i == 2 then (	-- Level
+
+		)
+		else ( -- Common
+			SetupAccessoriesList CarmaSettings.GamePath ((getFileNamePath (getThisScriptFilename()))+"UI\\Accessories\\") (dotnetclass "CMDControls.AccessoryList+AccessoryListType").Common
+		)
+		UpdateToolsUI()
+	)
 	on dpdn_Tool selected i do (
 		UpdateToolsUI()
 	)
@@ -293,15 +407,26 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 		)
 	)
 	fn PlaceAccessory accessoryName accessoryFilename trans isPowerup:false = (
-		local accessory = CarmaHelper_AccessoryPlaceholder()
-		accessory.name = accessoryName
-		accessory.isPowerup = isPowerup
-		accessory.accessoryType = accessoryName
-		accessory.accessoryFileName = accessoryFilename + "\\accessory.cnt"
-		accessory.transform = trans
 		
-		tempLayer.addnode accessory
-		append tempAccessories accessory
+			local accessory = CarmaHelper_AccessoryPlaceholder()
+			accessory.name = accessoryName
+			accessory.isPowerup = isPowerup
+			accessory.accessoryType = accessoryName
+			accessory.accessoryFileName = accessoryFilename + "\\accessory.cnt"
+			accessory.transform = trans
+			/*
+			if dpdn_AccessoryType.Selected == "Mobile" then (
+				local accMod = AddFunsizeAccessoryItemAttributes accessory
+	
+				accMod.InstanceColour = color 255 255 255
+				accMod.InstanceName = accessoryName	
+				accMod.AccessoryType = accessoryName
+			
+			)*/
+
+			tempLayer.addnode accessory
+			append tempAccessories accessory
+		
 	)
 	fn GetMouseObjectHit viewPoint = (
 		local foundObj = undefined
@@ -637,71 +762,13 @@ rollout accessory_pallete_rollout "Accessory Placement" width:300 height:650
 	)
 )
 
-fn OpenAccessoryPlacementFloater = (
+fn OpenAccessoryPlacementFloater mobile:false = (
 	if accessory_pallete_rollout.open then (
 		DestroyDialog accessory_pallete_rollout
 	)
+
 	floater = createDialog accessory_pallete_rollout style:#(#style_titlebar, #style_border, #style_sysmenu, #style_resizing)
 	cui.RegisterDialogBar accessory_pallete_rollout style:#(#cui_floatable,#cui_dock_left,#cui_handles) minSize:[300,500] maxSize:[-1,-1]
 
 	floater
-)
-
-fn ReplaceWithAccessory accessoryCntPath accessoryName objRoot = (
-
-	local currentLayer = LayerManager.current
-	local accLibraryLayer = LayerManager.getLayerFromName "sys_AccessoryLibrary"
-
-	local accToInstance = undefined
-
-	if accLibraryLayer != undefined then (
-		local refLayer = ILayerManager.getLayerObject "sys_AccessoryLibrary"
-		local layerDeps = refs.dependents refLayer
-		local layerNodes = for n in layerDeps where (isKindOf n node) == true collect n
-		for obj in layerNodes where obj.name == accessoryName and obj.parent == undefined do (
-			accToInstance = obj
-		)
-
-	)
-	else (
-		accLibraryLayer = LayerManager.newLayerFromName "sys_AccessoryLibrary"
-		accLibraryLayer.isHidden = true
-		accLibraryLayer.renderable = false
-	)
-
-	if accToInstance == undefined then (
-		accLibraryLayer.current = true
-
-		accToInstance = ImportAccessory accessoryCntPath
-		accToInstance.name = accessoryName
-		currentLayer.current = true
-	)
-
-	local instancedObjects = #()
-	Maxops.CloneNodes accToInstance expandHierarchy:true newNodes:&instancedObjects cloneType:#instance
-	for obj in instancedObjects do currentLayer.addnode obj
-
-	local instancedAccessory = instancedObjects[1]
-
-	local existingChildren = join #() objRoot.children
-	for obj in existingChildren do existingChildren = join existingChildren obj.children
-
-	instancedAccessory.transform = objRoot.transform
-	instancedAccessory.parent = objRoot
-
-	instancedAccessory
-)
-
-fn ReplaceWithFunsizeAccessory accessoryName objRoot = (
-	global CarmaSettings
-
-	local accessoryCntPath = CarmaSettings.FunsizeSettings.DataFolder
-	if accessoryCntPath[accessoryCntPath.count] != "\\" then accessoryCntPath = accessoryCntPath + "\\"
-	accessoryCntPath = accessoryCntPath + "DATA\\CONTENT\\TRACKS\\ACCESSORIES\\" + accessoryName + "\\accessory.cnt" 
-	if (dotnetclass "System.IO.File").exists accessoryCntPath then (
-		ReplaceWithAccessory accessoryCntPath accessoryName objRoot
-	)
-	else (
-		format "Could not find %\n" accessoryCntPath
-	)
 )

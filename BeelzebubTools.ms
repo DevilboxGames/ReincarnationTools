@@ -41,10 +41,11 @@ fileIn "CRImportRBA.ms"
 
 filein "CRLights.ms"
 
+fileIn "C1Mobile_Scripts.ms"
+
 fileIn "CRWheelTools.ms"
 fileIn "CRLevelTools.ms"
 
-fileIn "C1Mobile_Scripts.ms"
 fileIn "CRToolsUI.ms"
 
 /*

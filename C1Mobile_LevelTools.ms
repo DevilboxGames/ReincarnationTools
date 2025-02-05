@@ -44,7 +44,7 @@ fn PlaceCopHelper copType location = (
 	copHelper
 )
 
-fn PlacePed pedType pedPoints firstPoint = (
+fn PlacePed pedType pedPoints loopCount = (
 
 	local pedspline = SplineShape()
 	pedspline.pos = pedPoints[1]
@@ -59,7 +59,7 @@ fn PlacePed pedType pedPoints firstPoint = (
 	)
 	local pedMod = AddFunsizePedAttributes pedspline
 	pedMod.PedType = pedType
-	pedMod.InitialPoint = firstPoint
+	pedMod.LoopCount = LoopCount
 
 	local pedNull = CreateNewNULLNode (matrix3 1) (pedType as string) addAttributes:true nodeType:"IGNORE"
 	pedNull.pos = pedPoints[1]
@@ -323,7 +323,7 @@ fn SetFunsizeLevelTXTFromModifier levelRoot careersTxt textXml levelNum = (
 
 	--levelModifier.GridHelper =  nodeTransformMonitor node:gridHelper forwardTransformChangeMsgs:false
 
-	levelTxt.MapMatrix = MaxMatrix3ToxicRagersMatrix3D levelModifier.MapMatrix 
+	levelTxt.MapMatrix = MaxMatrix3ToToxicRagersMatrix3D levelModifier.MapMatrix 
 	levelTxt.Fog = MaxColorToToxicRagersColour levelModifier.FogColour
 	levelTxt.Lighting = MaxColorToToxicRagersColour levelModifier.LightingColour
 	levelTxt.Headlights = levelModifier.Headlights == true

@@ -96,7 +96,7 @@ fn ImportFunsizeLevelTXT filename  = (
 	)
 	(layerManager.getLayerFromName LevelPathsLayerName).current = true
 
-	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt"))) LevelPathsLayerName
+	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt"))) layerToUse:LevelPathsLayerName
 
 	currentLayer.current = true
 

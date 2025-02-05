@@ -34,7 +34,7 @@ fn FindAndLoadLevelAccessory accessoryType levelPath isPowerup:false=
 		)
 		
 	)
-	--if accessory.accessoryFileName != undefied  and accessory.accessoryFileName != "" then 
+	--if accessory.accessoryFileName != undefined  and accessory.accessoryFileName != "" then 
 		--format "Found accessory in: %\n" accessory.AccessoryFileName
 	--else
 		--format "No accessory found matching %\n" accessoryType

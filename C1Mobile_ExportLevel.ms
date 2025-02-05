@@ -99,8 +99,13 @@ fn ExportFunsizeLevelTXT levelRoot filename  = (
 
 )
 
-fn Funsize_AddLeveltoXML levelInfoModifier = (
+fn Funsize_AddLeveltoXML levelInfoModifier overridePath:unsupplied = (
 	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+
+	if overridePath != unsupplied then (
+		FunsizeDataPath = overridePath
+	)
+
 	local xmlPath = pathClass.Combine #(FunsizeDataPath, "Data", "Content","Text", "Text.xml")
 	local textXml = (dotnetobject "ToxicRagers.CarmageddonMobile.Formats.TextXml" xmlPath)
 
@@ -112,7 +117,7 @@ fn Funsize_AddLeveltoXML levelInfoModifier = (
 	textXml.Save xmlPath
 )
 
-fn Funsize_UpdateCareersTXT levelModifier levelInfoModifier = (
+fn Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:unsupplied = (
 
 	
 	local levelFolder = levelModifier.LevelFolderName
@@ -120,6 +125,12 @@ fn Funsize_UpdateCareersTXT levelModifier levelInfoModifier = (
 	
 	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
 
+	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+	
+	if overridePath != unsupplied then (
+		FunsizeDataPath = overridePath
+	)
+	
 	local careersTxtPath = pathClass.Combine #(FunsizeDataPath, "Data", "Content", "careermode.txt")
 	local careersTxt = (dotnetclass "ToxicRagers.CarmageddonMobile.Formats.CareerModeTxt").Load careersTxtPath
 	local levelCareerInfo = careersTxt.FindLevel folderName ("level_"+levelNumString+".txt")
@@ -189,7 +200,7 @@ fn Funsize_CollectAccessoriesForLevelTxt levelModifier levelTxt = (
 	local LevelLayerName = "sys_level_"+(levelNumString)
 	local LevelPedLayerName = LevelLayerName + "_ped"
 	local LevelPowerupLayerName = LevelLayerName + "_powerups"
-	local LevelPathsLayerName = LevelLayerName + "_paths"
+	local LevelPathsLayerName = "sys_LevelRoutes"
 
 	local accessoryNodes
 	local pedNodes
@@ -199,26 +210,92 @@ fn Funsize_CollectAccessoriesForLevelTxt levelModifier levelTxt = (
 	(LayerManager.getLayerFromName LevelLayerName).nodes &accessoryNodes
 	(LayerManager.getLayerFromName LevelPedLayerName).nodes &pedNodes
 	(LayerManager.getLayerFromName LevelPowerupLayerName).nodes &powerupNodes
-	(LayerManager.getLayerFromName LevelPathsLayerName).nodes &pathNodes
 
 	for accessoryNode in accessoryNodes do (
 		local accModifier = accessoryNode.Modifiers["Funsize Accessory"]
-		local accTransform = MaxMatrix3ToToxicRagersMatrix3D (ConvertMatrixToCRSpace accData.Transform)
-		local accData = dotnetObject "ToxicRages.CarmageddonMobile.Formats.AccessoryDef"
-		accData.Name = accModifier.AccessoryType
-		accData.InstanceName = accModifier.InstanceName
-		accData.InstanceColour = MaxColorToToxicRagesColour accModifier.InstanceColo
-		
-		levelTxt.Accessories.Add accData
+		if accModifier != undefined then (
+			local accTransform = MaxMatrix3ToToxicRagersMatrix3D (ConvertMatrixToCRSpace accData.Transform)
+			local accData = dotnetObject "ToxicRages.CarmageddonMobile.Formats.AccessoryDef"
+			accData.Name = accModifier.AccessoryType
+			accData.InstanceName = accModifier.InstanceName
+			accData.InstanceColour = MaxColorToToxicRagersColour accModifier.InstanceColo
+			
+			levelTxt.Accessories.Add accData
+		)
+		else (
+			local copModifier = accessoryNode.Modifiers["Funsize Cop"]
+			if copModifier != undefined then (
+				local copData = dotnetObject "ToxicRagers.CarmageddonMobile.Formats.CopDef"
+				copData.Type = (dotnetclass "ToxicRagers.CarmageddonMobile.Formats.CopDef+CopType").NORM
+				if copModifier.CopType == "APC" then (
+					copData.Type = (dotnetclass "ToxicRagers.CarmageddonMobile.Formats.CopDef+CopType").APC
+				)
+
+				copData.Position = MaxPoint3ToToxicRagersVector3 (ConvertCopToFunsize accessoryNode.Position)
+				levelTxt.Cops.Add copData
+			)
+		)
 	)
 
-
+	for pedNode in pedNodes do (
+		local pedModifier = pedNode.Modifiers["Funsize Ped"]
+		if pedModifier != undefined then (
+			local pedData = dotnetObject "ToxicRagers.CarmageddonMobile.Formats.PedestrianDef"
+			pedData.LoopCount = pedModifier.LoopCount
+			pedData.PedType = pedModifier.PedType
+			pedData.PathCount = numKnots pedNode
+			for i = 1 to pedData.PathCount do (
+				local knotPoint = MaxPoint3ToToxicRagersVector3 (ConvertToCRSpace (getknotpoint pedNode 1 i))
+				pedData.Paths.Add knotPoint
+			)
+		)
+	)
+	for powerupNode in powerupNodes do (
+		local powerupModifier = powerupNode.Modifiers["Funsize Powerup"]
+		if powerupModifier != undefined then (
+			local pupData = dotnetObject "ToxicRagers.CarmageddonMobile.Formats.PowerupDef"
+			local pupTrans = MaxMatrix3ToToxicRagersMatrix3D (ConvertMatrixToCRSpace pupDef.Transform)
+			pupData.Transform = pupTrans
+			pupData.RespawnTime = powerupModifier.RespawnTime
+			pupData.PowerupCount = powerupModifier.PowerupCount
+			for i = 1 to pupData.PowerupCount do (
+				pupData.PowerupNames.Add powerupModifier.PowerupTypes
+			)
+		)
+	)
 )
 
-fn Funsize_ExportLevelTxt levelModifier = (
-	
+fn Funsize_ExportLevelPaths levelModifier overridePath:unsupplied = (
 
-	folderName = levelModifier.LevelFolderName
+	local levelFolder = levelModifier.LevelFolderName
+	local levelNumString = (levelInfoModifier.LevelRaceNum as string)
+	
+	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
+
+	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+	
+	if overridePath != unsupplied then (
+		FunsizeDataPath = overridePath
+	)
+
+	
+)
+
+fn Funsize_ExportLevelTxt levelModifier overridePath:unsupplied = (
+
+	
+	local levelFolder = levelModifier.LevelFolderName
+	local levelNumString = (levelInfoModifier.LevelRaceNum as string)
+	
+	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
+
+	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+	
+	if overridePath != unsupplied then (
+		FunsizeDataPath = overridePath
+	)
+	
+	local careersTxtPath = pathClass.Combine #(FunsizeDataPath, "Data", "Content", "careermode.txt")
 	/*
 	levelModifier.LevelFileName = "level_"+(levelNumString)+".txt"
 	levelModifier.LevelLayerName = "sys_level_"+(levelNumString)
@@ -227,6 +304,9 @@ fn Funsize_ExportLevelTxt levelModifier = (
 	levelModifier.LevelPathsLayerName = levelModifier.LevelLayerName + "_paths"
 */
 	--levelModifier.LevelName = FunsizeGetValueFromXml (folderName+"_"+levelNumString)
+
+	local levelTxt = dotnetobject "ToxicRagers.CarmageddonMobile.Formats.Level"
+
 	if levelModifier.Environment != undefined then (
 		levelTxt.Environment = levelModifier.Environment
 	)
@@ -252,7 +332,7 @@ fn Funsize_ExportLevelTxt levelModifier = (
 
 	--levelModifier.GridHelper =  nodeTransformMonitor node:gridHelper forwardTransformChangeMsgs:false
 
-	levelTxt.MapMatrix = MaxMatrix3ToxicRagersMatrix3D levelModifier.MapMatrix 
+	levelTxt.MapMatrix = MaxMatrix3ToToxicRagersMatrix3D levelModifier.MapMatrix 
 	levelTxt.Fog = MaxColorToToxicRagersColour levelModifier.FogColour
 	levelTxt.Lighting = MaxColorToToxicRagersColour levelModifier.LightingColour
 	levelTxt.Headlights = levelModifier.Headlights == true
@@ -290,26 +370,29 @@ fn Funsize_ExportLevelTxt levelModifier = (
 		levelTxt.MatMods.Add matMod
 	)
 
-
+	Funsize_CollectAccessoriesForLevelTxt levelModifier levelTxt
 
 	levelTxt.Save
 )
 
-fn ExportFunsizeLevel levelRoot nolaunch: false onlyAllowCars: = (
+fn ExportFunsizeLevel levelRoot nolaunch:false overridePath:unsupplied = (
 	global CarmaSettings
-	FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+	
+	if overridePath != unsupplied then (
+		FunsizeDataPath = overridePath
+	)
+	
 	--for mat in scenematerials do format "%: %\n" mat.name (classof mat)
 	ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:true
 	
-	Funsize_ExportHUDScript FunsizeDataPath carModifier.carname carRoot.Modifiers["Funsize HUD Damage"]
-	Funsize_UpdateCarSpecs FunsizeDataPath carModifier.carname carModifier
-	Funsize_QuickRaceCars FunsizeDataPath carModifier.carname carModifier onlyAllowCars: onlyAllowCars
-	Funsize_ExportCarTXTFile (FunsizeDataPath+"Data\\Content\\Vehicles\\" + carModifier.carname + "\\car.txt") carRoot
 	local levelModifier = levelRoot.modifiers["Funsize Level Settings"] 
 	local levelInfoModifier = levelRoot.modifiers["Funsize Level Info"] 
 
-	Funsize_AddLeveltoXML levelInfoModifier
-	Funsize_UpdateCareersTXT levelModifier levelInfoModifier
+	Funsize_AddLeveltoXML levelInfoModifier overridePath:overridePath
+	Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:overridePath
+	Funsize_ExportLevelPaths levelModifier overridePath:overridePath
+	Funsize_ExportLevelTxt levelModifier overridePath:overridePath
 
 	levelFolder = (FunsizeDataPath+"Data\\Content\\Tracks\\Levels\\" + levelModifier.LevelFolderName + "\\")
 

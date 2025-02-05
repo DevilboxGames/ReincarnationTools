@@ -2,11 +2,11 @@ FunsizePedDetailsAttribute = attributes FunsizePedDetailsCustAttribute attribid:
 (
 	parameters main rollout:FunsizePedDetailsRollout (
 		PedType type:#string ui:txt_PedType default:"PED_1"
-		InitialPoint type:#integer ui:spn_InitialPoint default:1
+		LoopCount type:#integer ui:spn_LoopCount default:1
 	)
 	rollout FunsizePedDetailsRollout "Ped Details" (
 		edittext txt_PedType "Ped Type"
-		spinner spn_InitialPoint "Initial Point" range:[1,1000,1]
+		spinner spn_LoopCount "Loop Count" range:[1,1000,1]
 
 	)
 )

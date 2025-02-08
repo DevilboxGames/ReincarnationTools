@@ -411,7 +411,7 @@ fn importMobileCarClicked sender arg = (
 )
 
 fn importMobileLevelClicked sender arg = (
-	file = GetOpenFileName caption:"Open Mobile Level" types:"Level Txt File (level*.txt)|level*.txt"
+	file = GetOpenFileName caption:"Open Mobile Level" types:"Level CNT File (level.cnt)|level.cnt"
 
 	if file != undefined then (
 

@@ -263,6 +263,7 @@ fn ToolsStartup =
 				local gibbedAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Duels.FileFormats.dll")
 				local gibbedIOAssembly = dotNet.loadAssembly (dllpath+"Gibbed.IO.dll")
 				local gibbedSquishAssembly = dotNet.loadAssembly (dllpath+"Gibbed.Squish.dll")
+				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll")
 				local imgAssembly = dotNet.loadAssembly (dllpath+"IMGToolLib.dll")
 				--local gibbedAssembly = dotNet.loadAssembly CarmaSettings.GibbedTools
 				local dotNetType = gibbedAssembly.GetType "Gibbed.Stainless.TDXConvertLib.ConvertTDX"
@@ -277,9 +278,8 @@ fn ToolsStartup =
 				local imgtooldotNetType = imgAssembly.GetType "IMGToolLib.IMGTool"
 				local imgConvertClass = (dotnetClass "System.Activator").CreateInstance imgtooldotNetType
 
-				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"toxicragers.dll")
 				local toxicRagersAssembly = dotnet.loadAssembly (dllpath+"CMDControls.dll")
-		format "GamePath: %\nTexturePath: %\n GibbedTools: %\nToxicRages: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools (dllpath+"toxicragers.dll")
+		format "GamePath: %\nTexturePath: %\n GibbedTools: %\nToxicRagers: %\n" CarmaSettings.GamePath CarmaSettings.TexturePath CarmaSettings.GibbedTools (dllpath+"toxicragers.dll")
 		if CarmaSettings.GamePath == undefined or CarmaSettings.GamePath == "" then
 		(
 			--parentDialogs = windows.getChildrenHWND #max

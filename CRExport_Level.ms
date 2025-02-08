@@ -82,23 +82,29 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:Tr
 	)
 	--format "Accessories: \n%\n===================================================\nPowerups: \n%" lolScriptText powerupsScriptText
 )
-fn ExportLevelRoutes routetxtfile =
+fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 (
-	routestxt = "[RACES]\n"
-	allNodes = #()
-	allLinks = #()
-	nodeText = ""
-	linkText = ""
+	local allNodes = #()
+	local allLinks = #()
+	local nodeText = ""
+	local linkText = ""
 	
-	for i = 1 to layerManager.count-1 do
-	(
-		curLayer = layerManager.getLayer i
-		layerName = curLayer.name
-		if (substring layerName 1 4) == "race" then 
+	local routestxt = ""
+
+	if funsize == false then (
+		routestxt = "[RACES]\n"
+	
+		for i = 1 to layerManager.count-1 do
 		(
-			routestxt = routestxt + layerName + "\n"
+			curLayer = layerManager.getLayer i
+			layerName = curLayer.name
+			if (substring layerName 1 4) == "race" then 
+			(
+				routestxt = routestxt + layerName + "\n"
+			)
 		)
 	)
+
 	for i = 1 to objects.count do
 	(
 		if (classof objects[i]) == AILink then 
@@ -119,7 +125,12 @@ fn ExportLevelRoutes routetxtfile =
 		linkTypeText = ""
 		for j = 1 to allLinks[i].LinkType.count do
 		(
-			linkTypeText = linkTypeText + (allLinks[i].LinkType[j] as string) + "\n"
+			if funsize == false or funsizeRaceIndex == j then (
+				linkTypeText = linkTypeText + (allLinks[i].LinkType[j] as string) + "\n"
+			)
+		)
+		if linkTypeText == "" then (
+			linkTypeText = "0\n"
 		)
 		linkText = linkText + "[AILINK]\n<NODES>\n"+(node1ID as string)+"\n"+(node2ID as string)+"\n<WIDTH>\n"+(allLinks[i].Width as string)+"\n<TYPE>\n"+linkTypeText
 		if allLinks[i].OneWay == true then

@@ -23,6 +23,7 @@ struct SKINnode (objectNameLength, objectName)
 struct VFXInode (objectNameLength, objectName)
 struct NewCNTNode (nameLength, nodeName, isA12CNT, unknownFloat, parentNode, transformMatrix, position, combinedMatrix, absolutePosition,  nodeType, nodeData, numChildren, children)
 
+
 format "Defining MTL Structs - ca is %\n" mtlmat_ca
 struct MTLLayer
 (

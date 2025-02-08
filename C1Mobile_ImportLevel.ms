@@ -16,6 +16,9 @@ fn ImportFunsizeLevelTXT filename  = (
 	
 	local levelFolder = pathClass.GetDirectoryName filename
 
+	local levelTxtFiles = getFiles (pathClass.Combine levelFolder + "level_*.txt")
+
+
 	local levelNumString = (filterstring (pathClass.GetFileNameWithoutExtension fileName) "_")[2]
 		
 	--if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
@@ -96,7 +99,7 @@ fn ImportFunsizeLevelTXT filename  = (
 	)
 	(layerManager.getLayerFromName LevelPathsLayerName).current = true
 
-	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt"))) layerToUse:LevelPathsLayerName
+	ParseLevelRoutesTXT ((dotnetclass "System.IO.Path").Combine #((getFileNamePath filename), ("paths_"+levelNumString+".txt"))) layerToUse:LevelPathsLayerName funsize:true funsizeRaceIndex:(levelNumString as integer) amendExistingPaths:false
 
 	currentLayer.current = true
 

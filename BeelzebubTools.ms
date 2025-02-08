@@ -3,6 +3,8 @@ if LoadC1TXT == undefined then (
 	
 	filein "Carma_ImportV19-Trent.ms"
 )
+
+fileIn "CRHelperObjectLibrary.ms"
 filein "DocParser.ms"
 fileIn "CRToolsSettings.ms"
 fileIn "CRFormHelpers.ms"

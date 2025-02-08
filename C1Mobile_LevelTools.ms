@@ -225,14 +225,14 @@ fn SetFunsizeLevelTXTFromModifier levelRoot careersTxt textXml levelNum = (
 	local levelNumString = (levelInfoModifier.LevelRaceNum as string)
 	local careerLevelNum = levelInfoModifier.LevelCareerNum
 
-	if levelNum < 10 then levelNumString = "0"+levelNumString
+	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
 
 	-- TODO: Use an index to find the race to replace?
 	local levelCareerInfo = careersTxt.FindLevel folderName ("level_"+levelNumString+".txt")
 
 	if levelCareerInfo == undefined then
 	(
-		levelCareerInfo = dotNetObject "ToxicRages.CarmageddonMobile.Formats.CareerModeTextItem"
+		levelCareerInfo = dotNetObject "ToxicRagers.CarmageddonMobile.Formats.CareerModeTextItem"
 		careersTxt.Items.insert (careerLevelNum - 1) levelCareerInfo
 	)
 	else if (careersTxt.Items.IndexOf levelCareerInfo) != (careerLevelNum - 1) then
@@ -297,7 +297,7 @@ fn SetFunsizeLevelTXTFromModifier levelRoot careersTxt textXml levelNum = (
 	levelModifier.LevelPowerupLayerName = levelModifier.LevelLayerName + "_powerups"
 	levelModifier.LevelPathsLayerName = levelModifier.LevelLayerName + "_paths"
 */
-	levelModifier.LevelName = FunsizeGetValueFromXml (folderName+"_"+levelNumString)
+	--levelModifier.LevelName = FunsizeGetValueFromXml (folderName+"_"+levelNumString)
 	if levelModifier.Environment != undefined then (
 		levelTxt.Environment = levelModifier.Environment
 	)
@@ -323,7 +323,7 @@ fn SetFunsizeLevelTXTFromModifier levelRoot careersTxt textXml levelNum = (
 
 	--levelModifier.GridHelper =  nodeTransformMonitor node:gridHelper forwardTransformChangeMsgs:false
 
-	levelTxt.MapMatrix = MaxMatrix3ToToxicRagersMatrix3D levelModifier.MapMatrix 
+	levelTxt.MapMatrix = MaxMatrix3ToxicRagersMatrix3D levelModifier.MapMatrix 
 	levelTxt.Fog = MaxColorToToxicRagersColour levelModifier.FogColour
 	levelTxt.Lighting = MaxColorToToxicRagersColour levelModifier.LightingColour
 	levelTxt.Headlights = levelModifier.Headlights == true

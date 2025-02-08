@@ -1967,14 +1967,22 @@ fn ImportCNT cnt_name importTextures:false forcePREP:true useTriStrips:false mer
 	global merge_MatsIDsToNames = #()
 	global merge_SubMat
 	global parsedCNTNodes = 0
+
+	local merge_SubMat
 	
 	if mergeMDLs==true then
 	(
-		merge_SubMat = multisubmaterial()
-		merge_SubMat.name = (getFilenameFile cnt_name) + "_MultiMat"
-		merge_SubMat.count = 0
-		merge_SubMat.material[1].name = "##DELETEME##"
-		--format "merge_SubMat created: %\n" merge_SubMat;
+		merge_SubMat = FindHelperObject cnt_name "MergedCntMaterial"
+
+		if merge_SubMat == undefined then (
+			merge_SubMat = multisubmaterial()
+			
+			merge_SubMat.name = (getFilenameFile cnt_name) + "_MultiMat"
+			merge_SubMat.count = 0
+			merge_SubMat.material[1].name = "##DELETEME##"
+			StoreHelperObject cnt_name "MergedCntMaterial" merge_SubMat
+			--format "merge_SubMat created: %\n" merge_SubMat;
+		)
 	)
 	
 	f = fopen cnt_name "r"
@@ -2040,8 +2048,21 @@ fn QuickImportCnt file  mergeMDLs:false  = (
 	local mergeSplits = CarmaSettings.ImportSettings.MergeSplits
 	local SpawnOctree = false
 	
-	local rootMesh = ImportCNT file importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs mergeSplits:mergeSplits  SpawnOctree:SpawnOctree
-	
+
+
+	local rootMesh = undefined
+	if mergeMDLs then (
+		rootMesh = (FindHelperObject file "MergedCNT" )
+		if rootMesh != undefined then (
+			rootMesh = instance rootMesh
+		)
+	)
+	if rootMesh == undefined then (
+		rootMesh = ImportCNT file importTextures:importTextures forcePREP:forcePREP useTriStrips:useTriStrips mergeMDLs:mergeMDLs mergeSplits:mergeSplits  SpawnOctree:SpawnOctree
+		if mergeMdls then (
+			StoreHelperObject file "MergedCNT" rootMesh
+		)
+	)
 	rootMesh
 )
 

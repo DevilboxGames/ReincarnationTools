@@ -178,7 +178,7 @@ fn CreateNewNULLNode trans nodename addAttributes:true selectAndFocus:false useD
 	if newmat == undefined do
 	(
 		newmat = multimaterial numsubs:3
-		
+		newmat.Name = "crTools_NullNodeMaterial"
 		submat1 = standardmaterial()
 		submat1.name = "crTools_NullNodeMaterial_X"
 		submat1.diffuse = color 255 0 0

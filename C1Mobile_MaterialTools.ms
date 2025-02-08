@@ -117,26 +117,26 @@ fn ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:false	= (
 	for mat in sceneMaterials do (
 		if classof mat == multimaterial then (
 			for submat in mat.materiallist do (
-				if submat != undefined then (
+				if submat != undefined and (MatIsMTL submat) == false then (
 					if (OnlyWithDiffuse == false or submat.diffusemap != undefined) and (OnlyProperlyNamed == false or (matchPattern submat.name pattern:"material*#*") == false) then (
 						numMats = numMats + 1
 						AddMTLtoMat submat
 					)
-					if (mod numMats 20 )== 0 then (
-						format "Done % mats\n" numMats
+					if (mod numMats 200 )== 0 then (
+						--format "Sub mats - Done % mats\n" numMats
 						if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 					)
 				)
 			)
 		)
-		else if classof mat == Standardmaterial then (
+		else if classof mat == Standardmaterial  and (MatIsMTL mat) == false then (
 			if (OnlyWithDiffuse == false or mat.diffusemap != undefined)  and (OnlyWithProperName == false or (matchPattern mat.name pattern:"material*#*") == false) then (
 				numMats = numMats + 1
 				AddMTLtoMat mat
 			)
 		)
-		if (mod numMats 20 )== 0 then (
-			format "Done % mats\n" numMats
+		if (mod numMats 200 )== 0 then (
+			--format "Done % mats\n" numMats
 			if (MaxVersion())[1] >= 9000 do (dotnetClass "Application").doEvents()
 		)
 	)

@@ -344,7 +344,7 @@ fn ParseLevelAccessoryLOL lolFileName isPowerup:false =
 	PrintArrayInFull UniqueAccessoryList "List Of Accessories: "
 	--format "The Level.lol file: %\n" lolscript
 )
-fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" =
+fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" funsize:false funsizeRaceIndex:1 amendExistingPaths:false =
 (
 	oldCurrentLayer = LayerManager.current
 	routesLayer = LayerManager.getLayerFromName layerToUse
@@ -396,12 +396,22 @@ fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" =
 					currentAINode = undefined
 					if toupper curline == "[AINODE]" then
 					(
-						currentAINode = AINode name:("AINode_"+(AINodeCount as string))
+						if amendExistingPaths then (
+							currentAINode =  (for obj in objects where obj.Name == ("AINode_"+(AINodeCount as string) collect obj)[1]
+						)
+						else (
+							currentAINode = AINode name:("AINode_"+(AINodeCount as string))
+						)
 						AINodeCount += 1
 					)
 					else if toupper curline == "[AILINK]" then
 					(
-						currentAILink = AILink name:("AILink_"+(AILinkCount as string))
+						if ammendExistingPaths then (
+							currentAILink = (for obj in objects where obj.Name == ("AILink_"+(AILinkCount as string)) collect obj)[1]
+						)
+						else ()
+							currentAILink = AILink name:("AILink_"+(AILinkCount as string))
+						)
 						AILinkCount += 1
 					)
 				)
@@ -469,7 +479,23 @@ fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" =
 							)
 							"<TYPE>":
 							(
-								append currentAILink.LinkType (curline as integer)
+								if funsize then (
+									for i = 1 to funsizeRaceIndex do (
+										local typeValue = 0
+										if funsizeRaceIndex == i then (
+											typeValue = curLine as integer
+										)
+										if i < currentAILink.LinkType.count then (
+											append currentAILink.LinkType typeValue
+										)
+										else (
+											currentAILink.LinkType[i] = typeValue
+										)
+									)
+								)
+								else (
+									append currentAILink.LinkType (curline as integer)
+								)
 							)
 							"<RACE_VALUE>":
 							(

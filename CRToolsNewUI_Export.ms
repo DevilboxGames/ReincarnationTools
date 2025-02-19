@@ -93,11 +93,11 @@ fn ExportCNTMenuClicked sender arg =
 (
 	if (selection as array).count == 0 then
 	(
-		messageBox "Please select the root object to export (e.g. the car body)" title:"No objects selected!"
+		messageBox "Please select the root object to export." title:"No objects selected!"
 	)
 	else if (selection as array).count > 1 then
 	(
-		messageBox "Please select JUST the root object to export (e.g. the car body)" title:"Too many objects selected!"
+		messageBox "Please select JUST the root object to export." title:"Too many objects selected!"
 	)
 	else
 	(
@@ -135,13 +135,16 @@ fn ExportFullHierarchyMenuClicked sender arg =
 		local cntFileName = unsupplied
 
 		if (IsObjectACNT selectedModel) and selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
-			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName + ".cnt"
+			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName
+			if (substring cntFileName (cntFileName.Count - 3) -1) != ".cnt" then (
+				cntFileName = cntFileName + ".cnt"
+			)
 		)
 
 		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" filename:cntFileName
 		if cnt_name != undefined do
 		(
-			exportTexturesChecked = true
+			/*exportTexturesChecked = true
 			exportMatsChecked = true
 			exportMTLChecked = false
 			exportOctreeChecked = false
@@ -159,7 +162,9 @@ fn ExportFullHierarchyMenuClicked sender arg =
 			ExportCNT cnt_name selectedModel
 			ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			--PrintArrayInFull = "MaterialsToExport"
-			messageBox ("Export CNT & MDL Hierarchy to "+mdl_path+" completed!") title:"Export Finished!"
+			*/
+			ExportFullHierarchy cnt_name selectedModel
+			messageBox ("Export CNT & MDL Hierarchy to "+cnt_name+" completed!") title:"Export Finished!"
 		)
 	)	
 )

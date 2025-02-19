@@ -362,14 +362,18 @@ fn ConvertQuatToCRSpace2 q =
 (
 	 (quat -q.x -q.z q.y q.w)
 )
-fn GetAllChildren obj &arr:#() =
-(
-	for c in obj.children do
-	(
-		append arr c
-		GetAllChildren c arr:arr
-	)
-	 arr
+
+fn GetAllChildren parent includeSelf:false = (
+	local result = #(parent)
+
+	if includeSelf == false then result = $()+obj.children
+
+	local i = 1
+	do (
+		result = result + result[i].children
+		i += 1
+	) while i <= result.count
+	result
 )
 fn GetDescendantByName obj nodeName =
 (
@@ -378,7 +382,7 @@ fn GetDescendantByName obj nodeName =
 	if tolower(nodeName) == tolower(obj.name) then foundobj = obj
 	else
 	(
-				allchildren = GetAllChildren obj arr:#()
+				allchildren = GetAllChildren obj
 				for c in allchildren do
 				(
 					if tolower(nodeName) == tolower(c.name) then foundobj = c

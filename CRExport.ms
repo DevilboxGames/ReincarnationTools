@@ -2620,8 +2620,7 @@ fn ExportCNTModel f model =
 	)
 )
 
-fn ExportCNT cnt_name model =
-(
+fn ExportCNT cnt_name model = (
 	
 	cnt_file = openfile cnt_name mode:"w"
 	close cnt_file
@@ -2632,6 +2631,44 @@ fn ExportCNT cnt_name model =
 	ExportCNTModel f model
 	
 	fclose f
+)
+fn ExportAllCNTs cnt_name model =
+(
+	local allChildren = GetAllChildren model includeSelf:true
+
+	local allCntNodes = for obj in allChildren where obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeType == "CNT" collect obj
+
+	for cnt in allCntNodes do (
+		local instances = #()
+		if (InstanceMgr.GetInstances cnt &instances) > 1 then (
+			for i = 2 to instances.count do (
+				if (finditem allCntNodes instances[i]) > 0 then
+					deleteItem allCntNodes (finditem allCntNodes instances[i])
+			)
+		)
+	)
+
+	if model.modifiers["CNT Hierarchy"] != undefined and  model.modifiers["CNT Hierarchy"].NodeType == "IGNORE" then (
+
+		messageBox "You're trying to export an IGNORE node to a CNT file, what the fuck, name?" title:"You're doing something stupid"
+	)
+	else (
+		if model.modifiers["CNT Hierarchy"] != undefined and  model.modifiers["CNT Hierarchy"].NodeType != "CNT" then (
+			ExportCNT cnt_name model
+		)
+		for cnt in allCntNodes do (
+			local cntModel = cnt.Children[1]
+			local cntMod = cnt.modifiers["CNT Hierarchy"]
+			local cntFileName = cntMod.Filename
+			if cntMod.OverridePath then (
+				cntFileName = (dotnetclass "System.IO.Path").Combine cntMod.Path cntFileName
+			)
+			else (
+				cntFileName = (dotnetclass "System.IO.Path").Combine (getFilenamePath cnt_name) cntFileName
+			)
+			ExportCNT cntFileName cntModel
+		)
+	)
 )
 
 fn ExportLight folder_name nodeToExport exportGobo:false =
@@ -2661,28 +2698,87 @@ fn ExportLight folder_name nodeToExport exportGobo:false =
 		)
 	)
 )
+
+fn FindModelsToExport nodes exportHierarchy = (
+	result = #() + nodes
+	modelFilenames = #()
+	msg = ""
+	for model in result do
+	(
+		isACNT = IsObjectACNT model
+		
+		if isACNT and (model.modifiers["CNT Hierarchy"].NodeType == "MODL" or model.modifiers["CNT Hierarchy"].NodeType == "SKIN" or model.modifiers["CNT Hierarchy"].NodeType == "LITg") then
+		(
+			if (finditem result model) == 0 and (finditem modelFilenames model.modifiers["CNT Hierarchy"].filename) == 0 do
+			(
+
+				local modelInstances = #()
+				InstanceMgr.GetInstances model &modelInstances
+				if (for modelInstance in modelInstances where (finditem result modelInstance) > 0 collect modelInstance).count == 0 then (
+					append result model
+					append modelFilenames model.modifiers["CNT Hierarchy"].filename
+				)
+			)
+			
+		)
+		else if (isACNT == false  and classof model != dummy and (classof model == editable_mesh or classof model == editable_poly or superclassof model == geometryclass)) then
+		(
+			msg += model.name+"\n"
+		)
+
+		if exportHierarchy == true  and isACNT and (model.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and model.modifiers["CNT Hierarchy"].NodeType != "CNT") do
+		(
+			result = result + (FindModelsToExport model.children exportHierarchy)
+		)
+	)
+	if msg != "" then
+	(
+		messageBox ("The following objects are not set as CNT Nodes and will not be exported:\n\n"+msg) title:"Some objects won't be exported"
+	)
+
+	result
+)
+
+fn FindCntsToExport nodes = (
+	local allChildren = GetAllChildren nodes includeSelf:true
+
+	local allCntNodes = for obj in allChildren where obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeType == "CNT" collect obj
+
+	for cnt in allCntNodes do (
+		local instances = #()
+		if (InstanceMgr.GetInstances cnt &instances) > 1 then (
+			for i = 2 to instances.count do (
+				if (finditem allCntNodes instances[i]) > 0 then
+					deleteItem allCntNodes (finditem allCntNodes instances[i])
+			)
+		)
+	)
+
+	return allCntNodes
+)
+
 fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false exportTextures:false funsizeExport:false createOctree:false nodes:undefined =
 (
-	global materials = #()
-	global models = #()
-	global cnts = #()
+	local materials = #()
+	local models = #()
+	local cnts = #()
 	modelsDone = #()
-	global MaterialsToExport
+	local MaterialsToExport
 	MaterialsToExport=#()
 	
 	--local nodes
 	if exportSelected == true then
 	(
-		nodes = selection
+		nodes = $() + selection
 	)
 	else if nodes == undefined or nodes.count < 1 do
 	(
 		nodes = for model in objects where model.ishidden == false collect model
 	)
 	
-	GatherMDLs nodes exportHierarchy
+	models = FindModelsToExport nodes exportHierarchy
 	
-	
+	/*
 	for mat in scenematerials do
 	(
 		if classof mat == standardmaterial do
@@ -2700,7 +2796,8 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 				)
 			)
 		)
-	)
+	)*/
+
 	count = 0
 	for i=1 to models.count do
 	(
@@ -2711,7 +2808,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 				ExportLight folder_name nodeToExport
 				
 			)
-			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE" then
+			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and  nodeToExport.modifiers["CNT Hierarchy"].NodeType != "CNT" then
 			(
 				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
 			)
@@ -2724,6 +2821,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 	local oldCnts = Cnts
 	MaterialsToExport = #()
 	Models = #()
+	/*
 	if exportHierarchy then (
 		local cntsToExport = copy cnts #noMap
 		local cntFolder = folder_name
@@ -2738,15 +2836,85 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 			ExportMaterialsAndTextures cntFolder exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport createOctree:createOctree
 			
 		)
-	)
+	)*/
 	MaterialsToExport = oldMaterialsToExport
 	Models = oldModels
 	Cnts = oldCnts
 	OK
 )
 
- 
+ fn ExportToBeelzebub fileName selectedModel exportMdls:true exportCnts:true exportHierarchy:true exportTexturesChecked:true exportMatsChecked:true exportMTLChecked:false exportOctreeChecked:false = 
+ (
+	if fileName != undefined and selectedModel != undefined do
+	(
+		global MaterialsToExport
 
+		MaterialsToExport=#()
+		mdl_path = getFilenamePath fileName
+
+		if selectedModel.modifiers["CNT Hierarchy"] != undefined and  selectedModel.modifiers["CNT Hierarchy"].NodeType == "IGNORE" then (
+
+			messageBox "You're trying to export an IGNORE node to a CNT file, what the fuck, name?" title:"You're doing something stupid"
+		)
+		else (
+			
+			if (IsObjectACNT selectedModel) and selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
+				selectedModel = selectedModel.children[1]
+			)
+
+			if exportCnts then 
+			(
+				ExportCNT fileName selectedModel
+			)
+			if exportMdls then
+			(
+				ExportMDL mdl_path false exportHierarchy exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked nodes:#(selectedModel)
+				ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
+			)
+			--PrintArrayInFull = "MaterialsToExport"
+			messageBox ("Export completed!") title:"Export Finished!"
+		)
+	)
+ )
+
+fn ExportFullHierarchy cnt_name selectedModel exportMdls:true exportAllCnts:false exportCnts:true  exportHierarchy:true exportTexturesChecked:true exportMatsChecked:true exportMTLChecked:false exportOctreeChecked:false =
+(
+
+
+	if exportAllCnts then (
+
+		if selectedModel.modifiers["CNT Hierarchy"] != undefined and selectedModel.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and selectedModel.modifiers["CNT Hierarchy"].NodeType != "CNT" then
+		(
+			ExportToBeelzebub cnt_name selectedModel exportMdls:exportMdls exportCnts:exportCnts exportHierarchy:exportHierarchy exportTexturesChecked:exportTexturesChecked exportMatsChecked:exportMatsChecked exportMTLChecked:exportMTLChecked exportOctreeChecked:exportOctreeChecked
+		)
+
+		local allCnts = FindCntsToExport selectedModel
+
+		for cnt in allCnts do (
+
+			local cntModel = cnt.Children[1]
+			local cntMod = cnt.modifiers["CNT Hierarchy"]
+			local cntFileName = cntMod.Filename
+			if cntMod.OverridePath then (
+				cntFileName = (dotnetclass "System.IO.Path").Combine cntMod.Path cntFileName
+				if (doesDirectoryExist cntMod.Path) == false then (
+					makeDir cntMod.Path
+				)
+			)
+			else (
+				cntFileName = (dotnetclass "System.IO.Path").Combine (getFilenamePath cnt_name) cntFileName
+				if (doesDirectoryExist (getFilenamePath cnt_name)) == false then (
+					makeDir (getFilenamePath cnt_name)
+				)
+			)
+
+			ExportToBeelzebub cntFileName cnt exportMdls:exportMdls exportCnts:exportCnts exportHierarchy:exportHierarchy  exportTexturesChecked:exportTexturesChecked exportMatsChecked:exportMatsChecked exportMTLChecked:exportMTLChecked exportOctreeChecked:exportOctreeChecked
+		)
+	)
+	else (
+		ExportToBeelzebub cnt_name selectedModel exportMdls:exportMdls exportCnts:exportCnts exportHierarchy:exportHierarchy exportTexturesChecked:exportTexturesChecked exportMatsChecked:exportMatsChecked exportMTLChecked:exportMTLChecked exportOctreeChecked:exportOctreeChecked
+	)
+)
 
 fn ExportMDLButtonPressed sender arg =
 (
@@ -2813,18 +2981,25 @@ fn ExportCNTButtonPressed sender arg =
 	(
 		local selectedCnt = selection[1]
 		local cntFileName = unsupplied
+
 		if (IsObjectACNT selectedCnt) and selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
-			cntFileName = selectedCnt.modifiers["CNT Hierarchy"].fileName + ".cnt"
+			cntFileName = selectedCnt.modifiers["CNT Hierarchy"].fileName
+			if (substring cntFileName (cntFileName.Count - 3) -1) != ".cnt" then (
+				cntFileName = cntFileName + ".cnt"
+			)
 		)
+		
 		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" fileName:cntFileName
+		
 		if cnt_name != undefined do
 		(
-			if (IsObjectACNT selectedCnt) and (selectedCnt.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
+			/*if (IsObjectACNT selectedCnt) and (selectedCnt.modifiers["CNT Hierarchy"].NodeType == "IGNORE" or selectedCnt.modifiers["CNT Hierarchy"].NodeType == "CNT") then (
 				selectedCnt = selectedCnt.children[1]
 			)
 			ExportCNT cnt_name selectedCnt
 			messageBox ("Export CNT Hierarchy to "+cnt_name+" completed!") title:"Export Finished!"
-			gc()
+			gc()*/
+			ExportToBeelzebub cnt_name selectedCnt
 		)
 	)
 )
@@ -2844,7 +3019,10 @@ fn ExportFullHierarchyButtonPressed sender arg =
 		selectedModel = selection[1]
 		local cntFileName = unsupplied
 		if (IsObjectACNT selectedModel) and selectedModel.modifiers["CNT Hierarchy"].NodeType == "CNT" then (
-			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName + ".cnt"
+			cntFileName = selectedModel.modifiers["CNT Hierarchy"].fileName
+			if (substring cntFileName (cntFileName.Count - 3) -1) != ".cnt" then (
+				cntFileName = cntFileName + ".cnt"
+			)
 		)
 		cnt_name = GetSaveFileName caption:"Save CNT As" types:"CNT(*.CNT)|*.cnt" fileName:cntFileName
 		if cnt_name != undefined do

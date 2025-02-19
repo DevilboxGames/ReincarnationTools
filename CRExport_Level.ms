@@ -82,7 +82,8 @@ fn ExportLevelAccessories levelLOLfile ExportPowerups:false ExportAccessories:Tr
 	)
 	--format "Accessories: \n%\n===================================================\nPowerups: \n%" lolScriptText powerupsScriptText
 )
-fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
+
+fn ExportLevelRoutes routetxtfile funsize:false routesLayerName:"sys_LevelRoutes" =
 (
 	local allNodes = #()
 	local allLinks = #()
@@ -90,6 +91,11 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 	local linkText = ""
 	
 	local routestxt = ""
+
+	local routesLayer = LayerManager.getLayerByName routesLayerName
+	local routesNodes
+
+	routesLayer.nodes &routesNodes
 
 	if funsize == false then (
 		routestxt = "[RACES]\n"
@@ -105,19 +111,20 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 		)
 	)
 
-	for i = 1 to objects.count do
+	for i = 1 to routesNodes.count do
 	(
-		if (classof objects[i]) == AILink then 
+		if (classof routesNodes[i]) == AILink then 
 			(
-					append allLinks objects[i]
+					append allLinks routesNodes[i]
 			)
-			else if (classof objects[i]) == AINode then 
+			else if (classof routesNodes[i]) == AINode then 
 			(
-				append allNodes objects[i]
-				nodePos = ConvertToCRSpace objects[i].pos
-				nodeText = nodeText + "[AINODE]\n<INDEX>\n"+(allNodes.count as string)+"\n<TYPE>\n0\n<RADIUS>\n"+(objects[i].radius as string)+"\n<POS>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE_OFFSET>\n0.0000\n\n"
+				append allNodes routesNodes[i]
+				nodePos = ConvertToCRSpace routesNodes[i].pos
+				nodeText = nodeText + "[AINODE]\n<INDEX>\n"+(allNodes.count as string)+"\n<TYPE>\n0\n<RADIUS>\n"+(routesNodes[i].radius as string)+"\n<POS>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE_OFFSET>\n0.0000\n\n"
 			)
 	)
+
 	for i=1 to allLinks.count do
 	(
 		node1ID = findItem allNodes allLinks[i].Node1.node
@@ -125,18 +132,21 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 		linkTypeText = ""
 		for j = 1 to allLinks[i].LinkType.count do
 		(
-			if funsize == false or funsizeRaceIndex == j then (
+			--if funsize == false or funsizeRaceIndex == j then (
 				linkTypeText = linkTypeText + (allLinks[i].LinkType[j] as string) + "\n"
-			)
+			--)
 		)
+
 		if linkTypeText == "" then (
 			linkTypeText = "0\n"
 		)
+
 		linkText = linkText + "[AILINK]\n<NODES>\n"+(node1ID as string)+"\n"+(node2ID as string)+"\n<WIDTH>\n"+(allLinks[i].Width as string)+"\n<TYPE>\n"+linkTypeText
 		if allLinks[i].OneWay == true then
 		(
 			linkText = linkText + "<ONEWAY>"
 		)
+
 		if allLinks[i].Interior == true or allLinks[i].Isloop == true then
 		(
 			linkText = linkText + "<VALUE>"
@@ -149,7 +159,8 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 				linkText = linkText + "\"\"loop\"\""
 			)
 		)
-		if(allLinks[i].Water.count > 0) then
+
+		if allLinks[i].Water.count > 0 then
 		(
 				linkText = linkText + "<RACE_VALUE>"
 			for val in allLinks[i].Water do
@@ -159,6 +170,7 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 			)
 		)
 	)
+
 	routestxt = routestxt + "\n" + nodeText + "\n" + linkText
 	fp = openFile routetxtfile mode:"wt"
 		format "%" routestxt to:fp
@@ -166,6 +178,7 @@ fn ExportLevelRoutes routetxtfile funsize:false funsizeRaceIndex:1 =
 	routestxt
 	messageBox "Finished exporting routes." title:"Export Finished"
 )
+
 fn ExportLevelPaperworkButtonPressed sender arg =
 (
 	if (selection as array).count == 0 then
@@ -192,6 +205,7 @@ fn ExportLevelPaperworkButtonPressed sender arg =
 		)
 	)
 )
+
 fn ExportLevelButtonPressed sender arg=
 (
 	if (selection as array).count == 0 then

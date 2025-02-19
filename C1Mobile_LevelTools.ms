@@ -1,15 +1,24 @@
 fn PlaceGridHelper location orientation = (
 	local gridMeshPath = (dotnetclass "System.IO.Path").Combine #((getFileNamePath (getThisScriptFilename())), "MDLs", "grid", "grid.cnt")
 
+	local gridNull = CreateNewNULLNode (matrix3 1) (instanceName as string) addAttributes:true nodeType:"IGNORE"
 	local gridHelper = QuickImportCnt gridMeshPath mergeMdls:true
+
 	gridHelper.rotation = EulerAngles 0 0 -(orientation - 90)
 	gridHelper.position = location
+	
+	gridNull.rotation = EulerAngles 0 0 -(orientation - 90)
+	gridNull.position = location
+	
 	SetCNTNodeType gridHelper "IGNORE"
-	gridHelper.name = "GRID_HELPER"
+	gridNull.name = "GRID_HELPER"
+	gridHelper.parent = gridNull
 	gridHelper
 )
 
 fn PlacePowerup trans pupNames respawnTime = (
+	
+	local pupNull = CreateNewNULLNode trans (instanceName as string) addAttributes:true nodeType:"IGNORE"
 	local pupMeshPath = (dotnetclass "System.IO.Path").Combine #((getFileNamePath (getThisScriptFilename())), "MDLs\\pup", "pup.cnt")
 
 
@@ -17,17 +26,21 @@ fn PlacePowerup trans pupNames respawnTime = (
 	
 
 	pupHelper.transform = trans
+	pupNull.transform = trans
 	
 	SetCNTNodeType pupHelper "IGNORE"
-	pupHelper.name = "pup_HELPER_" + pupNames[1]
+	pupNull.name = "pup_HELPER_" + pupNames[1]
+	pupHelper.parent = pupNull
 
-	local pupMod = AddFunsizePowerupItemAttributes pupHelper
+	local pupMod = AddFunsizePowerupItemAttributes pupNull
 	pupMod.PowerupTypes = pupNames
 	pupMod.RespawnTime = respawnTime
-	pupHelper
+	pupNull
 )
 
 fn PlaceCopHelper copType location = (
+	
+	local copNull = CreateNewNULLNode (matrix3 1) (instanceName as string) addAttributes:true nodeType:"IGNORE"
 	local copMeshPath = (dotnetclass "System.IO.Path").Combine #((getFileNamePath (getThisScriptFilename())), "MDLs\\cops", copType, "carbody.cnt")
 
 
@@ -35,13 +48,15 @@ fn PlaceCopHelper copType location = (
 	
 
 	copHelper.position = location
+	copNull.position = location
 	
-	SetCNTNodeType copHelper "IGNORE"
-	copHelper.name = "COP_HELPER"
+	copNull.name = "COP_HELPER"
 
-	local copMod = AddFunsizeCopAttributes copHelper
+	SetCNTNodeType copHelper "IGNORE"
+	local copMod = AddFunsizeCopAttributes copNull
 	copMod.CopType = copType
-	copHelper
+	copHelper.parent = copNull
+	copNull
 )
 
 fn PlacePed pedType pedPoints loopCount = (
@@ -160,7 +175,7 @@ fn SetFunsizeLevelSettingsFromTXT levelRoot levelTxt careersTxt textXml folderNa
 	levelModifier.LevelLayerName = "sys_level_"+(levelNumString)
 	levelModifier.LevelPedLayerName = levelModifier.LevelLayerName + "_ped"
 	levelModifier.LevelPowerupLayerName = levelModifier.LevelLayerName + "_powerups"
-	levelModifier.LevelPathsLayerName = levelModifier.LevelLayerName + "_paths"
+	levelModifier.LevelPathsLayerName ="sys_LevelRoutes_"+levelNumString
 
 	levelModifier.LevelName = FunsizeGetValueFromXml (folderName+"_"+levelNumString)
 	if levelTxt.Environment != undefined then (

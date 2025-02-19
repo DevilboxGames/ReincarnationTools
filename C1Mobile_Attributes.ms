@@ -224,7 +224,7 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		LevelLayerName type:#string default: "sys_level_01"
 		LevelPedLayerName type:#string default: "sys_level_01_ped"
 		LevelPowerupLayerName type:#string default: "sys_level_01_powerups"
-		LevelPathsLayerName type:#string default: "sys_level_01_paths"
+		LevelPathsLayerName type:#string default: "sys_LevelRoutes_01"
 		LevelName type:#string ui:txt_LevelName default:"User Level"
 		LevelDescription type:#string ui:txt_LevelDescription default: "This is a user made level"
 		Environment type:#string ui:txt_Environment default:"nyhorizn"

@@ -299,7 +299,7 @@ fn GetMaterialFromMT2 folder materialName importTextures:false = (
 		mat = Standardmaterial name:materialName twoSided:true diffuse:(color 0 0 0)
 		append CMDMaterialLibrary mat
 		materialExists = ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2"))
-		if materialExists ==	false then (
+		if materialExists == false then (
 			folder = CarmaSettings.DataCorePath+"\\Content\\Textures\\"
 		)
 		if ((dotnetclass "System.IO.File").exists (folder+materialName+".MT2")) then

@@ -111,11 +111,11 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 					
 					trans = matrix3 1
 					local selectedObj = selection[1]
-					if sselectedObj != undefined do trans = sselectedObj.transform
+					if selectedObj != undefined do trans = selectedObj.transform
 					local newNull = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true
-					if sselectedObj != undefined do (
-						newNull.parent = sselectedObj.parent
-						sselectedObj.parent = newNull
+					if selectedObj != undefined do (
+						newNull.parent = selectedObj.parent
+						selectedObj.parent = newNull
 					)
 				)
 			)
@@ -148,7 +148,7 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 		layoutHelper.EndHorizontalGroup()
 
 		local SetupHierarchyLabel = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,20] margin:[0,0]
-		SetupHierarchyLabel.text = "CNT & Ignore Contain Nodes:"
+		SetupHierarchyLabel.text = "CNT && Ignore Container Nodes:"
 		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:15 marginBottom:3 marginLeft:15
 		(
 			local createCntNode = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
@@ -162,7 +162,7 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 					if selectedObj != undefined do trans = selectedObj.transform
 					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"CNT"
 
-					if selectedObj != undefined do cnt.parent = selection[1] 
+					if selectedObj != undefined do cnt.parent = selectedObj
 				)
 			)
 			SetClickHandler createCntNode OnCreateCntContainerClicked
@@ -172,7 +172,7 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 			insertCntAboveButton.text = "Insert CNT as Parent"
 			insertCntAboveButton.name = "insertCntAboveButton"
 			fn OnInsertCntAboveClicked btn ev = (
-				undo "Convert To Wheel Node" on
+				undo "Insert CNT Container Node As Parent" on
 				(
 					local selectedObj = selection[1]
 					trans = matrix3 1
@@ -180,8 +180,8 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"CNT"
 
 					if selectedObj != undefined do (
-						cnt.parent = selection[1].parent
-						selection
+						cnt.parent = selectedObj.parent
+						selectedObj.parent = cnt
 					)
 				)
 			)
@@ -191,17 +191,17 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 		layoutHelper.BeginHorizontalGroup align:"center" marginTop:3 marginRight:15 marginBottom:3 marginLeft:15
 		(
 			local createIgnoreNode = layoutHelper.AddControl "System.Windows.Forms.Button" size:[150,20]
-			createIgnoreNode.text = "Create CNT"
+			createIgnoreNode.text = "Create IGNORE"
 			createIgnoreNode.name = "createIgnoreNode"
 			fn OnCreateIgnoreContainerClicked btn ev = (
-				undo "Create CNT Container Node" on
+				undo "Create IGNORE Container Node" on
 				(
 					trans = matrix3 1
 					local selectedObj = selection[1]
 					if selectedObj != undefined do trans = selectedObj.transform
 					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"IGNORE"
 
-					if selectedObj != undefined do cnt.parent = selection[1] 
+					if selectedObj != undefined do cnt.parent = selectedObj 
 				)
 			)
 			SetClickHandler createIgnoreNode OnCreateIgnoreContainerClicked
@@ -211,7 +211,7 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 			insertIgnoreAboveButton.text = "Insert CNT as Parent"
 			insertIgnoreAboveButton.name = "insertIgnoreAboveButton"
 			fn OnInsertIgnoreAboveClicked btn ev = (
-				undo "Convert To Wheel Node" on
+				undo "Insert IGNORE Container Node As Parent" on
 				(
 					local selectedObj = selection[1]
 					trans = matrix3 1
@@ -219,8 +219,8 @@ fn AddHierarchyToolsUI parentLayoutHelper = (
 					cnt = CreateNewNULLNode trans "NewNullNode" selectAndFocus:true NodeType:"IGNORE"
 
 					if selectedObj != undefined do (
-						cnt.parent = selection[1].parent
-						selection
+						cnt.parent = selectedObj.parent
+						selectedObj.parent = cnt
 					)
 				)
 			)

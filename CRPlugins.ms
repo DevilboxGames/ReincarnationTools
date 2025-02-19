@@ -1798,6 +1798,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		Races type:#stringTab tabSizeVariable:true
 		RoutesVersion type:#float default:2.5
 		Lump type:#string default:""
+		IsFunsize type:#boolean default:false
 
 		AINodes type:#maxObjectTab tabSizeVariable:true
 		AINodes_Index type:#intTab tabSizeVariable:true
@@ -1833,6 +1834,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		)
 		group "Race Routes"
 		(
+			checkbox chk_isFunsize "Funsize?" default: false
 			dotnetcontrol lv_Races "listview" height:100
 			button but_AddRace "Add Race" across:2
 			button but_DelRace "Delete Race"
@@ -1879,6 +1881,17 @@ plugin simpleObject CarmaHelper_LevelRoutes
 
 		fn UpdateRaces = (
 			lv_Races.Items.clear()
+			if IsFunsize then (
+				while Races.count > 0 do ( deleteItem Races 1)
+				local levelNumString = activeRace as string
+						
+				if activeRace < 10 then levelNumString = "0"+levelNumString
+					
+				for obj in objects where (findstring obj.name "sys_RaceInfo_") == 1 and obj.modifiers["Funsize Level Info"] != undefined do (
+					append Races obj.modifiers["Funsize Level Info"].LevelName
+				)
+			)
+
 			for race in Races do (
 				lv_Races.Items.add race
 			)
@@ -1900,6 +1913,7 @@ plugin simpleObject CarmaHelper_LevelRoutes
 				append AINodes obj
 				lv_AINodes.Items.add obj.name
 			)
+			
 		)
 		fn UpdateAILinks = (
 			lv_AILinks.Items.clear()
@@ -1911,6 +1925,11 @@ plugin simpleObject CarmaHelper_LevelRoutes
 			)
 		)
 		on RouteParameters open do (
+
+			if activeRace == undefined then (
+				activeRace = 1
+			)
+
 			 lv_Races.view = (dotnetclass "view").details
 				lv_Races.fullrowselect= true
 				lv_Races.gridlines = true
@@ -2338,6 +2357,9 @@ rollout AILinkPathToolRollout "AI Path Tool" (
 		fn UpdateRaces = (
 
 			aiPathManager = GetLevelAIPathManager()
+
+			if aiPathManager.activeRace == undefined then aiPathManager.activeRace = 1
+
 			lv_Races.Items.clear()
 			for race in aiPathManager.Races do (
 				lv_Races.Items.add race
@@ -2357,9 +2379,28 @@ rollout AILinkPathToolRollout "AI Path Tool" (
 			lv_AINodes.Items.clear()
 			while aiPathManager.AINodes.count > 0 do ( deleteItem aiPathManager.AINodes 1)
 
-			for obj in objects where (classof obj) == AINode do (
-				append aiPathManager.AINodes obj
-				lv_AINodes.Items.add obj.name
+			if aiPathManager.IsFunsize then (
+				
+				local levelNumString = aiPathManager.activeRace as string
+						
+				if aiPathManager.activeRace < 10 then levelNumString = "0"+levelNumString
+
+				local levelInfo = (for obj in objects where obj.name == ("sys_RaceInfo_"+levelNumString) collect obj)[1].modifiers["Funsize Level Settings"]
+				local layerName = levelInfo.LevelPathsLayerName
+				local aiNodeObjects;
+				(LayerManager.getLayerFromName layerName).nodes &aiNodeObjects
+
+				for obj in aiNodeObjects where (classof obj) == AINode do (
+					append aiPathManager.AINodes obj
+					lv_AINodes.Items.add obj.name
+				)
+
+			)
+			else (
+				for obj in objects where (classof obj) == AINode do (
+					append aiPathManager.AINodes obj
+					lv_AINodes.Items.add obj.name
+				)
 			)
 		)
 
@@ -2368,9 +2409,29 @@ rollout AILinkPathToolRollout "AI Path Tool" (
 			lv_AILinks.Items.clear()
 			while aiPathManager.AILinks.count > 0 do ( deleteItem aiPathManager.AILinks 1)
 
-			for obj in objects where (classof obj) == AILink do (
-				append aiPathManager.AILinks obj
-				lv_AILinks.Items.add obj.name
+			if aiPathManager.IsFunsize then (
+				
+				local levelNumString = aiPathManager.activeRace as string
+						
+				if aiPathManager.activeRace < 10 then levelNumString = "0"+levelNumString
+
+				
+				local levelInfo = (for obj in objects where obj.name == ("sys_RaceInfo_"+levelNumString) collect obj)[1].modifiers["Funsize Level Settings"]
+				local layerName = levelInfo.LevelPathsLayerName
+				local aiLinkObjects;
+				
+				(LayerManager.getLayerFromName layerName).nodes &aiLinkObjects
+
+				for obj in aiLinkObjects where (classof obj) == AILink do (
+					append aiPathManager.AILinks obj
+					lv_AILinks.Items.add obj.name
+				)
+			)
+			else (
+				for obj in objects where (classof obj) == AILink do (
+					append aiPathManager.AILinks obj
+					lv_AILinks.Items.add obj.name
+				)
 			)
 		)
 		
@@ -2467,8 +2528,37 @@ rollout AILinkPathToolRollout "AI Path Tool" (
 				index = lv_Races.selectedIndices.item[0]+1
 				aiPathManager = GetLevelAIPathManager()
 				aiPathManager.activeRace = index
-				for obj in objects where (classof obj) == AILink do (
-					obj.EditingRoute = index
+				if aiPathManager.IsFunsize then (
+					local selectedLevelNumString = index as string
+					
+					if index < 10 then selectedLevelNumString = "0"+selectedLevelNumString
+
+					for i = 1 to aiPathManager.Races.count do (
+						local levelNumString = i as string
+						
+						if i < 10 then levelNumString = "0"+levelNumString
+						local levelInfo = (for obj in objects where obj.name == ("sys_RaceInfo_"+levelNumString) collect obj)[1].modifiers["Funsize Level Settings"]
+						local layerName = levelInfo.LevelPathsLayerName
+						if i == index then (
+							(LayerManager.getLayerFromName layerName).isHidden = false
+						)
+						else (
+							(LayerManager.getLayerFromName layerName).isHidden = true
+						)
+						UpdateAINodes()
+						UpdateAILinks()
+						
+						(LayerManager.getLayerFromName layerName).nodes &aiLinkObjects
+
+						for obj in aiLinkObjects where (classof obj) == AILink do (
+							obj.EditingRoute = 1
+						)
+					)
+				)
+				else (
+					for obj in objects where (classof obj) == AILink do (
+						obj.EditingRoute = index
+					)
 				)
 			)
 			CompleteRedraw()

@@ -4103,7 +4103,7 @@ fn ExportAccessoryTXT file rootObj = (
 	local accFile = AccessoryFileLump()
 
 	accFile.CustomBlocks = GetAccessoryAppDataBlock rootObj
-	local objs = #(rootObj) + GetAllChildren rootObj
+	local objs = GetAllChildren rootObj includeSelf:true
 
 
 	for obj in objs do (

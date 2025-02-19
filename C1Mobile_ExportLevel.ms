@@ -415,26 +415,30 @@ fn Funsize_ExportLevelTxt levelModifier levelInfoModifier overridePath:unsupplie
 
 fn ExportFunsizeLevel levelRoot nolaunch:false overridePath:unsupplied = (
 	global CarmaSettings
+	global MaterialsToExport
+	
 	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
 	
 	if overridePath != unsupplied then (
 		FunsizeDataPath = overridePath
 	)
-	
+	for obj in objects where (findstring obj.name "sys_RaceInfo_") == 1 and obj.modifiers["Funsize Level Info"] != undefined do (
 	--for mat in scenematerials do format "%: %\n" mat.name (classof mat)
 	ApplyMTLToAllMatsInScene OnlyWithDiffuse:false OnlyProperlyNamed:true
 	
 	local levelModifier = levelRoot.modifiers["Funsize Level Settings"] 
 	local levelInfoModifier = levelRoot.modifiers["Funsize Level Info"] 
 
-	Funsize_AddLeveltoXML levelInfoModifier overridePath:overridePath
-	Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:overridePath
-	Funsize_ExportLevelPaths levelModifier levelInfoModifier overridePath:overridePath
-	Funsize_ExportLevelTxt levelModifier levelInfoModifier overridePath:overridePath
+		Funsize_AddLeveltoXML levelInfoModifier overridePath:overridePath
+		Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:overridePath
+		Funsize_ExportLevelPaths levelModifier levelInfoModifier overridePath:overridePath
+		Funsize_ExportLevelTxt levelModifier levelInfoModifier overridePath:overridePath
 
+	)
+	
 	levelFolder = (FunsizeDataPath+"Data\\Content\\Tracks\\Levels\\" + levelModifier.LevelFolderName + "\\")
-
-	global MaterialsToExport
+	
+	
 	MaterialsToExport=#()
 	ExportMDL levelFolder false true exportMats:true exportTextures:true funsizeExport:true createOctree:true nodes:#(levelRoot)
 	ExportCNT (levelFolder+"level.cnt") levelRoot

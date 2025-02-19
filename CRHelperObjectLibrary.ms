@@ -12,7 +12,13 @@ fn FindHelperObject File Type = (
     local results = for obj in HelperObjectLibrary where obj.File == File and obj.Type == Type collect obj
 
     if results.count > 0 then (
-        results[1].Item
+        local result = undefined
+        for i in results do (
+            if result == undefined and i.Item != undefined and (isDeleted i.Item) == false then (
+                result = i.Item
+            )
+        )
+        result
     )
     else (
         undefined
@@ -34,3 +40,12 @@ fn StoreHelperObject File Type Item = (
 
     obj
 )
+
+fn ClearHelperObjects = (
+    global HelperObjectLibrary
+    HelperObjectLibrary = #()
+)
+
+callbacks.removeScripts id:#crHelperObjectLibraryCallbacks
+callbacks.addScript #systemPreReset "ClearHelperObjects()"
+callbacks.addScript #systemPreNew "ClearHelperObjects()"

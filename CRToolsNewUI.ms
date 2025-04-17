@@ -8,6 +8,7 @@ fileIn "DotNetFormHelper.ms"
 fileIn "CRToolsSettings.ms"
 fileIn "CRToolsNewUI_Common.ms"
 fileIn "CRToolsNewUI_Mobile.ms"
+fileIn "CRToolsNewUI_MobileLevels.ms"
 fileIn "CRToolsNewUI_Cars.ms"
 fileIn "CRToolsNewUI_Wheels.ms"
 fileIn "CRToolsNewUI_Accessories.ms"
@@ -105,6 +106,24 @@ fn SetToolMode_Level args = (
 		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
 		AddHierarchyToolsUI layoutHelper
 		AddLevelToolsUI layoutHelper
+		
+		layoutHelper.EndVerticalGroup()
+	)
+)
+fn SetToolMode_MobileLevel args = (
+	global CRToolsUI, currentMode
+	if currentMode != "level" then (
+		currentMode = "level"
+		CRToolsUI.controls.clear()
+		local layoutHelper = DotNetFormHelper ParentControl:CRToolsUI OutterMarginTop:0 OutterMarginBottom:5 OutterMarginLeft:5 OutterMarginTop:5
+		layoutHelper.BeginVerticalGroup  marginTop:10 marginBottom:20
+
+		AddModeButtons layoutHelper "Level"
+		--local uicontent = layoutHelper.AddControl "System.Windows.Forms.Label" size:[200,30]
+		--uicontent.text = "Level Mode"
+		--layoutHelper.SetFont uicontent "Segoe UI" 16 bold:true underline:true
+		AddHierarchyToolsUI layoutHelper
+		AddMobileLevelToolsUI layoutHelper
 		
 		layoutHelper.EndVerticalGroup()
 	)
@@ -688,7 +707,11 @@ fn CreateMenu uiForm = (
 
 	local modeCar = modeMenu.MenuItems.Add("&Mobile Car Creation") 
 	SetClickHandler modeCar SetToolMode_MobileCar
-	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift1
+	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift6
+
+	local modeCar = modeMenu.MenuItems.Add("&Mobile Level Creation") 
+	SetClickHandler modeCar SetToolMode_MobileLevel
+	modeCar.Shortcut = (dotnetclass "System.Windows.Forms.Shortcut").CtrlShift7
 	
 	local toolsMenu = crMenu.MenuItems.Add("&Tools")
 

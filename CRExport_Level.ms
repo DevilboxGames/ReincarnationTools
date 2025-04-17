@@ -92,7 +92,7 @@ fn ExportLevelRoutes routetxtfile funsize:false routesLayerName:"sys_LevelRoutes
 	
 	local routestxt = ""
 
-	local routesLayer = LayerManager.getLayerByName routesLayerName
+	local routesLayer = LayerManager.getLayerFromName routesLayerName
 	local routesNodes
 
 	routesLayer.nodes &routesNodes
@@ -114,15 +114,15 @@ fn ExportLevelRoutes routetxtfile funsize:false routesLayerName:"sys_LevelRoutes
 	for i = 1 to routesNodes.count do
 	(
 		if (classof routesNodes[i]) == AILink then 
-			(
-					append allLinks routesNodes[i]
-			)
-			else if (classof routesNodes[i]) == AINode then 
-			(
-				append allNodes routesNodes[i]
-				nodePos = ConvertToCRSpace routesNodes[i].pos
-				nodeText = nodeText + "[AINODE]\n<INDEX>\n"+(allNodes.count as string)+"\n<TYPE>\n0\n<RADIUS>\n"+(routesNodes[i].radius as string)+"\n<POS>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE_OFFSET>\n0.0000\n\n"
-			)
+		(
+				append allLinks routesNodes[i]
+		)
+		else if (classof routesNodes[i]) == AINode then 
+		(
+			append allNodes routesNodes[i]
+			nodePos = ConvertToCRSpace routesNodes[i].pos
+			nodeText = nodeText + "[AINODE]\n<INDEX>\n"+(allNodes.count as string)+"\n<TYPE>\n0\n<RADIUS>\n"+(routesNodes[i].radius as string)+"\n<POS>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE>\n"+(nodePos.x as string)+","+(nodePos.y as string)+","+(nodePos.z as string)+"\n<RACE_LINE_OFFSET>\n0.0000\n\n"
+		)
 	)
 
 	for i=1 to allLinks.count do

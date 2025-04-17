@@ -93,12 +93,12 @@ FunsizeAccessoryPlacementAttribute = attributes FunsizeAccessoryPlacementCustAtt
 			local node = undefined
 			format "dependents:\n"
 			for dep in deps do (
-				format "\t% - %  - % - %\n" dep (classof dep) (superClassOf dep) (isKindOf dep GeometryClass)
+				--format "\t% - %  - % - %\n" dep (classof dep) (superClassOf dep) (isKindOf dep GeometryClass)
 				local deps2 = refs.dependents dep
 
-				format "\tdependents:\n"
+				--format "\tdependents:\n"
 				for dep2 in deps2 do (
-					format "\t\t% - % - % - %\n" dep2 (classof dep2) (superClassOf dep2) (isKindOf dep2 GeometryClass)
+					--format "\t\t% - % - % - %\n" dep2 (classof dep2) (superClassOf dep2) (isKindOf dep2 GeometryClass)
 					if (isKindOf dep2 ReferenceTarget) == false then node = dep2
 				)
 			)
@@ -117,14 +117,14 @@ FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(
 	parameters main rollout:FunsizeLevelTextRollout (
 		LevelCareerNum type:#integer ui:spn_LevelCareerNum range:[0,100,0]
 		LevelRaceNum type:#integer ui:spn_LevelRaceNum range:[0,30,0]
-		LevelNameKey type:#string ui:txt_LevelNameKey
-		LevelName type:#string ui:txt_LevelName
-		LevelDescriptionKey type:#string ui:txt_LevelDescriptionKey
-		LevelDescription type:#string ui:txt_LevelDescription
-		LevelEnvironmentKey type:#string ui:txt_LevelEnvironmentKey
-		LevelEnvironment type:#string ui:txt_LevelEnvironment
-		LevelText3Key type:#string ui:txt_LevelText3Key
-		LevelText3 type:#string ui:txt_LevelText3
+		--LevelNameKey type:#string ui:txt_LevelNameKey default:"USER_LEVEL_01"
+		LevelName type:#string ui:txt_LevelName default:"User Level"
+		--LevelDescriptionKey type:#string ui:txt_LevelDescriptionKey default:"CM_TEXT_3_1"
+		LevelDescription type:#string ui:txt_LevelDescription default:"This is a user made level"
+		--LevelEnvironmentKey type:#string ui:txt_LevelEnvironmentKey default: "USERLEVEL_LOCATION"
+		LevelEnvironment type:#string ui:txt_LevelEnvironment default:"User World"
+		--LevelText3Key type:#string ui:txt_LevelText3Key
+		--LevelText3 type:#string ui:txt_LevelText3
 
 	)
 	parameters unlocks rollout:FunsizeLevelUnlocksRollout (
@@ -140,42 +140,42 @@ FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(
 		PedCount type:#integer ui:spn_PedCount range:[0,10000,0]
 		Laps type:#integer ui:spn_Laps default:3 range:[0,100,0]
 		AISkill type:#integer ui:spn_AISkill default:2 range:[0,10,0]
-		AICars type:#integer ui:spn_AICars default:2 range:[0,30,0]
-		NumAI type:#integer ui:spn_NumAI default:2 range:[0,30,0]
+		AICars type:#integer ui:spn_AICars default:0 range:[0,30,0]
+		NumAI type:#integer ui:spn_NumAI default:5 range:[0,30,0]
 
 		Boss type:#string ui:txt_Boss default:"None"
 	)
 	parameters timeandcredits rollout:FunsizeLevelTimeCreditsRollout (
 		RequiredCredits type:#integer ui:spn_RequiredCredits
 
-		WinBonusLaps_Easy type:#integer ui:spn_WinBonusLaps_Easy
-		WinBonusLaps_Medium type:#integer ui:spn_WinBonusLaps_Medium
-		WinBonusLaps_Hard type:#integer ui:spn_WinBonusLaps_Hard
+		WinBonusLaps_Easy type:#integer ui:spn_WinBonusLaps_Easy default:2000
+		WinBonusLaps_Medium type:#integer ui:spn_WinBonusLaps_Medium default:1000
+		WinBonusLaps_Hard type:#integer ui:spn_WinBonusLaps_Hard default:1000
 
-		WinBonusPeds_Easy type:#integer ui:spn_WinBonusPeds_Easy
-		WinBonusPeds_Medium type:#integer ui:spn_WinBonusPeds_Medium
-		WinBonusPeds_Hard type:#integer ui:spn_WinBonusPeds_Hard
+		WinBonusPeds_Easy type:#integer ui:spn_WinBonusPeds_Easy default:7500
+		WinBonusPeds_Medium type:#integer ui:spn_WinBonusPeds_Medium default:5000
+		WinBonusPeds_Hard type:#integer ui:spn_WinBonusPeds_Hard default:3000
 
-		WinBonusWasted_Easy type:#integer ui:spn_WinBonusWasted_Easy
-		WinBonusWasted_Medium type:#integer ui:spn_WinBonusWasted_Medium
-		WinBonusWasted_Hard type:#integer ui:spn_WinBonusWasted_Hard
+		WinBonusWasted_Easy type:#integer ui:spn_WinBonusWasted_Easy default:2000
+		WinBonusWasted_Medium type:#integer ui:spn_WinBonusWasted_Medium default:1000
+		WinBonusWasted_Hard type:#integer ui:spn_WinBonusWasted_Hard default:1000
 
-		StartTime_Easy type:#integer ui:spn_StartTime_Easy
-		StartTime_Medium type:#integer ui:spn_StartTime_Medium
-		StartTime_Hard type:#integer ui:spn_StartTime_Hard
+		StartTime_Easy type:#integer ui:spn_StartTime_Easy default:180
+		StartTime_Medium type:#integer ui:spn_StartTime_Medium default:90
+		StartTime_Hard type:#integer ui:spn_StartTime_Hard default:60
 
 	)
 	rollout FunsizeLevelTextRollout "Level Text" (
 		spinner spn_LevelCareerNum "Career Mode Order" type:#integer range:[0,100,0]
 		spinner spn_LevelRaceNum "Race Number" type:#integer range:[0,30,0]
-		edittext txt_LevelNameKey "LevelNameKey" labelOnTop:true
+		--edittext txt_LevelNameKey "LevelNameKey" labelOnTop:true
 		edittext txt_LevelName "LevelName" labelOnTop:true
-		edittext txt_LevelDescriptionKey "LevelDescriptionKey" labelOnTop:true
+		--edittext txt_LevelDescriptionKey "LevelDescriptionKey" labelOnTop:true
 		edittext txt_LevelDescription "LevelDescription" labelOnTop:true
-		edittext txt_LevelEnvironmentKey "LevelEnvironmentKey" labelOnTop:true
+		--edittext txt_LevelEnvironmentKey "LevelEnvironmentKey" labelOnTop:true
 		edittext txt_LevelEnvironment "LevelEnvironment" labelOnTop:true
-		edittext txt_LevelText3Key "LevelText3Key" labelOnTop:true
-		edittext txt_LevelText3 "LevelText3" labelOnTop:true
+		--edittext txt_LevelText3Key "LevelText3Key" labelOnTop:true
+		--edittext txt_LevelText3 "LevelText3" labelOnTop:true
 	)
 	rollout FunsizeLevelUnlocksRollout "Level Unlocks & Stats" (
 		edittext txt_TrackUnlock "TrackUnlock"
@@ -187,13 +187,50 @@ FunsizeLevelInfoAttribute = attributes FunsizeLevelInfoCustAttribute attribid:#(
 		edittext txt_RaceType "RaceType"
 
 		spinner spn_LapLength "LapLength" type:#float range:[0,10000,0]
+		button btn_CalcLapLength "Calculate Lap Length"
 		spinner spn_PedCount "PedCount" type:#integer  range:[0,10000,0]
+		button btn_CalcPedCount "Calculate Ped Count"
 		spinner spn_Laps "Laps" type:#integer  default:3 range:[0,100,0]
 		spinner spn_AISkill "AISkill" type:#integer  default:2 range:[0,10,0]
 		spinner spn_AICars "AICars" type:#integer  default:2 range:[0,30,0]
 		spinner spn_NumAI "NumAI" type:#integer  default:2 range:[0,30,0]
 
 		edittext txt_Boss "Boss"
+
+		on btn_CalcLapLength pressed do (
+			
+			local deps = refs.dependents this
+			local node = undefined
+			for dep in deps do (
+				local deps2 = refs.dependents dep
+
+				for dep2 in deps2 do (
+					if (isKindOf dep2 ReferenceTarget) == false then node = dep2
+				)
+			)
+
+			LapLength = 0
+			if node != null then (
+				local levelModifier = node.modifiers["Funsize Level Settings"]
+
+				if levelModifier != null then (
+					local routesLayerName = levelModifier.LevelPathsLayerName
+					local routesLayer = LayerManager.getLayerFromName routesLayerName
+					local routesNodes
+
+					routesLayer.nodes &routesNodes
+
+					local links = for routeNode in routesNodes where (classof routeNode) == AILink and routeNode.LinkType[1] == 1 collect routeNode
+					Format "Found % links out of %\n" links.count routesNodes.count
+					for routeNode in routesNodes where (classof routeNode) == AILink and routeNode.LinkType[1] == 1 do (
+						local linkLength = distance routeNode.Node1.Node routeNode.Node2.Node
+						LapLength += linkLength
+						Format "\tAdding % to laplength (now %)\n" linkLength LapLength
+					)
+				)
+			)
+			
+		)
 	)
 	rollout FunsizeLevelTimeCreditsRollout "Level Credits & Timer" (
 
@@ -230,15 +267,15 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		Environment type:#string ui:txt_Environment default:"nyhorizn"
 		EnvironmentMap type:#string ui:txt_EnvironmentMap default:"env"
 		ShadowStrength type:#color default:(color 178 178 178)
-		MapName type:#string ui:txt_MapName defualt:"Embankment_level"
+		MapName type:#string ui:txt_MapName default:"Embankment_level"
 		MapSize type:#point3
 		MapCenter type:#point3
 		BigMap type:#string ui:txt_BigMap
 		GridHelper type:#maxObject
 		MapMatrix type:#Matrix3
-		FogColour type:#color ui:col_FogColour
-		LightingColour type:#color ui:col_LightingColour
-		Headlights type:#boolean ui:chk_Headlights
+		FogColour type:#color ui:col_FogColour default:(color 15 5 0 190)
+		LightingColour type:#color ui:col_LightingColour default:(color 147 153 211)
+		Headlights type:#boolean ui:chk_Headlights default:true
 		Splash type:#string ui:txt_Splash
 		AutoRecoverHeightEnabled type:#boolean ui:chk_AutoRecoverHeightenabled
 		AutoRecoverHeight type:#float ui:spn_AutoRecoverHeight
@@ -251,24 +288,25 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 
 	rollout FunsizeLevelDetailsRollout "Level Details" (
 		group "Level Details" (
-			edittext txt_FolderName "Folder Name"
-			edittext txt_FileName "File Name"
+			edittext txt_FolderName "Folder Name" labelOnTop:true
+			edittext txt_FileName "File Name" labelOnTop:true
 			dropdownlist dpdn_LayerName "Accessory Layer"
 			dropdownlist dpdn_PedLayerName "Ped Layer"
 			dropdownlist dpdn_PowerupLayerName "Powerup Layer"
-			edittext txt_LevelName "Level Name"
-			edittext txt_LevelDescription "Level Description"
-			edittext txt_Environment "Environment"
-			edittext txt_EnvironmentMap "Environment Map"
-			edittext txt_Splash "Splash Texture"
+			dropdownlist dpdn_PathsLayerName "Paths Layer"
+			edittext txt_LevelName "Level Name" labelOnTop:true
+			edittext txt_LevelDescription "Level Description" labelOnTop:true
+			edittext txt_Environment "Environment" labelOnTop:true
+			edittext txt_EnvironmentMap "Environment Map" labelOnTop:true
+			edittext txt_Splash "Splash Texture" labelOnTop:true
 			checkbox chk_AutoRecoverHeightenabled "Auto Recovery Height"
 			spinner spn_AutoRecoverHeight "" type:#float range:[-500,500,-100]
 			spinner spn_Viz "VIZ" type:#integer range:[0,1000,435]
-			edittext txt_AIPath "AI Paths File"
+			edittext txt_AIPath "AI Paths File" labelOnTop:true
 		)
 		group "Mini Map" (
-			edittext txt_MapName "Map Name"
-			edittext txt_BigMap "Map Image"
+			edittext txt_MapName "Map Name" labelOnTop:true
+			edittext txt_BigMap "Map Image" labelOnTop:true
 			label lbl_MapSize "Map Size"
 			spinner spn_MapSizeX "X" across:2 
 			spinner spn_MapSizeY "Y" across:2 
@@ -405,9 +443,11 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 			dpdn_PedLayerName.selection = finditem dpdn_PedLayerName.items LevelPedLayerName
 			dpdn_PowerupLayerName.items = items
 			dpdn_PowerupLayerName.selection = finditem dpdn_LayerName.items LevelPowerupLayerName
+			dpdn_PathsLayerName.items = items
+			dpdn_PathsLayerName.selection = finditem dpdn_LayerName.items LevelPathsLayerName
 		)
 		on FunsizeLevelDetailsRollout open do (
-
+			FunsizeLevelDetailsRollout.width = 500
 			refreshMapData()
 			refreshMatMods()
 			refreshSmokeCols()
@@ -418,6 +458,19 @@ FunsizeLevelDetailsAttribute = attributes FunsizeLevelDetailsCustAttribute attri
 		on dpdn_LayerName selected selectedIndex do (
 			LevelLayerName = dpdn_LayerName.Items[selectedIndex]
 		)
+
+		on dpdn_PedLayerName selected selectedIndex do (
+			LevelPedLayerName = dpdn_PedLayerName.Items[selectedIndex]
+		)
+
+		on dpdn_PowerupLayerName selected selectedIndex do (
+			LevelPowerupLayerName = dpdn_PowerupLayerName.Items[selectedIndex]
+		)
+
+		on dpdn_PathsLayerName selected selectedIndex do (
+			LevelPathsLayerName = dpdn_PathsLayerName.Items[selectedIndex]
+		)
+
 		on lv_SmokeCols selectedindexchanged do (
 			if lv_SmokeCols.SelectedIndices.count > 0 then (
 				local i = lv_SmokeCols.SelectedIndices.Item[0]

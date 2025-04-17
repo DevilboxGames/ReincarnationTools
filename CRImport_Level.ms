@@ -436,7 +436,7 @@ fn ParseLevelRoutesTXT txtFileName layerToUse:"sys_LevelRoutes" uniquePathsPerRa
 							(
 								currentAINode.RaceLine = ConvertToCRSpace (StringAsPoint3 curline)
 								currentAINode.RaceLine.y = -currentAINode.RaceLine.y
-								currentAINode.pos.z = -currentAINode.pos.z
+								currentAINode.RaceLine.z = -currentAINode.RaceLine.z
 							)
 							"<RACE_LINE_OFFSET>":
 							(

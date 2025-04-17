@@ -1898,7 +1898,61 @@ plugin simpleObject CarmaHelper_LevelRoutes
 		)
 
 		on but_AddRace pressed do (
-			append Races ("Race"+((Races.count+1) as string))
+			if IsFunsize then (
+				local levelNumString = (Races.count + 1) as string						
+				
+				if activeRace < 10 then levelNumString = "0"+levelNumString
+
+				local LevelPathsLayerName = "sys_LevelRoutes_" + levelNumString
+
+				if (LayerManager.getLayerFromName LevelPathsLayerName) == undefined then(
+					LayerManager.newLayerFromName LevelPathsLayerName
+				)
+
+				local routesLayer = (LayerManager.getLayerFromName LevelPathsLayerName)
+				routesLayer.current = true
+				append Races ("Race"+((Races.count+1) as string))
+				
+				local existingRoutesNodes
+				routesLayer.nodes &existingRoutesNodes
+
+				if (for n in existingRoutesNodes where (classof n) == AILink or (classof n) == AINode collect n).count == 0 and Races.Count > 1 then (
+					local routesNodes
+					local newNodes = #()
+					local newLinks = #()
+					local firstRouteLayer = (LayerManager.getLayerFromName "sys_LevelRoutes_01")
+					if firstRouteLayer != undefined then (
+						firstRouteLayer.nodes &routesNodes
+
+						for node in routesNodes where (classof node) == AINode do (
+							local newNode = AINode name:node.Name pos:node.pos Index:node.Index Radius:node.Radius RaceLine:node.RaceLine RaceLineOffset:node.RaceLineOffset Type:node.Type
+							append newNodes newNode
+						)
+
+						for link in routesNodes where (classof link) == AILink do (
+							local newLink = AILink name:link.Name Width:link.Width LinkType:#() Water:#()
+							for linkType in link.LinkType do (
+								append newLink.LinkType linkType
+							)
+							for water in link.Water do (
+								append newLink.Water water
+							)
+							local node1 = (for n in newNodes where n.Name == link.Node1.node.Name collect n)[1]
+							local node2 = (for n in newNodes where n.Name == link.Node2.node.Name collect n)[1]
+
+							newLink.Node1 = nodeTransformMonitor node:node1 forwardTransformChangeMsgs:false
+							newLink.Node2 = nodeTransformMonitor node:node2 forwardTransformChangeMsgs:false
+
+						)
+
+					)
+					
+				)
+
+			)
+			else (
+				append Races ("Race"+((Races.count+1) as string))
+			)
 			UpdateRaces()
 		)
 		on but_DelRace pressed do (
@@ -2305,7 +2359,7 @@ fn LinkSelectedAINodes = (
 
 fn CreateLevelAIPathManager = (
 	global aiPathManager = CarmaHelper_LevelRoutes name:"sys_AIPathManager"
-	append aiPathManager.Races "Race1"
+	append aiPathManager.Races "Race01"
 	aiPathManager
 )
 

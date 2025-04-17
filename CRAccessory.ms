@@ -2540,7 +2540,12 @@ AccessoryDynamicsAttribute = attributes AccessoryDynamicsCustAttrib attribid:#(0
 			)
 			lv_shapes.Items.clear()
 			for shape in collisionshapes do (
-				lvItem = dotnetobject "listviewitem" shape.node.name
+				if shape.node != undefined then (
+					lvItem = dotnetobject "listviewitem" shape.node.name
+				)
+				else (
+					lvItem = dotnetobject "listviewitem" "[MissingShape]"
+				)
 				lv_shapes.Items.add lvitem
 			)
 		)

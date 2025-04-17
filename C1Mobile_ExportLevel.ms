@@ -100,8 +100,13 @@ fn ExportFunsizeLevelTXT levelRoot filename  = (
 
 )
 
-fn Funsize_AddLeveltoXML levelInfoModifier overridePath:unsupplied = (
+fn Funsize_AddLeveltoXML levelModifier levelInfoModifier overridePath:unsupplied = (
 	local FunsizeDataPath = CarmaSettings.FunsizeSettings.DataFolder
+
+	local levelFolder = levelModifier.LevelFolderName
+	local levelNumString = (levelInfoModifier.LevelRaceNum as string)
+	
+	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
 
 	if overridePath != unsupplied then (
 		FunsizeDataPath = overridePath
@@ -126,15 +131,14 @@ fn Funsize_AddLeveltoXML levelInfoModifier overridePath:unsupplied = (
 	if levelEnvironment == undefined then (
 		levelEnvironment = "UNKNOWN"
 	)
-	if levelText3 == undefined then (
-		levelText3 = ""
-	)
+	
+	local levelNameKey = (toupper levelFolder) + "_" + levelNumString
+	local levelDescriptionKey = "CM_TEXT_1_"+(levelInfoModifier.LevelCareerNum as string)
+	local levelEnvironmentKey = (toupper levelFolder) + "_LOCATION"
 
-
-	textXml.SetText  levelInfoModifier.LevelNameKey levelName language
-	textXml.SetText  levelInfoModifier.LevelDescriptionKey levelDescription language
-	textXml.SetText  levelInfoModifier.LevelEnvironmentKey levelEnvironment language
-	textXml.SetText  levelInfoModifier.LevelText3Key levelText3 language
+	textXml.SetText levelNameKey levelName language
+	textXml.SetText levelDescriptionKey levelDescription language
+	textXml.SetText levelEnvironmentKey levelEnvironment language
 
 	textXml.Save xmlPath
 )
@@ -144,7 +148,7 @@ fn Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:unsuppl
 	
 	local pathClass = (dotnetclass "System.IO.Path")
 	local levelFolder = levelModifier.LevelFolderName
-	local careerLevelNum = levelInfoModifier.LevelRaceNum
+	local careerLevelNum = levelInfoModifier.LevelCareerNum
 	local levelNumString = (levelInfoModifier.LevelRaceNum as string)
 	
 	if levelInfoModifier.LevelRaceNum < 10 then levelNumString = "0"+levelNumString
@@ -171,10 +175,15 @@ fn Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:unsuppl
 	)
 
 	if levelCareerInfo != undefined then (
-		levelCareerInfo.LevelNameKey = levelInfoModifier.LevelNameKey
-		levelCareerInfo.LevelDescriptionKey = levelInfoModifier.LevelDescriptionKey
-		levelCareerInfo.EnvironmentNameKey = levelInfoModifier.LevelEnvironmentKey
-		levelCareerInfo.LocalisationTextKey4 = levelInfoModifier.LevelText3Key
+		local levelNameKey = (toupper levelFolder) + "_" + levelNumString
+		local levelDescriptionKey = "CM_TEXT_1_"+(levelInfoModifier.LevelCareerNum as string)
+		local levelEnvironmentKey = (toupper levelFolder) + "_LOCATION"
+		local levelText3Key = "CM_TEXT_3_"+(levelInfoModifier.LevelCareerNum as string)
+
+		levelCareerInfo.LevelNameKey = levelNameKey
+		levelCareerInfo.LevelDescriptionKey = levelDescriptionKey
+		levelCareerInfo.EnvironmentNameKey = levelEnvironmentKey
+		levelCareerInfo.LocalisationTextKey4 = levelText3Key
 		
 		levelCareerInfo.TrackUnlock = levelInfoModifier.TrackUnlock
 		levelCareerInfo.VehicleUnlock = levelInfoModifier.VehicleUnlock
@@ -429,7 +438,7 @@ fn ExportFunsizeLevel levelRoot nolaunch:false overridePath:unsupplied = (
 	local levelModifier = levelRoot.modifiers["Funsize Level Settings"] 
 	local levelInfoModifier = levelRoot.modifiers["Funsize Level Info"] 
 
-		Funsize_AddLeveltoXML levelInfoModifier overridePath:overridePath
+		Funsize_AddLeveltoXML levelModifier levelInfoModifier overridePath:overridePath
 		Funsize_UpdateCareersTXT levelModifier levelInfoModifier overridePath:overridePath
 		Funsize_ExportLevelPaths levelModifier levelInfoModifier overridePath:overridePath
 		Funsize_ExportLevelTxt levelModifier levelInfoModifier overridePath:overridePath
@@ -438,14 +447,15 @@ fn ExportFunsizeLevel levelRoot nolaunch:false overridePath:unsupplied = (
 	
 	levelFolder = (FunsizeDataPath+"Data\\Content\\Tracks\\Levels\\" + levelModifier.LevelFolderName + "\\")
 	
-	
+	/*
 	MaterialsToExport=#()
 	ExportMDL levelFolder false true exportMats:true exportTextures:true funsizeExport:true createOctree:true nodes:#(levelRoot)
 	ExportCNT (levelFolder+"level.cnt") levelRoot
 	for mat in MaterialsToExport do format "%, %\n" mat[2].name mat[2].mat_flags
 	ExportMaterialsAndTextures levelFolder exportMats:true exportTextures:true funsizeExport:true createOctree:false
 	--RenderMobileUIAssets carModifier.CarName FunsizeDataPath
-	
+	*/
+	ExportToBeelzebub fileName selectedModel exportMdls:true exportCnts:true exportHierarchy:true exportTexturesChecked:true exportMatsChecked:true exportMTLChecked:true exportOctreeChecked:true
 
 	if CarmaSettings.FunsizeSettings.AutoBuild and nolaunch == false then (
 		PackObb()

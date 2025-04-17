@@ -97,6 +97,56 @@ fn PlaceMobileAccessory trans accessoryName instanceName instanceColour = (
 
 )
 
+fn CreateLevelInfo = (
+
+	local levelNum = (for n in objects where (findstring n.name "sys_RaceInfo_") == 1 collect n).count + 1
+	local levelNumString = levelNum as string
+
+	if levelNum < 10 then levelNumString = "0"+levelNumString
+	
+	local LevelLayerName = "sys_level_"+(levelNumString)
+	local LevelPedLayerName = LevelLayerName + "_ped"
+	local LevelPowerupLayerName = LevelLayerName + "_powerups"
+	local LevelPathsLayerName = "sys_LevelRoutes_" + levelNumString
+
+	
+	local raceInfoNull = CreateNewNULLNode (matrix3 1) ("sys_RaceInfo_"+levelNumString) addAttributes:true nodeType:"IGNORE"
+	if (LayerManager.getLayerFromName LevelLayerName) == undefined then(
+		LayerManager.newLayerFromName LevelLayerName
+	)
+	if (LayerManager.getLayerFromName LevelPedLayerName) == undefined then(
+		LayerManager.newLayerFromName LevelPedLayerName
+	)
+	if (LayerManager.getLayerFromName LevelPowerupLayerName) == undefined then(
+		LayerManager.newLayerFromName LevelPowerupLayerName
+	)
+	if (LayerManager.getLayerFromName LevelPathsLayerName) == undefined then(
+		LayerManager.newLayerFromName LevelPathsLayerName
+	)
+
+	(layerManager.getLayerFromName LevelLayerName).current = true
+
+	
+	local levelModifier = raceInfoNull.modifiers["Funsize Level Settings"] 
+	local levelInfoModifier = raceInfoNull.modifiers["Funsize Level Info"] 
+
+	if levelModifier == undefined then (
+		levelModifier = AddFunsizeLevelAttributes raceInfoNull
+	)
+
+	if levelInfoModifier == undefined then (
+		levelInfoModifier = AddFunsizeLevelInfoAttributes raceInfoNull
+	)
+
+	levelInfoModifier.LevelRaceNum = levelNum
+	levelModifier.LevelFileName = "level_"+(levelNumString)+".txt"
+	levelModifier.LevelLayerName = LevelLayerName
+	levelModifier.LevelPedLayerName = LevelPedLayerName
+	levelModifier.LevelPowerupLayerName = LevelPowerupLayerName
+	levelModifier.LevelPathsLayerName = LevelPathsLayerName
+	levelModifier.AIPath = "paths_"+(levelNumString)+".txt"
+)
+
 fn SetFunsizeLevelSettingsFromTXT levelRoot levelTxt careersTxt textXml folderName levelNum = (
 	local levelModifier = levelRoot.modifiers["Funsize Level Settings"] 
 	local levelInfoModifier = levelRoot.modifiers["Funsize Level Info"] 
@@ -117,10 +167,13 @@ fn SetFunsizeLevelSettingsFromTXT levelRoot levelTxt careersTxt textXml folderNa
 	if levelCareerInfo != undefined then (
 		levelInfoModifier.LevelCareerNum = careersTxt.Items.IndexOf levelCareerInfo
 		levelInfoModifier.LevelRaceNum = levelNum
-		levelInfoModifier.LevelNameKey = levelCareerInfo.LevelNameKey
-		levelInfoModifier.LevelDescriptionKey = levelCareerInfo.LevelDescriptionKey
-		levelInfoModifier.LevelEnvironmentKey = levelCareerInfo.EnvironmentNameKey
-		levelInfoModifier.LevelText3Key = levelCareerInfo.LocalisationTextKey4
+		local levelNameKey = (toupper folderName) + "_" + levelNumString
+		local levelDescriptionKey = "CM_TEXT_1_"+(levelInfoModifier.LevelCareerNum as string)
+		local levelEnvironmentKey = (toupper folderName) + "_LOCATION"
+		--levelInfoModifier.LevelNameKey = levelCareerInfo.LevelNameKey
+		--levelInfoModifier.LevelDescriptionKey = levelCareerInfo.LevelDescriptionKey
+		--levelInfoModifier.LevelEnvironmentKey = levelCareerInfo.EnvironmentNameKey
+		--levelInfoModifier.LevelText3Key = levelCareerInfo.LocalisationTextKey4
 		if textXml.KeyExists levelCareerInfo.LevelNameKey then (
 			levelInfoModifier.LevelName = textXml.GetText levelCareerInfo.LevelNameKey
 		)

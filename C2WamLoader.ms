@@ -1,5 +1,5 @@
 forceDummyNull = true
-	CMDContentFolder = "d:\\Steam\\steamapps\\common\\Carmageddon Max Damage\\Data_Core\\Content\\" 
+	CMDContentFolder = "G:\\Steam\\steamapps\\common\\Carmageddon Max Damage\\Data_Core\\Content\\" 
 	CMDVehicleFolder = CMDContentFolder + "Vehicles\\" 
 	HeadlightFile = CMDVehicleFolder + "eagle_r\\head_light.light" 
 	BrakelightFile = CMDVehicleFolder + "eagle_r\\brake_light.light" 
@@ -8,8 +8,8 @@ forceDummyNull = true
 	C2DataFolder = C2Folder+"data\\"
 	C2CarImageFolder = C2Folder+"data\\INTRFACE\\CarImage\\"
 	CarsFolder = "cars\\"
-	C2OpponetsTextFile = C2DataFolder+"OPPONENT.TXT"
-	MaxSaveFolder = "D:\\Work\\ReincarnationTools\\VehicleDev\\C2Ports\\"
+	C2OpponentsTextFile = C2DataFolder+"OPPONENT.TXT"
+	MaxSaveFolder = "F:\\Work\\ReincarnationTools\\VehicleDev\\C2Ports\\"
 fn RotatePivotOnly obj rotation = (
 	local rotValInv=inverse (rotation as quat)
 	animate off in coordsys local obj.rotation*=RotValInv
@@ -49,7 +49,7 @@ fn CheckScriptChanges = (
 CheckScriptChanges()
 if loadedOtherScripts != true then (
 	filein "Carma_ImportV19-Trent.ms"
-	filein "ReincarnationTools.ms"
+	filein "BeelzebubTools.ms"
 	loadedOtherScripts = true
 )
 
@@ -756,7 +756,7 @@ struct GrooveAnimDef (
 fn ConvertCar C2CarName:"eagle3" = (
 	global OpponentsTXT
 	if OpponentsTXT == undefined then (
-		OpponentsTXT = (dotnetclass "ToxicRagers.Carmageddon2.Formats.OpponentsTXT").Load C2OpponetsTextFile
+		OpponentsTXT = (dotnetclass "ToxicRagers.Carmageddon2.Formats.OpponentTXT").Load C2OpponentsTextFile
 	)
 
 	additionalMatsToConvert = #()
@@ -764,7 +764,7 @@ fn ConvertCar C2CarName:"eagle3" = (
 	WAM = LoadWAMFile (C2DataFolder+CarsFolder+C2CarName+"\\"+C2CarName+".wam")
 	TXT = LoadTXTFile (C2DataFolder+CarsFolder+C2CarName+"\\"+C2CarName+".txt")
 
-	carRoot = LoadC2Dat (C2DataFolder+CarsFolder+C2CarName+"\\"+C2CarName+".dat") &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true imp_hier:true imp_group:true imp_act:true prefix:"" imp_scale69:true
+	carRoot = LoadC2Dat (C2DataFolder+CarsFolder+C2CarName+"\\"+C2CarName+".dat") &progressValue &progressText imp_mat:true imp_smth:true imp_quad:true imp_hier:true imp_group:false imp_act:true prefix:"" imp_scale69:true
 	--carShell = LoadC2Dat (C2DataFolder+CarsFolder+C2CarName+"\\"+C2CarName+"shell.dat") &progressValue &progressText imp_mat:false imp_smth:true imp_quad:true imp_hier:true imp_group:true imp_act:false prefix:"" imp_scale69:true
 
 	carname="C2"+C2carname
@@ -932,10 +932,30 @@ fn ConvertCar C2CarName:"eagle3" = (
 	format "RRWheel: %\tRRPivot:%\n" RRWheelAct RRPivotAct
 	format "RRWheel: %\tRRPivot:%\n" RRWheelAct RRPivotAct
 	format "Left Steer Act: %\t Right Steer Act: %" leftSteerAct rightSteerAct
+	
 	FLWheelObj = getnodebyname FLWheelAct
+	if FLWheelObj == null then (
+		FLWheelAct = (dotnetclass "System.IO.Path").ChangeExtension FLWheelAct ".dat"
+		FLWheelObj = getnodebyname FLWheelAct
+	)
+	
 	FRWheelObj = getnodebyname FRWheelAct
+	if FRWheelObj == null then (
+		FRWheelAct = (dotnetclass "System.IO.Path").ChangeExtension FRWheelAct ".dat"
+		FRWheelObj = getnodebyname FRWheelAct
+	)
+	
 	RLWheelObj = getnodebyname RLWheelAct
+	if RLWheelObj == null then (
+		RLWheelAct = (dotnetclass "System.IO.Path").ChangeExtension RLWheelAct ".dat"
+		RLWheelObj = getnodebyname RLWheelAct
+	)
+	
 	RRWheelObj = getnodebyname RRWheelAct
+	if RRWheelObj == null then (
+		RRWheelAct = (dotnetclass "System.IO.Path").ChangeExtension RRWheelAct ".dat"
+		RRWheelObj = getnodebyname RRWheelAct
+	)
 
 	FLWheelObj.pivot = FLWheelObj.center
 	FRWheelObj.pivot = FRWheelObj.center
@@ -980,7 +1000,7 @@ fn ConvertCar C2CarName:"eagle3" = (
 		crush = WAM.CrushEntries.item[i]
 		actorname = crush.Actor
 		obj = getnodebyname actorname
-		if obj != undefined then (
+		if obj != undefined and (classof obj) != Dummy then (
 			append originalWamMeshes obj
 			numObjVerts = getNumVerts obj
 			append originalWamMeshVerts (for i = 1 to numObjVerts collect getVert obj i)
@@ -999,7 +1019,7 @@ fn ConvertCar C2CarName:"eagle3" = (
 	KeepMaxAlive()
 	cfgMod = AddVehilceCFGModifier carRoot
 	KeepMaxAlive()
-	vehicleSetupLUAMod = AddVehilceSetupLUAModifier carRoot
+	vehicleSetupLUAMod = AddVehicleSetupLUAModifier carRoot
 	KeepMaxAlive()
 	handlingSetupLUAMod = AddHandlingSetupLUAModifier carRoot
 	KeepMaxAlive()
@@ -1037,31 +1057,56 @@ fn ConvertCar C2CarName:"eagle3" = (
 		)
 	)
  	append FLPivotObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_POINT_OF_SUSPENSION"
+	append FLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append FLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
+
  	if leftSteerAct == FLPivotAct then (
  		append FLPivotObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_POINT_OF_STEERING"
+ 		append FLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+ 		append FLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
  	)
  	append FLWheelObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_LEFT_POINT_OF_ROTATION"
+	append FLWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append FLWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 0
  	append FLWheelObj.modifiers["Car Structure Part"].ShapeType "TIC_TAC_X"
 
  	append FRPivotObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_POINT_OF_SUSPENSION"
+	append FRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append FRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 1
  	if rightSteerAct == FRPivotAct then (
  		append FRPivotObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_POINT_OF_STEERING"
+		append FRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+		append FRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 1
  	)
  	append FRWheelObj.modifiers["Car Structure Part"].PhysicsProperties "FRONT_RIGHT_POINT_OF_ROTATION"
+	append FRWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append FRWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 1
  	append FRWheelObj.modifiers["Car Structure Part"].ShapeType "TIC_TAC_X"
 	
 	if leftSteerAct == RLPivotAct then (
  		append RLPivotObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_LEFT_POINT_OF_STEERING"
+		append RLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+		append RLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 2
  	)
  	append RLPivotObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_LEFT_POINT_OF_SUSPENSION"
+	append RLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append RLPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 2
  	append RLWheelObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_LEFT_POINT_OF_ROTATION"
+	append RLWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append RLWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 2
  	append RLWheelObj.modifiers["Car Structure Part"].ShapeType "TIC_TAC_X"
 
 	if rightSteerAct == RLPivotAct then (
  		append RRPivotObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_POINT_OF_STEERING"
+		append RRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+		append RRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 3
  	)
  	append RRPivotObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_POINT_OF_SUSPENSION"
+	append RRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append RRPivotObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 3
  	append RRWheelObj.modifiers["Car Structure Part"].PhysicsProperties "REAR_RIGHT_POINT_OF_ROTATION"
+	append RRWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIsIndexed false
+	append RRWheelObj.modifiers["Car Structure Part"].PhysicsPropertyIndices 3
  	append RRWheelObj.modifiers["Car Structure Part"].ShapeType "TIC_TAC_X"
 
  	WeldParts FLWheelObj FLPivotObj -4
@@ -1083,8 +1128,10 @@ fn ConvertCar C2CarName:"eagle3" = (
  			vehicleSetupLUAMod.override_driver_name = opponent.DriverName
  			vehicleSetupLUAMod.override_bio = opponent.Bio
  			driverPortrait = C2CarImageFolder + c2carName+"CI\\tiffrgb\\"+opponent.DriverShortName+"64.tif"
- 			ConvertTDX.Convert driverPortrait (carFolder+"ui_assets\\") 5
- 			renameFile   (carFolder+"ui_assets\\"+opponent.DriverShortName+"64.tdx") (carFolder+"ui_assets\\"+carName+"_driver.tdx")
+			if (dotnetclass "System.IO.File").Exists driverPortrait then (
+ 				ConvertTDX.Convert driverPortrait (carFolder+"ui_assets\\") 5
+ 				renameFile   (carFolder+"ui_assets\\"+opponent.DriverShortName+"64.tdx") (carFolder+"ui_assets\\"+carName+"_driver.tdx")
+			)
  			if opponent.NetworkAvailability.tostring() == "eagle" then (
  				vehicleSetupLUAMod.eagle = true
  			)
@@ -1102,7 +1149,7 @@ fn ConvertCar C2CarName:"eagle3" = (
 		obj = getnodebyname actorname
 		
 
-		if obj != undefined then (
+		if obj != undefined and (classof obj) != Dummy then (
 			structMod = obj.modifiers["Car Structure Part"]
 			for s = 0 to (crush.SmashEntries.count - 1) do (
 				smash = crush.SmashEntries.item[s]
@@ -1258,100 +1305,101 @@ fn ConvertCar C2CarName:"eagle3" = (
  	for i=1 to otherGrooves.count do (
  		groove = otherGrooves[i]
  		obj = getnodebyname groove.PartName
+		if obj != undefined then (
+			if groove.AnimType == "Shear" then (
+				shearCentre = [-groove.Centre.x, -groove.Centre.z, groove.Centre.y] * 6.9
+				shearCentre = obj.center
+				format "Shear axis: %\n" groove.Axis
+				if groove.Centre.x != 0 then shearCentre.x = -groove.Centre.x * 6.9
+				else if groove.Centre.z != 0 then shearCentre.y = -groove.Centre.z * 6.9
+				else if groove.Centre.y != 0 then shearCentre.z = groove.Centre.y * 6.9
+				pointToPointMod =AddStructurePointToPointModifer obj
+				pointToPointMod.TypeOfPointToPoint_Selection = 1
+				pointToPointMod.TypeOfPointToPoint = StructurePointToPointValues[1]
+				pointOnThisObjectHelper = point prefix:("Position_Helper_"+obj.name) position:shearCentre
 
- 		if groove.AnimType == "Shear" then (
- 			shearCentre = [-groove.Centre.x, -groove.Centre.z, groove.Centre.y] * 6.9
- 			shearCentre = obj.center
- 			format "Shear axis: %\n" groove.Axis
- 			if groove.Centre.x != 0 then shearCentre.x = -groove.Centre.x * 6.9
- 			else if groove.Centre.z != 0 then shearCentre.y = -groove.Centre.z * 6.9
- 			else if groove.Centre.y != 0 then shearCentre.z = groove.Centre.y * 6.9
- 			pointToPointMod =AddStructurePointToPointModifer obj
- 			pointToPointMod.TypeOfPointToPoint_Selection = 1
- 			pointToPointMod.TypeOfPointToPoint = StructurePointToPointValues[1]
- 			pointOnThisObjectHelper = point prefix:("Position_Helper_"+obj.name) position:shearCentre
+				pointToPointMod.PointOnThisObject = nodeTransformMonitor node:pointOnThisObjectHelper forwardTransformChangeMsgs:false
+				pointToPointMod.PointOnOtherObject = nodeTransformMonitor node:pointOnThisObjectHelper forwardTransformChangeMsgs:false
+				pointToPointMod.OtherObject = nodeTransformMonitor node:carRoot forwardTransformChangeMsgs:false
 
- 			pointToPointMod.PointOnThisObject = nodeTransformMonitor node:pointOnThisObjectHelper forwardTransformChangeMsgs:false
- 			pointToPointMod.PointOnOtherObject = nodeTransformMonitor node:pointOnThisObjectHelper forwardTransformChangeMsgs:false
- 			pointToPointMod.OtherObject = nodeTransformMonitor node:carRoot forwardTransformChangeMsgs:false
+				pointToPointModWithScaling = AddStructurePointToPointModifer obj
+				pointToPointModWithScaling.TypeOfPointToPoint_Selection = 4
+				pointToPointModWithScaling.TypeOfPointToPoint = StructurePointToPointValues[4]
+				shearTargetObject = getnodebyname groove.ShearTarget
+				pointOnThisObjectScalingTargetHelper = point prefix:("Position_Helper_"+obj.name) position:shearTargetObject.pos
+				pointToPointModWithScaling.PointOnThisObject = nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false
+				pointToPointModWithScaling.PointOnOtherObject = nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false
+				pointToPointModWithScaling.OtherObject = nodeTransformMonitor node:shearTargetObject forwardTransformChangeMsgs:false
 
- 			pointToPointModWithScaling = AddStructurePointToPointModifer obj
- 			pointToPointModWithScaling.TypeOfPointToPoint_Selection = 4
- 			pointToPointModWithScaling.TypeOfPointToPoint = StructurePointToPointValues[4]
- 			shearTargetObject = getnodebyname groove.ShearTarget
- 			pointOnThisObjectScalingTargetHelper = point prefix:("Position_Helper_"+obj.name) position:shearTargetObject.pos
- 			pointToPointModWithScaling.PointOnThisObject = nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false
- 			pointToPointModWithScaling.PointOnOtherObject = nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false
- 			pointToPointModWithScaling.OtherObject = nodeTransformMonitor node:shearTargetObject forwardTransformChangeMsgs:false
+			)
+			else (
+				animMod = AddStructureAnimationModifer obj
+				animMod.AnimationTypeSelection =finditem StructureAnimationTypes groove.AnimType
+				animMod.AnimationType =groove.AnimType
+				animMod.ControlledBy = "CONSTANT_OVER_TIME"
+				animMod.ControlledBySelection = 2
+				if (tolower groove.axis) == "x" then (
+					animMod.axis = 1
+				)
+				else if (tolower groove.axis) == "y" then (
+					animMod.axis = 2
+				)
+				else (
+					animMod.axis = 3
+				)
+				format "Groove.axis: %\t\tAnimMod.axis: %\n" groove.axis animMod.axis
 
- 		)
- 		else (
- 			animMod = AddStructureAnimationModifer obj
- 			animMod.AnimationTypeSelection =finditem StructureAnimationTypes groove.AnimType
- 			animMod.AnimationType =groove.AnimType
- 			animMod.ControlledBy = "CONSTANT_OVER_TIME"
- 			animMod.ControlledBySelection = 2
- 			if (tolower groove.axis) == "x" then (
- 				animMod.axis = 1
-  			)
-  			else if (tolower groove.axis) == "y" then (
- 				animMod.axis = 2
-  			)
-  			else (
-  				animMod.axis = 3
-  			)
-  			format "Groove.axis: %\t\tAnimMod.axis: %\n" groove.axis animMod.axis
+				if groove.AnimType == "Oscillate" then (
+					animMod.Amount = groove.Period
+					animMod.Amount2 = length [groove.Delta.x,groove.Delta.y,groove.Delta.z] * 6.9
+					if groove.delta.x == 0 and groove.delta.y == 0 then (
+						animMod.axis = 1
+					)
+					else if groove.delta.x == 0 and groove.delta.z == 0 then (
+						animMod.axis =  2
+					)
+					else if groove.delta.z == 0 and groove.delta.y == 0 then (
+						animMod.axis = 3
+					)
+					else (
+						-- non axis aligned animation, create parent null
+						animAxis = normalize groove.delta
+						animAxis = [-animAxis.x, -animAxis.z, animAxis.y]
+						trans = matrixFromNormal animAxis
+						trans.pos = obj.pos
+						offsetNode = CreateNewNullNode trans (obj.name+"_offset")
+						offsetNode.parent = obj.parent
+						AddStructurePartModifier offsetNode
+						obj.parent = offsetNode
+						animMod.axis = 3
+					)
 
- 			if groove.AnimType == "Oscillate" then (
- 				animMod.Amount = groove.Period
- 				animMod.Amount2 = length [groove.Delta.x,groove.Delta.y,groove.Delta.z] * 6.9
- 				if groove.delta.x == 0 and groove.delta.y == 0 then (
- 					animMod.axis = 1
- 				)
- 				else if groove.delta.x == 0 and groove.delta.z == 0 then (
- 					animMod.axis =  2
- 				)
- 				else if groove.delta.z == 0 and groove.delta.y == 0 then (
- 					animMod.axis = 3
- 				)
- 				else (
- 					-- non axis aligned animation, create parent null
- 					animAxis = normalize groove.delta
- 					animAxis = [-animAxis.x, -animAxis.z, animAxis.y]
- 					trans = matrixFromNormal animAxis
- 					trans.pos = obj.pos
- 					offsetNode = CreateNewNullNode trans (obj.name+"_offset")
- 					offsetNode.parent = obj.parent
- 					AddStructurePartModifier offsetNode
- 					obj.parent = offsetNode
- 					animMod.axis = 3
-  				)
+				)
+				else if groove.AnimType == "Rotate" then (
+					animMod.Amount = groove.period * 6.9
 
- 			)
- 			else if groove.AnimType == "Rotate" then (
- 				animMod.Amount = groove.period * 6.9
+					if groove.Centre.x != 0 or  groove.Centre.y != 0 or  groove.Centre.z != 0 then (
+						offsetCentre = [-groove.Centre.x, -groove.Centre.z, groove.Centre.y] * 6.9
+						trans = obj.transform
+						trans.pos = trans.pos + offsetCentre
+						offsetNode = CreateNewNullNode trans (obj.name+"_offset")
+						offsetNode.parent = obj.parent
+						AddStructurePartModifier offsetNode
+						obj.parent = offsetNode
+						deleteModifier obj animMod
+						addModifier offsetNode animMod
 
- 				if groove.Centre.x != 0 or  groove.Centre.y != 0 or  groove.Centre.z != 0 then (
- 					offsetCentre = [-groove.Centre.x, -groove.Centre.z, groove.Centre.y] * 6.9
- 					trans = obj.transform
- 					trans.pos = trans.pos + offsetCentre
- 					offsetNode = CreateNewNullNode trans (obj.name+"_offset")
- 					offsetNode.parent = obj.parent
- 					AddStructurePartModifier offsetNode
- 					obj.parent = offsetNode
- 					deleteModifier obj animMod
- 					addModifier offsetNode animMod
+					)
+				)
+				else if groove.AnimType == "Rock" then (
+					animMod.Amount = groove.period
+					animMod.Amount2 = groove.MaxAngle
 
- 				)
- 			)
- 			else if groove.AnimType == "Rock" then (
- 				animMod.Amount = groove.period
- 				animMod.Amount2 = groove.MaxAngle
-
- 				pointOnThisObjectScalingTargetHelper = point prefix:("Position_Helper_"+obj.name) position:[-groove.Centre.x, -groove.Centre.z, groove.Centre.y]
- 				animMod.CentreOfRotation = (nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false) 
- 			)
- 		)
+					pointOnThisObjectScalingTargetHelper = point prefix:("Position_Helper_"+obj.name) position:[-groove.Centre.x, -groove.Centre.z, groove.Centre.y]
+					animMod.CentreOfRotation = (nodeTransformMonitor node:pointOnThisObjectScalingTargetHelper forwardTransformChangeMsgs:false) 
+				)
+			)
+		)
  	)
 
 	for obj in objects do (
@@ -1512,8 +1560,8 @@ fn SpaceOutCars = (
 		lastmax = $.max
 	)
 )
-fn ConvertAllCars = (
-	carFolders = getDirectories "G:\\VanillaC2\\Data\\CARS\\*"
+fn ConvertAllCars carDirectory:"G:\\VanillaC2\\Data\\CARS\\" = (
+	carFolders = getDirectories ((dotnetclass "System.IO.Path").Combine carDirectory "*")
 	numCars = carFolders.count
 	errors= StringStream ""
 	numErrors = 0

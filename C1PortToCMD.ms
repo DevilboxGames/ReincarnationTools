@@ -1011,7 +1011,7 @@ fn ConvertCar C1CarName:"monster" prefix:"C1SP" = (
 	KeepMaxAlive()
 	cfgMod = AddVehilceCFGModifier carRoot
 	KeepMaxAlive()
-	vehicleSetupLUAMod = AddVehilceSetupLUAModifier carRoot
+	vehicleSetupLUAMod = AddVehicleSetupLUAModifier carRoot
 	KeepMaxAlive()
 	handlingSetupLUAMod = AddHandlingSetupLUAModifier carRoot
 	KeepMaxAlive()

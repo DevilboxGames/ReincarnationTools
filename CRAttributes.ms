@@ -12,6 +12,18 @@ fn IsObjectANullCNT obj =
 	 (obj.modifiers["CNT Hierarchy"] != undefined and obj.modifiers["CNT Hierarchy"].NodeTypeID == 2)
 )
 
+fn HasCustomAttribute obj attribName = (
+	local result = false
+	local attribs = custAttributes.getDefs obj
+
+	for i = 1 to attribs.count do (
+		if attribs[i].name == attribName then (
+			result = true
+		)
+	)
+
+	result
+)
 
 fn ReplaceNullsWithDummy = (
 	
@@ -683,8 +695,8 @@ HandlingSetupLUAAttribute = attributes HandlingSetupLUA_Def attribID:#(0x34f73ea
 		CollisionEffect_Strength type:#float default:10.5 ui:spn_CollisionEffect_Strength  range:[0,100000,10.5]
 		Mass type:#float default:1300 ui:spn_Mass  range:[0,100000,1300]
 		WheelMass type:#float default:10 ui:spn_WheelMass  range:[0,100000,10]
-		CMPosY type:#float default:0.52 ui:spn_CMPosY  range:[0,100000,0.52]
-		CMPosZ type:#float default:0 ui:spn_CMPosZ  range:[0,100000,0]
+		CMPosY type:#float default:0.52 ui:spn_CMPosY  range:[-10,10,0.52]
+		CMPosZ type:#float default:0 ui:spn_CMPosZ  range:[-10,10,0]
 	)
 
 	parameters handling rollout:HandlingSetupLUAHandlingRollout
@@ -762,8 +774,8 @@ HandlingSetupLUAAttribute = attributes HandlingSetupLUA_Def attribID:#(0x34f73ea
 		spinner spn_CollisionEffect_Strength "Collision Effect Strength" type:#float default:10.5 range:[0,100000,10.5]
 		spinner spn_Mass "Mass" type:#float default:1300 range:[0,100000,1300]
 		spinner spn_WheelMass "WheelMass" type:#float default:10 range:[0,100000,10]
-		spinner spn_CMPosY "CMPosY" type:#float default:0.52 range:[0,100000,0.52]
-		spinner spn_CMPosZ "CMPosZ" type:#float default:0 range:[0,100000,0]
+		spinner spn_CMPosY "CMPosY" type:#float default:0.52 range:[-10,10,0.52]
+		spinner spn_CMPosZ "CMPosZ" type:#float default:0 range:[-10,10,0]
 	)
 
 	rollout HandlingSetupLUAHandlingRollout "Handling Setup" (
@@ -3123,12 +3135,14 @@ StructureCharacteristicsAttribute = attributes StructureCharacteristics_Def attr
 			append DamageWobble_AmpOfMaxWobble 0.02
 			append DamageWobble_RandomVariance 1.0
 
+			append Sound_ClunkVolume_Enabled true
 			append Sound_ClunkVolume_VolumeAtZero -6.0
 			append Sound_ClunkVolume_SpeedAtSlopeChange 20
 			append Sound_ClunkVolume_VolumeAtSlopeChange -3.0
 			append Sound_ClunkVolume_SpeedAtMaxVolume 80
 			append Sound_ClunkVolume_MaxVolume 0.0
 
+			append Sound_HighSpeedClunkVolume_Enabled true
 			append Sound_HighSpeedClunkVolume_VolumeAtZero -30.0
 			append Sound_HighSpeedClunkVolume_SpeedAtSlopeChange 40
 			append Sound_HighSpeedClunkVolume_VolumeAtSlopeChange -6.0
@@ -4741,7 +4755,7 @@ StructurePartAttribute = attributes StructurePart_Def attribID:#(0x70f93a7a, 0x4
 				local wheelindex = -1
 				for i = 1 to 4 do (
 					local physPropNamePos = (findString nextPhysProp StructPhysicsPropertyWheelPrefix[i])
-					if physPropNamePos > 0 then (
+					if physPropNamePos != undefined and physPropNamePos > 0 then (
 						wheelIndex = i - 1
 					)
 				)

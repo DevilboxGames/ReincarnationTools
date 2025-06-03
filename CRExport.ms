@@ -701,6 +701,221 @@ struct OtherTexturesDef (
 	Alias
 )
 
+fn ExportMt2Material folder mat = (
+	
+	dotNet.loadAssembly "system.xml"
+	xmlDoc=dotNetObject "system.xml.xmlDocument"
+	--format "exporting mat %\\%\n.mt2" folder materialName
+	
+	
+	local xmlRoot = xmlDoc.CreateElement "Material"
+	xmlDoc.AppendChild xmlRoot
+	
+	local xmlDecl = xmlDoc.CreateXmlDeclaration "1.0" "" ""
+	xmlDoc.InsertBefore xmlDecl xmlRoot
+	
+	local xmlBaseOff = xmlDoc.CreateElement "BasedOffOf"
+	xmlBaseOff.setAttribute "Name" mat.mt2_basematerialname
+	xmlRoot.AppendChild xmlBaseOff
+	
+	local xmlDoubleSided = xmlDoc.CreateElement "DoubleSided"
+	xmlDoubleSided.setAttribute "Value" mat.mt2_doublesided
+	xmlRoot.AppendChild xmlDoubleSided
+	
+	local xmlCastsShadow = xmlDoc.CreateElement "CastsShadows"
+	xmlDoubleSided.setAttribute "Value" mat.mt2_castshadows
+	xmlRoot.AppendChild xmlDoubleSided
+	
+	local xmlReceivesShadows = xmlDoc.CreateElement "ReceivesShadows"
+	xmlReceivesShadows.setAttribute "Value" mat.mt2_receivesshadows
+	xmlRoot.AppendChild xmlReceivesShadows
+	
+	local xmlFogEnabled = xmlDoc.CreateElement "FogEnabled"
+	xmlFogEnabled.setAttribute "Value" mat.mt2_fogenabled
+	xmlRoot.AppendChild xmlFogEnabled
+	
+	local xmlTranslucent = xmlDoc.CreateElement "Translucent"
+	xmlTranslucent.setAttribute "Value" mat.mt2_translucent
+	xmlRoot.AppendChild xmlTranslucent
+	
+	local xmlWalkable = xmlDoc.CreateElement "Walkable"
+	xmlWalkable.setAttribute "Value" mat.mt2_walkable
+	xmlRoot.AppendChild xmlWalkable
+	
+	local xmlPanickable = xmlDoc.CreateElement "Panickable"
+	xmlPanickable.setAttribute "Value" mat.mt2_Panickable
+	xmlRoot.AppendChild xmlPanickable
+	
+	local xmlSittable = xmlDoc.CreateElement "Sittable"
+	xmlSittable.setAttribute "Value" mat.mt2_Sittable
+	xmlRoot.AppendChild xmlSittable
+	
+	xmlPass = xmlDoc.CreateElement "Pass"
+	xmlPass.SetAttribute "Number" "0"
+	--xmlRoot.AppendChild xmlPass
+	
+	if mat.mt2_usemultiplier then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Multiplier"
+		if mat.mt2_multiplierisfloat3 then (
+			xmlConstant.setAttribute "Type" "float3"
+			xmlConstant.setAttribute "Value" ((mat.mt2_multiplierR as string) + " " + (mat.mt2_multiplierG as string) + " " + (mat.mt2_multiplierB))
+		)
+		else (
+			xmlConstant.setAttribute "Type" "float"
+			xmlConstant.setAttribute "Value" (mat.mt2_multiplierR as string)
+		)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usealphacutoff then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "AlphaCutOff"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_alphacutoff as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usremissivefactor then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "EmissiveFactor"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_emissivefactor as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_useEmissiveLight then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "EmissiveLight"
+		xmlConstant.setAttribute "Type" "float3"
+		xmlConstant.setAttribute "Value" ((mat.mt2_emissivelightR as string) + " " + (mat.mt2_emissivelightG as string) + " " + (mat.mt2_emissivelightB))
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usereflectionbluryness then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "ReflectionBluryness"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_reflectionbluryness as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usefresnelR0 then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Fresnel_R0"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_fresnelR0 as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usereflectionMultiplier then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "ReflectionMultiplier"
+		xmlConstant.setAttribute "Type" "float3"
+		xmlConstant.setAttribute "Value" ((mat.mt2_reflectionmultiplierR as string) + " " + (mat.mt2_reflectionmultiplierG as string) + " " + (mat.mt2_reflectionmultiplierB))
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_useblendfactor then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "BlendFactor"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_blendfactor as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_useBlenduvslot then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "BlendUVSlot"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_Blenduvslot as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_uselayer1uvslot then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Layer1UVSlot"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_layer1uvslot as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_uselayer2uvslot then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Layer2UVSlot"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_layer2uvslot as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usemindistance then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Min_distance"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_mindistance as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_usemaxdistance then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Max_distance"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_maxdistance as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_useseafalloff then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "Sea_Falloff"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_seafalloff as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if mat.mt2_useshorefactor then (
+		local xmlConstant = xmlDoc.CreateElement "Constant"
+		xmlConstant.setAttribute "Alias" "shore_factor"
+		xmlConstant.setAttribute "Type" "float"
+		xmlConstant.setAttribute "Value" (mat.mt2_useshorefactor as string)
+		xmlRoot.AppendChild xmlConstant
+	)
+
+	if(mat.mt2_texturecoordsource != undefined) then (
+		for tcs in mat.mt2_texturecoordsource do (
+			((dotnetclass "ToxicRagers.CarmageddonReincarnation.Formats.TextureCoordSource").FromJson tcs).ToXmlElement xmlRoot
+		)
+	)
+	xmlTexture = xmlDoc.CreateElement "Texture"
+	xmlTexture.SetAttribute "Alias" diffuseAlias
+	if bitmapName != undefined and bitmapName != "" then textureFileName = getFilenameFile bitmapName
+	else textureFileName = "NOTEXTURE"
+	xmlTexture.SetAttribute "FileName" textureFileName
+
+	xmlRoot.AppendChild xmlTexture
+	if otherTextures != undefined then (
+		for  otherTexture in otherTextures do (
+			xmlOtherTexture = xmlDoc.CreateElement "Texture"
+			xmlOtherTexture.SetAttribute "Alias" otherTexture.Alias
+			if otherTexture.TextureName != undefined and otherTexture.TextureName != "" then textureFileName = getFilenameFile otherTexture.TextureName
+			else textureFileName = "NOTEXTURE"
+			xmlOtherTexture.setAttribute "FileName" textureFileName
+
+			xmlRoot.AppendChild xmlOtherTexture
+		)
+	)
+
+	
+	xmlDoc.Save ((dotnetclass "System.IO.Path").Combine folder (materialName+".MT2"))
+	
+	free xmlDoc
+	free xmlRoot
+	free xmlDecl
+	free xmlDoubleSided
+	free xmlBaseOff
+	free xmlPass
+	free xmlTexture
+)
+
 fn ExportMaterial folder materialName bitmapName baseMaterial:"simple_base" diffuseAlias:"DiffuseColour" otherTextures:#() =
 (
 	dotNet.loadAssembly "system.xml"
@@ -1350,7 +1565,7 @@ fn ExportMDLMesh folder_name model forcedFilename:""  exportMats:false exportTex
 	)
 	--PrintArrayInFull mtl "List Of Materials"
 	--PrintArrayInFull facesForFinalMatID "facesForFinalMatID"
-	if exportMats or exportTextures do
+	if (exportMats or exportTextures) and rawMaterials.count > 0 do
 	(
 		for i=1 to mtl.count do
 		(
@@ -2808,7 +3023,7 @@ fn ExportMDL folder_name exportSelected exportHierarchy  exportMats:false export
 				ExportLight folder_name nodeToExport
 				
 			)
-			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and  nodeToExport.modifiers["CNT Hierarchy"].NodeType != "CNT" then
+			else if nodeToExport.modifiers["CNT Hierarchy"].NodeType != "IGNORE" and  nodeToExport.modifiers["CNT Hierarchy"].NodeType != "CNT" and  nodeToExport.modifiers["CNT Hierarchy"].NodeType != "NULL" then
 			(
 				ExportMDLMesh folder_name nodeToExport exportMats:exportMats exportTextures:exportTextures funsizeExport:funsizeExport  createOctree:createOctree
 			)

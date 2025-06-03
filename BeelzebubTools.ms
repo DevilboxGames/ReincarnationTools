@@ -11,6 +11,7 @@ fileIn "CRFormHelpers.ms"
 fileIn "CRRollouts.ms"
 
 fileIn "CRAttributes.ms"
+fileIn "Attributes/MT2Attributes.ms"
 
 fileIn "CRStructs.ms"
 --if PrintMeshScript== undefined then

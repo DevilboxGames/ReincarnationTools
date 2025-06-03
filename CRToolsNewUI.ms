@@ -18,6 +18,31 @@ fileIn "CRToolsNewUI_Export.ms"
 
 global currentMode = undefined
 
+fn BrowseForFolder formDialog inputFieldName initialDir caption:"Browser To Folder" onSelectedCallback:undefined = (
+	f = getSavePath initialDir:initialDir caption:caption
+	
+	local inputField = formDialog.Controls.Find inputFieldName false
+
+	if f == undefined then inputField[1].text = initialDir
+	else inputField[1].text = f
+
+	if onSelectedCallback != undefined then (
+		onSelectedCallback formDialog f
+	)
+)
+fn BrowseForFile formDialog inputFieldName initialFilename filterList caption:"Browser To Folder" onSelectedCallback:undefined = (
+	f = getOpenFilename filename:initialFilename caption:caption types:filterList
+	
+	local inputField = formDialog.Controls.Find inputFieldName false
+
+	if f == undefined then inputField[1].text = initialFilename
+	else inputField[1].text = f
+
+	if onSelectedCallback != undefined then (
+		onSelectedCallback formDialog f
+	)
+)
+
 fn GetIntPtr ptr = (
 	local dotnetPtr = dotNet.ValueToDotNetObject ptr (dotnetClass "System.IntPtr")
 	local ptrType = dotnetPtr.GetType()
@@ -163,6 +188,126 @@ fn SetToolMode_Ped args = (
 		
 		layoutHelper.EndVerticalGroup()
 	)
+)
+
+fn ShowGameOptions = (
+	global CarmaSettings
+	local gameOptionsDialog = dotNetObject "System.Windows.Forms.Form"
+	gameOptionsDialog.text = "General Settings"
+	gameOptionsDialog.name = "GameOptions"
+	gameOptionsDialog.AutoSize = true
+	gameOptionsDialog.AutoSizeMode = (dotnetclass "System.Windows.Forms.AutoSizeMode").GrowAndShrink
+
+
+	local layoutHelper = DotNetFormHelper ParentControl:gameOptionsDialog
+	layoutHelper.BeginVerticalGroup()
+		layoutHelper.BeginHorizontalGroup()
+			local gamePathInput = layoutHelper.AddTextInputWithLabel "gamePathInput" "Game Path" CarmaSettings.GamePath size:[300,27]
+			local gamePathBrowse = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20] margin:[0,28,10,10]
+			gamePathBrowse.Text = "Browse"
+			fn GamePathBrowseClicked btn ev =(
+				local gameOptionsDialog = btn.parent
+				fn onSelectedCallback formDialog f = (
+					local chkBox = formDialog.Controls.find "customDataCoreFolderCheckbox" false
+					if chkBox[1].checked == false then (
+						local txtInput = formDialog.Controls.find "DataCorePathInput" false
+						txtInput[1].text = (dotNetClass "System.IO.Path").Combine f "Data_Core"
+					)
+				)
+
+				BrowseForFolder gameOptionsDialog "gamePathInput" CarmaSettings.GamePath caption:"Browse To Game Folder..." onSelectedCallback: onSelectedCallback
+			)
+			SetClickHandler gamePathBrowse GamePathBrowseClicked
+		layoutHelper.EndHorizontalGroup()
+
+		
+		local customDataCoreFolderCheckbox = layoutHelper.AddControl  "System.Windows.Forms.Checkbox" size:[400,20]
+		customDataCoreFolderCheckbox.text = "Use Custom Data_Core folder?"
+		customDataCoreFolderCheckbox.name = "customDataCoreFolderCheckbox"
+		customDataCoreFolderCheckbox.checked = CarmaSettings.AllowSeperateDataCore
+
+		layoutHelper.BeginHorizontalGroup()
+			local DataCorePathInput = layoutHelper.AddTextInputWithLabel "DataCorePathInput" "Data_Core Path" CarmaSettings.DataCorePath size:[300,27]
+			local DataCorePathBrowse = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20] margin:[0,28,10,10]
+			
+			fn DataCorePathBrowseClicked btn ev =(
+				local gameOptionsDialog = btn.parent
+				BrowseForFolder gameOptionsDialog "DataCorePathInput" CarmaSettings.DataCorePath caption:"Browse To Data_Core Folder..."
+			)
+			SetClickHandler DataCorePathBrowse DataCorePathBrowseClicked
+			DataCorePathBrowse.Text = "Browse"
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+			local gibbedToolsPathInput = layoutHelper.AddTextInputWithLabel "gibbedToolsPathInput" "GibbedTools Path" CarmaSettings.GibbedTools size:[300,27]
+			local gibbedToolsPathBrowse = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20] margin:[0,28,10,10]
+			fn GibbedToolsPathBrowseClicked btn ev =(
+				local gameOptionsDialog = btn.parent
+				BrowseForFile gameOptionsDialog "gibbedToolsPathInput" CarmaSettings.GibbedTools "Gibbed.Duels.FileFormats.dll|Gibbed.Duels.FileFormats.dll" caption:"Browse To Gibbed Tools..."
+			)
+			SetClickHandler gibbedToolsPathBrowse GibbedToolsPathBrowseClicked
+			gibbedToolsPathBrowse.Text = "Browse"
+		layoutHelper.EndHorizontalGroup()
+
+		layoutHelper.BeginHorizontalGroup()
+			local lolDecoderPathInput = layoutHelper.AddTextInputWithLabel "lolDecoderPathInput" "LOL Decoder Path" CarmaSettings.LOLDecoder size:[300,27]
+			local lolDecoderPathBrowse = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20] margin:[0,28,10,10]
+			fn LOLDecoderPathBrowseClicked btn ev =(
+				local gameOptionsDialog = btn.parent
+				BrowseForFile gameOptionsDialog "lolDecoderPathInput" CarmaSettings.LOLDecoder "LOLDecoderLib.dll|LOLDecoderLib.dll" caption:"Browse To LOL Decoder..."
+			)
+			SetClickHandler lolDecoderPathBrowse LOLDecoderPathBrowseClicked
+			lolDecoderPathBrowse.Text = "Browse"
+		layoutHelper.EndHorizontalGroup()
+		
+		local convertTexturesInPlaceCheckbox = layoutHelper.AddControl  "System.Windows.Forms.Checkbox" size:[400,20]
+		convertTexturesInPlaceCheckbox.text = "Convert textures in same folder as TDX file?"
+		convertTexturesInPlaceCheckbox.name = "convertTexturesInPlaceCheckbox"
+		convertTexturesInPlaceCheckbox.checked = CarmaSettings.ConvertTexturesInPlace
+
+		layoutHelper.BeginHorizontalGroup()
+			local textureConversionPathInput = layoutHelper.AddTextInputWithLabel "textureConversionPathInput" "Texture Conversion Path" CarmaSettings.TexturePath size:[300,27]
+			local textureConversionPathBrowse = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20] margin:[0,28,10,10]
+			textureConversionPathBrowse.Text = "Browse"
+		layoutHelper.EndHorizontalGroup()
+	layoutHelper.BeginHorizontalGroup()
+
+	local okButton = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20]
+	--okButton.Location = dotnetobject "System.Drawing.Point" 10 130 
+	okButton.text = "Save"
+	fn GameSettingsOkClicked okButton ev = (
+		global CarmaSettings
+		local gameOptionsDialog = okButton.parent
+		local gamePathInput = gameOptionsDialog.Controls.Find "gamePathInput" false
+		local customDataCoreFolderCheckbox = gameOptionsDialog.Controls.Find "customDataCoreFolderCheckbox" false
+		local DataCorePathInput = gameOptionsDialog.Controls.Find "DataCorePathInput" false
+		local gibbedToolsPathInput = gameOptionsDialog.Controls.Find "gibbedToolsPathInput" false
+		local lolDecoderPathInput = gameOptionsDialog.Controls.Find "lolDecoderPathInput" false
+		local convertTexturesInPlaceCheckbox = gameOptionsDialog.Controls.Find "convertTexturesInPlaceCheckbox" false
+		local textureConversionPathInput = gameOptionsDialog.Controls.Find "textureConversionPathInput" false
+
+		CarmaSettings.GamePath = gamePathInput[1].text
+		CarmaSettings.AllowSeperateDataCore = customDataCoreFolderCheckbox[1].checked
+		CarmaSettings.GibbedTools = gibbedToolsPathInput[1].text
+		CarmaSettings.LOLDecoder = lolDecoderPathInput[1].text
+		CarmaSettings.ConvertTexturesInPlace = convertTexturesInPlaceCheckbox[1].checked
+		CarmaSettings.TexturePath = textureConversionPathInput[1].text
+		CarmaSettings.Save()
+		format "Saving CarmaSettings\n"
+		
+		gameOptionsDialog.Close()
+	)
+	SetClickHandler okButton GameSettingsOkClicked
+
+	local cancelButton = layoutHelper.AddControl  "System.Windows.Forms.Button" size:[100,20]
+	cancelButton.Text = "Cancel"
+	fn GameSettingsCancelClicked okButton ev = (
+		okButton.parent.Close()
+	)
+	SetClickHandler cancelButton GameSettingsCancelClicked
+	layoutHelper.EndHorizontalGroup()
+	layoutHelper.EndVerticalGroup()
+	gameOptionsDialog.ShowDialog()
 )
 
 fn ShowImportOptions = (
@@ -664,6 +809,8 @@ fn CreateMenu uiForm = (
 
 
 	fileMenu.MenuItems.Add("-")
+	local importSettings = fileMenu.MenuItems.Add("General Settings")
+	SetClickHandler importSettings ShowGameOptions
 	local importSettings = fileMenu.MenuItems.Add("Import Settings")
 	SetClickHandler importSettings ShowImportOptions
 	local exportSettings = fileMenu.MenuItems.Add("Export Settings")

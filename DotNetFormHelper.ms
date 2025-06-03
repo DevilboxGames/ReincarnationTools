@@ -75,15 +75,18 @@ struct DotNetFormHelper (
 
 		control.font = (dotNetObject "System.Drawing.Font" fontName fontSize fontStyle sizeUnitValue 0)
 	),
-	fn AddControl controlType size:[200,10] margin:[10,10] = (
+	fn AddControl controlType size:[200,10] margin:[0,0,0,0] = (
+		if (ClassOf margin) == Point2 then (
+			margin = [margin.x, margin.y, margin.x, margin.y]
+		)
 		if Items.Count > 0 then (
 			local control = dotNetObject controlType
 			local controlPosition = CurrentItem.NextControlPosition()
 
 			control.Size = dotnetobject "System.Drawing.Size" size.x size.y
-			control.Location = dotnetobject "System.Drawing.Point" controlPosition.x controlPosition.y
+			control.Location = dotnetobject "System.Drawing.Point" (controlPosition.x + margin.x) (controlPosition.y + margin.y)
 
-			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control MarginTop:margin.y MarginBottom:margin.y MarginLeft:margin.x MarginRight:margin.x
+			local controlItem = DotNetFormItem Type:"Control" X:controlPosition.X Y:controlPosition.Y Width:size.X Height:size.Y Control:control MarginTop:margin.y MarginBottom:margin.w MarginLeft:margin.x MarginRight:margin.z
 			append CurrentItem.Children controlItem
 
 			if AutoSize then (
@@ -214,7 +217,21 @@ struct DotNetFormHelper (
 			format "========================================\n== ERROR: Tried to end horizontal group without matching starting group\n"
 		)
 	),
-
+	fn AddTextInputWithLabel inputName inputLabel defaultValue size:[200,27] margin:[10,0] font:"Segoe UI" fontSize:10 bold:false underline:false = (
+		BeginVerticalGroup()
+		(
+			local inputLabelObj = AddControl "System.Windows.Forms.Label" size:size margin:margin
+			inputLabelObj.text = inputLabel
+			SetFont inputLabelObj "Segoe UI" fontSize bold:bold underline:underline
+	
+			local inputItem = AddControl "System.Windows.Forms.TextBox" size:size margin:margin
+			inputItem.name = inputName
+			inputItem.text = defaultValue
+		)
+		EndVerticalGroup()
+		
+		inputItem
+	),
 	fn PrintDebugItemTree item depth:1 = (
 		for i=1 to depth do format "\t"
 		format "%: % children" item.Type item.children.count

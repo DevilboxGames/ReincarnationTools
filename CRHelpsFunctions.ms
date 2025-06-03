@@ -150,6 +150,22 @@ fn ScatterObjectsOnMesh target objects count countIsPerArea:false = (
 	
 )
 
+fn computeConvexHullFromPoints nodeName points maxVerts:undefined pushAmnt:0.0 cleanup:true pos:[0,0,0] = (
+	local hull
+	with redraw off (
+		
+		hull = Editable_Mesh name:(nodeName + "_hull")
+		local mverts = maxVerts
+		if mVerts == undefined then mVerts = points.count
+
+		hull.mesh = nvpx.CreateConvexFromPoints points mVerts pushAmnt
+		hull.pivot = hull.center
+		hull.pos = pos
+		hull.pivot = [0,0,0]
+	)
+	hull
+)
+
 fn computeConvexHull theNode maxVerts:64 pushAmt:0.0 cleanup:true = (
 	with redraw off (
 		/*local rb = MassFX_RBody()

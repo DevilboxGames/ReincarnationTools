@@ -201,6 +201,7 @@ fn ExportCarFullClicked sender arg = (
 			--ExportCNT car_cnt_name selectedModel
 			--ExportMaterialsAndTextures mdl_path exportMats:exportMatsChecked exportTextures:exportTexturesChecked funsizeExport:exportMTLChecked createOctree:exportOctreeChecked
 			
+			ExportFullHierarchy car_cnt_name selectedModel
 		local structureXmlFile = (getFileNamePath car_cnt_name)+"structure.xml"
 		ExportStructureXML structureXmlFile selectedModel
 

@@ -239,7 +239,7 @@ fn ExportCarStructureClicked sender arg = (
 	else
 	(
 
-		file = GetSaveFileName caption:"Save Structure XML As" types:"Structure.XML (Structure.XML)|structure.xml"
+		structureXmlFile = GetSaveFileName caption:"Save Structure XML As" types:"Structure.XML (Structure.XML)|structure.xml"
 		ExportStructureXML structureXmlFile selection[1]
 	)
 )

@@ -110,6 +110,8 @@ attribID:#(0x1ece08a6, 0x11172cef)
         mt2_shorefactor type:#float default:0 ui:spn_shorefactor
     )
     rollout mt2propsrollout "Carmageddon Max Damage Material Properties" (
+        
+        fn bitmapPickFilter obj = (classof obj) == Bitmap 
         group "Base Settings" (
             dropdownlist dpdn_basematerialname "Base Material" items:Mt2BaseMaterials labelOnTop:true
             edittext txt_substance "Substance" labelOnTop:true across:2
@@ -206,7 +208,6 @@ attribID:#(0x1ece08a6, 0x11172cef)
 
         )
 
-        fn bitmapPickFilter obj = (classof obj) == Bitmap 
 
         fn UpdateForm = (
             if chk_multiplier.checked then (

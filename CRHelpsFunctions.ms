@@ -150,7 +150,7 @@ fn ScatterObjectsOnMesh target objects count countIsPerArea:false = (
 	
 )
 
-fn computeConvexHullFromPoints nodeName points maxVerts:undefined pushAmnt:0.0 cleanup:true pos:[0,0,0] = (
+fn computeConvexHullFromPoints nodeName points maxVerts:undefined pushAmnt:0.0 cleanup:true pos:[0,0,0] pivotAtCentre:false = (
 	local hull
 	with redraw off (
 		
@@ -159,9 +159,11 @@ fn computeConvexHullFromPoints nodeName points maxVerts:undefined pushAmnt:0.0 c
 		if mVerts == undefined then mVerts = points.count
 
 		hull.mesh = nvpx.CreateConvexFromPoints points mVerts pushAmnt
-		hull.pivot = hull.center
-		hull.pos = pos
-		hull.pivot = [0,0,0]
+		if pivotAtCentre then (
+			hull.pivot = hull.center
+			hull.pos = pos
+			hull.pivot = [0,0,0]
+		)
 	)
 	hull
 )
@@ -382,7 +384,7 @@ fn ConvertQuatToCRSpace2 q =
 fn GetAllChildren parent includeSelf:false = (
 	local result = #(parent)
 
-	if includeSelf == false then result = $()+obj.children
+	if includeSelf == false then result = #()+parent.children
 
 	local i = 1
 	do (

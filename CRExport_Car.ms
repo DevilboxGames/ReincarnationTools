@@ -740,6 +740,28 @@ fn FindVFXAnchorObjects obj = (
 	anchors
 )
 fn ExportVFXAnchors filename carRoot = (
+	local vfxFile = VFXAnchorsFile()
+	
+	for obj in anchorsObjects do (
+		for objmod in obj.modifiers do (
+			if objmod.name =="VFX Anchor" then (
+				helperObj = objmod.HelperObject.node
+				offset = ConvertToCRSpace (helperObj.position - obj.position)
+				rot = ConvertToCRSpace (helperObj.rotation as EulerAngles)
+				scale = ConvertToCRSpace helperObj.scale
+				scale.x = abs scale.x
+				scale.y = abs scale.y
+				scale.z = abs scale.z
+				vfxFile.AddAttachPointToTag objmod.AnchorID.groupName objmod.AnchorID obj.name offset rot scale
+				anchorData = VFXAnchorData AnchorID:objmod.AnchorID LumpName:obj.name offset:offset rotation:rot scale:scale
+				
+			)
+		)
+	)
+
+	vfxFile.Save filename
+)
+fn ExportVFXAnchors_Old filename carRoot = (
 	anchorsObjects = FindVFXAnchorObjects carRoot
 	anchorGroups = #()
 	anchorGroupNames = #()

@@ -13,6 +13,8 @@ fileIn "CRRollouts.ms"
 fileIn "CRAttributes.ms"
 fileIn "Attributes/MT2Attributes.ms"
 
+fileIn "FileFormats/CMD/Cars/VFXAnchors.ms"
+
 fileIn "CRStructs.ms"
 --if PrintMeshScript== undefined then
 --(

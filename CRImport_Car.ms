@@ -3408,7 +3408,29 @@ fn LoadVehicleConfigOld obj folderName =
 fn ImportVFXAnchors rootMesh filePath = (
 	luaFilename = filePath
 	if ((dotnetclass "System.IO.Path").GetFilename luaFilename) == "" then (
-		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vehicle_setup.lua"
+		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vfx_anchors.lua"
+	)
+	
+	if ((dotnetclass "System.IO.File").Exists luaFilename) == false then (
+		luaFilename = (dotnetclass "System.IO.Path").ChangeExtension luaFilename ".lol"
+
+	)
+	if ((dotnetclass "System.IO.File").Exists luaFilename) then (
+		local vfxFile = VFXAnchorsFile()
+		vfxFile.Read luaFilename
+		for tag in vfxFile.Tags do (
+			for attachPoint in tag.AttachPoints do (
+				local anchorNode = GetDescendantByName rootMesh attachPoint.LumpName
+				vfxMod = AddVFXAnchor anchorNode groupname:tag.ID anchorid:attachPoint.ID offset:attachPoint.AnchorOffset rot:attachPoint.AnchorAngle scale:attachPoint.AnchorScale
+			)
+		)
+	)
+)
+
+fn ImportVFXAnchors_Old rootMesh filePath = (
+	luaFilename = filePath
+	if ((dotnetclass "System.IO.Path").GetFilename luaFilename) == "" then (
+		luaFilename = (dotnetclass "System.IO.Path").Combine ((dotnetclass "System.IO.Path").GetDirectoryName filePath) "vfx_anchors.lua"
 	)
 	
 	if ((dotnetclass "System.IO.File").Exists luaFilename) == false then (
